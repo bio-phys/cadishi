@@ -1,0 +1,35 @@
+# Cadishi example parameter file
+general:
+  redirect_output: true  # redirect output to log files
+  verbose: true  # print detailed output during computation
+  numa_aware: false  # pin kernels to CPU sockets (may improve performance, but requires taskset and numactl installed) (expert)
+histogram:
+  r_max: 70  # maximum distance value of the histogram, >0 sets explicitly, <0 fetches from capriqorn pipeline
+  dr: 0.01  # histogram bin width
+  sum: 10  # sum over 'sum' histograms before writing the result
+cpu:
+  module: pydh  # select CPU compute kernel
+  precision: single
+  workers: -1  # number of CPU worker processes, <0 autodetect, >0 set explicitly, 0 disable CPU workers
+  threads: 1  # number of threads per worker process, autodetected if workers is set to autodetection
+  check_input: true  # check during computation if distances lie within r_max, exit on error
+gpu:
+  module: cudh  # select GPU compute kernel
+  precision: single
+  workers: 0  # number of GPU worker processes, up to the number of physical GPUs
+  check_input: true  # check during computation if distances lie within r_max, exit on error
+input:
+  file: __TRAJECTORY_FILE__  # trajectory HDF5 file, Capriqorn preprocessor output
+  first: null  # first frame to be processed
+  last: null  # last frame to be processed
+  step: 1  # only read every `step`th frame
+  periodic_box: null  # null = rely on information present in the input frames (default), [] = force not to use any box, [a, b, c, alpha, beta, gamma] = force use of box as specified 
+output:
+  directory: ./histograms_output/  # output directory for histogram and log files
+  file: histograms.h5
+  compression: lzf  # HDF5 file compression, options are null, gzip, lzf
+  write_h5: true  # write distance histograms to HDF5 (expert)
+  write_npx: false  # write distance histograms to NumPy plain text files (expert)
+  write_npy: false  # write distance histograms to NumPy binary files (expert)
+  write_xyz: false  # write coordinate triples to text files (harms performance!) (expert)
+  flush_interval: 100  # flush file handles every flush_interval histograms (expert)

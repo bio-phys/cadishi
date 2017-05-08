@@ -1,0 +1,6 @@
+include cadishi.bash setup.cfg *.rst LICENSE.txt
+include doc/* doc/_static/* doc/_templates/*
+include cadishi/data/* cadishi/tests/data/* cadishi/tests/run_tests.sh
+include cadishi/kernel/* cadishi/kernel/include/*
+include scripts/*.sh
+global-exclude *.so *.pyc *.pyo

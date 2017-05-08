@@ -1,0 +1,2 @@
+To generate HTML documentation, install the package first in order to enable
+all the Cadishi modules be imported.  Then invoke `make html`.

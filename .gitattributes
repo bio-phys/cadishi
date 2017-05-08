@@ -1,0 +1,9 @@
+MISC/*   linguist-vendored
+*.py     linguist-language=Python
+*.cu     linguist-language=CUDA
+*.cpp    linguist-language=C++
+*.c      linguist-language=C
+*.sh     linguist-language=Shell
+*.md     linguist-language=Markdown
+*.rst    linguist-language=RefStructuredText
+*.html   linguist-language=HTML

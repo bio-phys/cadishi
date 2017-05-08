@@ -1,0 +1,9 @@
+*.pyc
+*.swp
+*.so
+.unison
+.cproject
+.project
+.pydevproject
+.settings
+build
