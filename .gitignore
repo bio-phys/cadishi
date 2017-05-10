@@ -8,3 +8,5 @@
 .settings
 build
 doc/html
+*.egg-info
+cadishi/version.py
