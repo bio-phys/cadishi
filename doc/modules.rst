@@ -23,28 +23,28 @@ cadishi.base
 cadishi.base_io_ascii
 ---------------------
 
-.. automodule:: cadishi.base_io_ascii 
+.. automodule:: cadishi.io.ascii
    :members:
    :undoc-members:
 
 cadishi.base_io_dummy
 ---------------------
 
-.. automodule:: cadishi.base_io_dummy 
+.. automodule:: cadishi.io.dummy
    :members:
    :undoc-members:
 
 cadishi.base_io_hdf5
 --------------------
 
-.. automodule:: cadishi.base_io_hdf5 
+.. automodule:: cadishi.io.hdf5
    :members:
    :undoc-members:
 
 cadishi.base_io_pickle
 ----------------------
 
-.. automodule:: cadishi.base_io_pickle 
+.. automodule:: cadishi.io.pickle
    :members:
    :undoc-members:
 
