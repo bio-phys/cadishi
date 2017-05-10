@@ -20,17 +20,10 @@ cadishi.exe.cli
    :members:
    :undoc-members:
 
-cadishi.exe.generate_input
---------------------------
+cadishi.exe.histograms
+----------------------
 
-.. automodule:: cadishi.exe.generate_input
-   :members:
-   :undoc-members:
-
-cadishi.exe.histograms_par
---------------------------
-
-.. automodule:: cadishi.exe.histograms_par
+.. automodule:: cadishi.exe.histograms
    :members:
    :undoc-members:
 
@@ -48,9 +41,9 @@ cadishi.exe.yaml2json
    :members:
    :undoc-members:
 
-cadishi.exe.unpack_h5
+cadishi.exe.unpack
 ---------------------
 
-.. automodule:: cadishi.exe.unpack_h5
+.. automodule:: cadishi.exe.unpack
    :members:
    :undoc-members:

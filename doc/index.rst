@@ -74,7 +74,7 @@ Usage
 First, a parameter file for the distance histogram calculation needs to be
 created::
 
-   cadishi histo-example
+   cadishi example
 
 By default, the parameter file's name is ``histograms.yaml``. Edit the parameter
 file to your needs.  In particular, the compute kernels *pydh* (CPU) and *cudh*
