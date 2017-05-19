@@ -44,41 +44,41 @@ cadishi.io.hdf5
 cadishi.io.pickle
 -----------------
 
-.. automodule:: cadishi.io.pickle
+.. automodule:: cadishi.io.pickel
    :members:
    :undoc-members:
 
 cadishi.dict_util
 -----------------
 
-.. automodule:: cadishi.dict_util 
+.. automodule:: cadishi.dict_util
    :members:
    :undoc-members:
 
 cadishi.dictfs
 --------------
 
-.. automodule:: cadishi.dictfs 
+.. automodule:: cadishi.dictfs
    :members:
    :undoc-members:
 
 cadishi.h5pickle
 ----------------
 
-.. automodule:: cadishi.h5pickle 
+.. automodule:: cadishi.h5pickle
    :members:
    :undoc-members:
 
 cadishi.util
 ------------
 
-.. automodule:: cadishi.util 
+.. automodule:: cadishi.util
    :members:
    :undoc-members:
 
 cadishi.version
 ---------------
 
-.. automodule:: cadishi.version 
+.. automodule:: cadishi.version
    :members:
    :undoc-members:
