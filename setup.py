@@ -112,7 +112,7 @@ def get_gcc_flags():
             if not on_mac():
                 if ENABLE_OPENMP:
                     cc_flags += ['-fopenmp']
-                cc_flags += ['-fopt-info-vec']
+                # cc_flags += ['-fopt-info-vec']
     return cc_flags
 
 
