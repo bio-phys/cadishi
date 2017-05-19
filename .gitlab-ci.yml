@@ -3,5 +3,5 @@ cadishi:
     - python setup.py config
     - python setup.py build
     - python setup.py develop --user
-    - python setup.py develop --uninstall
+    - python setup.py develop --user --uninstall
 
