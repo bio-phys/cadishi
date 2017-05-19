@@ -3,5 +3,7 @@ cadishi:
     - python setup.py config
     - python setup.py build
     - python setup.py develop --user
+    - cd cadishi/tests
+    - ./run_tests.sh
+    - cd ../..
     - python setup.py develop --user --uninstall
-
