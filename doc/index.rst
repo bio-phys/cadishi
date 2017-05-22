@@ -46,8 +46,8 @@ Optionally, Cadishi supports orthorhombic and triclinic periodic boxes and
 internally applies the minimum image convention to the distances. Computations
 can be performed in single (default) or double precision. Optionally, the
 distances can be checked if they fit into the desired histogram width. Given
-the combinatorial space resulting from these possibilities, templated C++ code
-is used to generate machine code with a minimum amount of runtime branches.
+the combinatorial space resulting from these possibilities, template C++ code
+is used to generate machine code with a minimum amount of branches at runtime.
 Recent compilers are known to generate well-vectorized machine code from the
 distance calculation for the CPU. The GPU kernel benefits strongly from the
 fast shared-memory atomic operations introduced with the MAXWELL generation of
@@ -64,25 +64,35 @@ follows into the user's homedirectory::
    python setup.py install --user
 
 In this case, setup.py copies the Cadishi files into the directory ``~/.local``.
-Make sure that your ``PATH`` environment variable contains the directory
-``~/.local/bin``.
+Make sure that your ``PATH`` environment variable includes the directory
+``~/.local/bin``.  To enable a CUDA build the ``nvcc`` compiler wrapper must be
+found via the ``PATH`` environment variable.  Influential boolean environment variables
+are ``CAD_DEBUG``, ``CAD_OPENMP``, ``CAD_CUDA``, and ``CAD_SAFE_CUDA_FLAGS``; if
+set they override the keys listed in the options section of the file ``setup.cfg``.
 
 
 Usage
 -----
 
-First, a parameter file for the distance histogram calculation needs to be
-created::
+The Cadishi package provides a single main executable ``cadishi`` which supports
+commands and options (similar to the well-known concept used by ``git``).
 
-   cadishi example
+To get a quick overview on the options of Cadishi issue the following command::
+
+   cadishi --help
+
+To get started a parameter file controlling the distance histogram calculation
+is required. A basic example is included with the package and can be created as
+follows::
+
+   cadishi example [--expert]
 
 By default, the parameter file's name is ``histograms.yaml``. Edit the parameter
 file to your needs.  In particular, the compute kernels *pydh* (CPU) and *cudh*
-(GPU) can be configured.  By default, the input configuration points to the
-default testcase included with the Cadishi package. Make sure to adapt the
-input configuration to your actual data.
-
-Second, the distance histogram calculation is run as follows::
+(GPU) can be configured.  In the example parameter file, the input configuration
+points to the default test case included with the Cadishi package. Adapt the
+input configuration to your actual data. As a second step the distance histogram
+calculation is run as follows::
 
    cadishi histo
 
@@ -94,9 +104,9 @@ Source documentation
    :maxdepth: 2
 
    modules.rst
-   
+
    kernel.rst
-   
+
    executables.rst
 
 
@@ -112,7 +122,7 @@ In case you're using Cadishi for your own academic or non-academic research, we
 kindly request that you cite Cadishi in your publications and presentations. We
 suggest the following citations as appropriate:
 
-TODO: Add paper reference once it is on the arxiv and/or published. 
+TODO: Add paper reference once it is on the arxiv and/or published.
 
 
 Indices and tables

@@ -1,7 +1,10 @@
 Cadishi executables
 ===================
 
-The following documentation was automatically generated from the docstrings present in the source code files.
+The executables are accessible via the ``cadishi`` command.
+
+The following documentation was automatically generated from the docstrings
+present in the source code files.
 
 .. toctree::
    :maxdepth: 2

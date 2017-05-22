@@ -1,7 +1,8 @@
 Cadishi compute kernels
 =======================
 
-The following documentation was automatically generated from the docstrings present in the source code files.
+The following documentation was automatically generated from the docstrings
+present in the source code files.
 
 .. toctree::
    :maxdepth: 2
