@@ -8,4 +8,5 @@ __author__ = "Juergen Koefinger, Klaus Reuter"
 __copyright__ = "Copyright (C) 2015-2017 Juergen Koefinger, Klaus Reuter"
 __license__ = "license_tba"
 
-from .version import *
+from . import version
+__version__ = version.get_version_string()

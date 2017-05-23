@@ -13,7 +13,7 @@ import argparse
 
 def parse_args():
     """"Set up the cadishi command line interface using argparse.
-    
+
     Individual cadishi commands and their arguments are set up
     next to their implementation via the configure_cli() functions.
     """
@@ -23,8 +23,21 @@ def parse_args():
     from . import random_trajectory
     from . import merge
     from . import unpack
+    from .. import version
+
+    version_string = "Cadishi " + version.get_version_string()
+    try:
+        from .. import githash
+    except:
+        pass
+    else:
+        version_string += " (git: " + githash.human_readable + ")"
 
     parser = argparse.ArgumentParser()
+
+    parser.add_argument('-v', '--version', help='print version information',
+                        action='version', version=version_string)
+
     subparsers = parser.add_subparsers(help='Commands')
 
     histograms.configure_cli(subparsers)

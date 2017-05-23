@@ -1,0 +1,2 @@
+Note: The scripts inside this directory must be run from the package root directory,
+i.e. for example './scripts/update_git_hash.py'.

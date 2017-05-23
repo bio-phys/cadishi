@@ -489,7 +489,7 @@ def generate_random_point_on_spherical_surface(R):
 
 def check_parameter_labels(input, reference):
     """Check the keys of a two-level nested dictionary structure against a reference structure.
-    
+
     Raises KeyError in case of an invalid key.
     """
     for key_1 in input:
@@ -511,7 +511,7 @@ def make_iterable(obj):
 def check_parameter(parameters, label, dtype, default_value,
                     valid_values=None, min_value=None, max_value=None, file_existence=False):
     """Check a parameter for validity.
-    
+
     Throws ValueError or IOError with useful end-user-friendly messages.
     """
     sec, key = label.split(':')
