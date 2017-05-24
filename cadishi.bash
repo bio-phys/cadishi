@@ -8,7 +8,7 @@
 
 _cadishi()
 {
-    local cur prev opts histo_opts example_opts
+    local cur prev opts histo_opts example_opts merge_opts unpack_opts
     COMPREPLY=()
     cur="${COMP_WORDS[COMP_CWORD]}"
     prev="${COMP_WORDS[COMP_CWORD-1]}"
