@@ -1,10 +1,29 @@
-cadishi:
+before_script:
+  - rm -f ~/.local/lib/python2.7/site-packages/cadishi.egg-link
+  - export BASE=`pwd`
+  - python setup.py develop --user
+
+test_job:
   script:
-    - python setup.py config
-    - python setup.py build
-    - python setup.py develop --user
+    # Run the included unit test cases
+    - py.test cadishi
+    # Call the Cadishi CLI by running the trivial included test case.
+    - mkdir tmp
+    - cd tmp
+    - cadishi --help
+    - cadishi --version
+    - cadishi example
+    - cadishi histo
+    - cd histograms_output
+    - cadishi unpack histograms.h5
+    - cadishi merge --output foo.h5 histograms.h5
+    - cd $BASE
+    # Test the documentation creation.
     - python setup.py build_sphinx
-    - cd cadishi/tests
-    - ./run_tests.sh
-    - cd ../..
-    - python setup.py develop --user --uninstall
+    # Test the tarball creation.
+    - python setup.py sdist --formats=gztar
+
+# Clean up remnants.
+after_script:
+  - python setup.py develop --user --uninstall
+  - rm -f ~/.local/lib/python2.7/site-packages/cadishi.egg-link
