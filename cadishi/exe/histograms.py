@@ -48,7 +48,7 @@ def configure_cli(subparsers):
 
 def check_parameters(histoparam):
     """Check and sanitize input parameters for the histogram computation.
-    
+
     Together with the <histograms_template.yaml> file, this function needs
     to be extended with each new parameter that is introduced."""
     import os
@@ -224,7 +224,7 @@ def main(argparse_args):
     nbins = int(math.ceil(r_max / dr))
 
 
-    print " Cadishi distance histogram package (git: " + version + ")"
+    print version.get_printable_version_string()
     print util.SEP
     print " parameter file:       " + parameter_file
     print " trajectory file:      " + str(histoparam['input']['file'])
