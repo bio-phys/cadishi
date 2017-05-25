@@ -3,16 +3,25 @@ package:
     version: "1.0.0"
 
 source:
-    path: ../
+    path: ../../
 
 requirements:
     build:
         - python
+        - setuptools
         - numpy
+        - scipy
+        - cython
+        - h5py
+        - pyyaml
 
     run:
         - python
         - numpy
+        - scipy
+        - h5py
+        - pyyaml
+        - setuptools
 
 # test:
 #     # Python imports
@@ -25,5 +34,6 @@ about:
     home: https://gitlab.mpcdf.mpg.de/MPIBP-Hummer/Cadishi
     license: MIT
     summary: 'Cadishi -- CAlculation of DIStance HIstograms -- is a software package written
-largely in Python that enables scientists to compute (Euclidean) distance
+in Python that enables scientists to compute (Euclidean) distance
 histograms efficiently.'
+
