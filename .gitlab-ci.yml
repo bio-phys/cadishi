@@ -22,6 +22,10 @@ test_job:
     - python setup.py build_sphinx
     # Test the tarball creation.
     - python setup.py sdist --formats=gztar
+    # Test conda package creation.
+    - cd conda
+    - ./conda_build.sh
+    - cd ..
 
 # Clean up remnants.
 after_script:
