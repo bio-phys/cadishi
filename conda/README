@@ -1,0 +1,5 @@
+May 26, 2017
+
+Script and recipe to build a conda package. Upload has not yet been tested.
+
+Run './conda_build.sh' to build the package. Requires conda-build to be installed.
