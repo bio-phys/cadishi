@@ -23,11 +23,12 @@ requirements:
         - h5py
         - pyyaml
 
-test:
-    # test if the package can be imported
-    imports:
-        - cadishi
-        - cadishi.kernel
+# disabled due to glitches with the pkg cache directory
+# test:
+#     # test if the package can be imported
+#     imports:
+#         - cadishi
+#         - cadishi.kernel
 
 about:
     home: https://gitlab.mpcdf.mpg.de/MPIBP-Hummer/Cadishi
