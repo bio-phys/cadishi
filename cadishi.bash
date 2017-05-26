@@ -14,21 +14,17 @@ _cadishi()
     prev="${COMP_WORDS[COMP_CWORD-1]}"
 
     opts="histo example merge unpack --help --version"
-    histo_opts="--help --input"
-    example_opts="--help --output"
-    merge_opts="--help --force --output"
+    histo_opts="--help"
+    example_opts="--help --expert"
+    merge_opts="--help --force --output --compression"
     unpack_opts="--help --force --output"
 
-    if [[ ${prev} == --input ]] ; then
-        COMPREPLY=( $(compgen -f -X '!*.yaml' -- ${cur}) )
-        return 0
-    fi
-    if [[ ${prev} == --output ]] ; then
-        COMPREPLY=( $(compgen -f -X '!*.yaml' -- ${cur}) )
+    if [[ ${prev} == --compression ]] ; then
+        COMPREPLY=( $(compgen -W "${compression_opts}" -- ${cur}) )
         return 0
     fi
     if [[ ${prev} == histo ]] ; then
-        COMPREPLY=( $(compgen -W "${histo_opts}" -- ${cur}) )
+        COMPREPLY=( $(compgen -W "${histo_opts}" -- ${cur}) $(compgen -f -X '!*.yaml' -- ${cur}) )
         return 0
     fi
     if [[ ${prev} == example ]] ; then
@@ -36,11 +32,11 @@ _cadishi()
         return 0
     fi
     if [[ ${prev} == merge ]] ; then
-        COMPREPLY=( $(compgen -W "${merge_opts}" -- ${cur}) )
+        COMPREPLY=( $(compgen -W "${merge_opts}" -- ${cur}) $(compgen -f -X '!*.h5' -- ${cur}) )
         return 0
     fi
     if [[ ${prev} == unpack ]] ; then
-        COMPREPLY=( $(compgen -W "${unpack_opts}" -- ${cur}) )
+        COMPREPLY=( $(compgen -W "${unpack_opts}" -- ${cur}) $(compgen -f -X '!*.h5' -- ${cur}) )
         return 0
     fi
     if [[ ${cur} == * ]] ; then
