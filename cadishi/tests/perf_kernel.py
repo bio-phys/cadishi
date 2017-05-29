@@ -102,7 +102,7 @@ else:
     output_prefix = "perf/"
     run_values['output'] = output_prefix + "perf_kernel" + output_suffix
 
-run_values['version'] = version
+run_values['version'] = version.get_printable_version_string()
 
 
 # ---
