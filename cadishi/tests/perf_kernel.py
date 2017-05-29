@@ -22,6 +22,19 @@ import argparse
 from six.moves import range
 from cadishi import util
 from cadishi import version
+from collections import OrderedDict
+import sqlite3 as sq3
+
+
+def quote(string):
+    """Add quotes to the beginning and the end of a string if not already present."""
+    string_elements = []
+    if not string.startswith('\''):
+        string_elements.append('\'')
+    string_elements.append(string)
+    if not string.endswith('\''):
+        string_elements.append('\'')
+    return "".join(string_elements)
 
 
 # --- set up and parse command line arguments
@@ -35,13 +48,12 @@ parser.add_argument('--threads', help='number of CPU threads', type=int, metavar
 parser.add_argument('--check-input', help='activate input check in kernels', action="store_true")
 parser.add_argument('--double-precision', help='use double precision coordinates', action="store_true")
 parser.add_argument('--numa', help='use numa process pinning', action="store_true")
-parser.add_argument('--timestamp', help='add timestamp to output file name', action="store_true")
-parser.add_argument('--output', help='specify output file name', type=str, metavar='file_name')
-parser.add_argument('--verbose', help='print results to stdout', action="store_true")
+parser.add_argument('--silent', help='do not print results to stdout', action="store_true")
+parser.add_argument('--sqlite', help='write results to sqlite table', action="store_true")
 p_args = parser.parse_args()
 
 
-run_values = {}
+run_values = OrderedDict()
 
 
 if p_args.gpu:
@@ -84,25 +96,46 @@ if p_args.numa:
 else:
     run_values['numa'] = False
 
-if p_args.verbose:
-    run_values['verbose'] = True
+if p_args.silent:
+    run_values['silent'] = True
 else:
-    run_values['verbose'] = False
+    run_values['silent'] = False
 
-if p_args.timestamp:
-    t = time.time()
-    s = datetime.datetime.fromtimestamp(t).strftime('%Y-%m-%d-%H-%M-%S')
-    output_suffix = "_" + s + ".yml"
-else:
-    output_suffix = ".yml"
 
-if p_args.output:
-    run_values['output'] = p_args.output
-else:
-    output_prefix = "perf/"
-    run_values['output'] = output_prefix + "perf_kernel" + output_suffix
+run_values['timestamp'] = datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d-%H-%M-%S')
 
-run_values['version'] = version.get_printable_version_string()
+run_values['version'] = version.get_version_string()
+
+
+# data types for sqlite database
+output_keys = OrderedDict()
+output_keys['kernel'] = 'text'
+output_keys['version'] = 'text'
+output_keys['timestamp'] = 'text'
+output_keys['threads'] = 'integer'
+output_keys['precision'] = 'text'
+output_keys['size'] = 'text'
+output_keys['bins'] = 'integer'
+output_keys['box'] = 'text'
+output_keys['check_input'] = 'text'
+output_keys['bap'] = 'real'
+output_keys['time'] = 'real'
+output_keys['bapps'] = 'real'
+
+
+database = 'perf.db'
+if p_args.sqlite:
+    if not os.path.isfile(database):
+        with sq3.connect(database) as conn:
+            keys = []
+            for key in output_keys:
+                key_sql = key + " " + str(output_keys[key])
+                # if (key == 'kernel'):
+                    # key_sql = key_sql + " PRIMARY KEY"
+                keys.append(key_sql)
+            sql = "CREATE TABLE IF NOT EXISTS cadishi (" + ', '.join(keys) + ")"
+            conn.cursor().execute(sql)
+            conn.commit()
 
 
 # ---
@@ -112,15 +145,6 @@ if run_values['kernel'] == "cudh":
     from cadishi.kernel import cudh
 else:
     from cadishi.kernel import pydh
-
-
-# def get_random_coordinate_set(n_atoms=[512, 1024, 2048]):
-#     """return random coordinate sets in a unit box"""
-#     coords = []
-#     for n in n_atoms:
-#         c = np.random.rand(n, 3)
-#         coords.append(c)
-#     return coords
 
 
 def get_bap():
@@ -166,9 +190,6 @@ r_max = math.sqrt(3.0)
 
 bap = get_bap()
 
-if run_values['verbose']:
-    print("Running " + run_values['kernel'] + " ...")
-
 t0 = time.time()
 if run_values['kernel'] == "cudh":
     cudh = cudh.histograms(coords,
@@ -194,15 +215,29 @@ run_values['bap'] = bap
 run_values['time'] = dt
 run_values['bapps'] = bapps
 
-if run_values['verbose']:
-    keys = ['size', 'bins', 'box', 'kernel', 'precision', 'threads',
-            'check_input', 'bap', 'time', 'bapps']
-    vals = [x + ":" + str(run_values[x]) for x in keys]
+
+if not run_values['silent']:
+    vals = [x + ":" + str(run_values[x]) for x in output_keys]
     line = ' '.join(vals)
     print(line)
 
-util.md(run_values['output'])
 
-with open(run_values['output'], 'w') as fp:
-    del(run_values['output'])
-    yaml.dump(run_values, fp, default_flow_style=False)
+if p_args.sqlite:
+    with sq3.connect(database) as conn:
+        data_str_lst = []
+        for key in output_keys:
+            val = run_values[key]
+            if (output_keys[key] == 'text'):
+                val = quote(str(val))
+            data_str_lst.append(str(val))
+        sql = "INSERT INTO cadishi VALUES (" + ', '.join(data_str_lst) + ")"
+        # print sql
+        conn.cursor().execute(sql)
+        conn.commit()
+
+
+# util.md(run_values['output'])
+#
+# with open(run_values['output'], 'w') as fp:
+#     del(run_values['output'])
+#     yaml.dump(run_values, fp, default_flow_style=False)
