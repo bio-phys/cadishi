@@ -30,10 +30,10 @@
 
 // Attempt to make the distance array in the inner loop fit into the CPU cache,
 // this does not seem to be beneficial in most use cases, so we disable it for the moment.
-//#define USE_BLOCKING
+// #define USE_BLOCKING
 #undef USE_BLOCKING
 #ifdef USE_BLOCKING
-const int inner_loop_blocksize = 32768;
+const int inner_loop_blocksize = 131072;
 #endif
 
 // alignment passed to posix_memalign()
@@ -421,7 +421,7 @@ void hist_2(TUPLE3_T * __restrict__ p1,
 template <typename TUPLE3_T, typename FLOAT_T, bool check_input, int box_type_id>
 void histo_cpu(TUPLE3_T *coords, int n_tot, int *n_per_el, int n_el,
                uint64_t *histos, int n_bins, FLOAT_T r_max, int *mask,
-               const TUPLE3_T * const box)
+               const TUPLE3_T * const box, const int do_histo2_only=0)
 {
    const FLOAT_T scal = ((FLOAT_T)n_bins)/r_max;
 
@@ -472,10 +472,12 @@ void histo_cpu(TUPLE3_T *coords, int n_tot, int *n_per_el, int n_el,
                        &histos[histoOffset], n_bins, scal,
                        box, box_ortho, box_inv, box_half);
             } else {
-               hist_1 <TUPLE3_T, FLOAT_T, check_input, box_type_id>
-                      (&coords[iOffset], n_per_el[i], &moved_into_box[i],
-                       &histos[histoOffset], n_bins, scal,
-                       box, box_ortho, box_inv, box_half);
+               if (! do_histo2_only) {
+                  hist_1 <TUPLE3_T, FLOAT_T, check_input, box_type_id>
+                         (&coords[iOffset], n_per_el[i], &moved_into_box[i],
+                          &histos[histoOffset], n_bins, scal,
+                          box, box_ortho, box_inv, box_half);
+               }
             }
          }
          // ---
@@ -504,7 +506,8 @@ void histograms_template_dispatcher(NP_TUPLE3_T *r_ptr,
                                     int *mask_ptr,
                                     double *box_ptr,
                                     bool check_input,
-                                    int box_type_id) {
+                                    int box_type_id,
+                                    const int do_histo2_only=0) {
    TUPLE3_T* r_copy = NULL;
    // r_copy = (TUPLE3_T*) malloc(n_tot*sizeof(TUPLE3_T));
    posix_memalign((void**)&r_copy, alignment, n_tot*sizeof(TUPLE3_T));
@@ -533,30 +536,36 @@ void histograms_template_dispatcher(NP_TUPLE3_T *r_ptr,
       switch (box_type_id) {
          case none:
             histo_cpu <TUPLE3_T, FLOAT_T, true, none>
-               (r_copy, n_tot, nel_ptr, n_El, histo_ptr, n_bins, FLOAT_T(r_max), mask_ptr, box_copy);
+               (r_copy, n_tot, nel_ptr, n_El, histo_ptr, n_bins, FLOAT_T(r_max),
+                mask_ptr, box_copy, do_histo2_only);
             break;
          case orthorhombic:
             histo_cpu <TUPLE3_T, FLOAT_T, true, orthorhombic>
-               (r_copy, n_tot, nel_ptr, n_El, histo_ptr, n_bins, FLOAT_T(r_max), mask_ptr, box_copy);
+               (r_copy, n_tot, nel_ptr, n_El, histo_ptr, n_bins, FLOAT_T(r_max),
+                mask_ptr, box_copy, do_histo2_only);
             break;
          case triclinic:
             histo_cpu <TUPLE3_T, FLOAT_T, true, triclinic>
-               (r_copy, n_tot, nel_ptr, n_El, histo_ptr, n_bins, FLOAT_T(r_max), mask_ptr, box_copy);
+               (r_copy, n_tot, nel_ptr, n_El, histo_ptr, n_bins, FLOAT_T(r_max),
+                mask_ptr, box_copy, do_histo2_only);
             break;
       }
    } else {
       switch (box_type_id) {
          case none:
             histo_cpu <TUPLE3_T, FLOAT_T, false, none>
-               (r_copy, n_tot, nel_ptr, n_El, histo_ptr, n_bins, FLOAT_T(r_max), mask_ptr, box_copy);
+               (r_copy, n_tot, nel_ptr, n_El, histo_ptr, n_bins, FLOAT_T(r_max),
+                mask_ptr, box_copy, do_histo2_only);
             break;
          case orthorhombic:
             histo_cpu <TUPLE3_T, FLOAT_T, false, orthorhombic>
-               (r_copy, n_tot, nel_ptr, n_El, histo_ptr, n_bins, FLOAT_T(r_max), mask_ptr, box_copy);
+               (r_copy, n_tot, nel_ptr, n_El, histo_ptr, n_bins, FLOAT_T(r_max),
+                mask_ptr, box_copy, do_histo2_only);
             break;
          case triclinic:
             histo_cpu <TUPLE3_T, FLOAT_T, false, triclinic>
-               (r_copy, n_tot, nel_ptr, n_El, histo_ptr, n_bins, FLOAT_T(r_max), mask_ptr, box_copy);
+               (r_copy, n_tot, nel_ptr, n_El, histo_ptr, n_bins, FLOAT_T(r_max),
+                mask_ptr, box_copy, do_histo2_only);
             break;
       }
    }
@@ -659,6 +668,7 @@ static PyObject* histograms(PyObject* self, PyObject* args)
    int precision = single_precision;
    int n_threads = 1;
    int check_input = 1;
+   int do_histo2_only = 0;
    // --- translate C++ exceptions into integer exit status
    int exit_status;
 #ifdef _OPENMP
@@ -668,8 +678,8 @@ static PyObject* histograms(PyObject* self, PyObject* args)
 
    exit_status = 0;
    try {
-      if (!PyArg_ParseTuple(args, "OOOdOOi|iii", &coords, &nelems, &histos, &r_max, &mask, &box, &box_type_id,
-                        /*optional parameters:*/ &precision, &n_threads, &check_input))
+      if (!PyArg_ParseTuple(args, "OOOdOOi|iiii", &coords, &nelems, &histos, &r_max, &mask, &box, &box_type_id,
+                        /*optional parameters:*/ &precision, &n_threads, &check_input, &do_histo2_only))
          return NULL;
 
       // --- 2D double precision coordinate array for all species
@@ -705,10 +715,12 @@ static PyObject* histograms(PyObject* self, PyObject* args)
 
       if ( precision == single_precision ) {
          histograms_template_dispatcher <np_tuple3d_t, tuple3s_t, float>
-            (r_ptr, n_tot, nel_ptr, n_El, histo_ptr, n_bins, r_max, mask_ptr, box_ptr, check_input, box_type_id);
+            (r_ptr, n_tot, nel_ptr, n_El, histo_ptr, n_bins, r_max, mask_ptr,
+             box_ptr, check_input, box_type_id, do_histo2_only);
       } else if ( precision == double_precision ) {
          histograms_template_dispatcher <np_tuple3d_t, tuple3d_t, double>
-            (r_ptr, n_tot, nel_ptr, n_El, histo_ptr, n_bins, r_max, mask_ptr, box_ptr, check_input, box_type_id);
+            (r_ptr, n_tot, nel_ptr, n_El, histo_ptr, n_bins, r_max, mask_ptr,
+             box_ptr, check_input, box_type_id, do_histo2_only);
       } else {
          RT_ERROR(std::string("unknown precision identifier passed"));
       }

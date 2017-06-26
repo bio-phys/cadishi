@@ -33,7 +33,8 @@ def histograms(coordinate_sets,
                check_input=True,
                scale_factors=[],
                mask_array=[],
-               box=[]):
+               box=[],
+               do_histo2_only=False):
     """Distance histogram calculation."""
 
     if not have_c_pydh:
@@ -46,6 +47,9 @@ def histograms(coordinate_sets,
 
     n_El = len(coordinate_sets)
     n_Hij = n_El * (n_El + 1) / 2
+
+    if do_histo2_only and (n_El != 2):
+        raise ValueError(common.overflow_error_msg)
 
     # --- concatenate list of numpy arrays into a single numpy array
     np_coord = np.concatenate(coordinate_sets, axis=0)
@@ -71,7 +75,8 @@ def histograms(coordinate_sets,
     # --- run the CUDH distance histogram kernel
     exit_status = c_pydh.histograms(np_coord, np_nelem, np_histos, r_max, np_mask, \
                                     np_box, box_type_id, \
-                                    precision, pydh_threads, check_input)
+                                    precision, pydh_threads, check_input, \
+                                    do_histo2_only)
 
     if (exit_status == 1):
         raise ValueError(common.overflow_error_msg)
