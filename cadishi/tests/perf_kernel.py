@@ -23,7 +23,6 @@ from six.moves import range
 from cadishi import util
 from cadishi import version
 from collections import OrderedDict
-import sqlite3 as sq3
 
 
 def quote(string):
@@ -132,6 +131,7 @@ output_keys['bapps'] = 'real'
 
 database = 'perf.db'
 if p_args.sqlite:
+    import sqlite3 as sq3  # on some systems sqlite is not available by default
     if not os.path.isfile(database):
         with sq3.connect(database) as conn:
             keys = []
@@ -240,10 +240,3 @@ if p_args.sqlite:
         # print sql
         conn.cursor().execute(sql)
         conn.commit()
-
-
-# util.md(run_values['output'])
-#
-# with open(run_values['output'], 'w') as fp:
-#     del(run_values['output'])
-#     yaml.dump(run_values, fp, default_flow_style=False)
