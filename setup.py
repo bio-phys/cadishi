@@ -86,16 +86,18 @@ def get_version_string():
 # Handle build options  #
 #########################
 config = Config()
-DEBUG_BUILD = config.get('debug', default=False)
-ENABLE_OPENMP = config.get('openmp', default=True)
-ENABLE_CUDA = config.get('cuda', default=True)
-SAFE_CUDA_FLAGS = config.get("safe_cuda_flags", default=False)
+CAD_DEBUG = config.get('debug', default=False)
+CAD_OPENMP = config.get('openmp', default=True)
+CAD_GCC_NATIVE = config.get('gcc_native', default=False)
+CAD_CUDA = config.get('cuda', default=True)
+CAD_SAFE_CUDA_FLAGS = config.get("safe_cuda_flags", default=False)
 
 print("### Cadishi " + get_version_string() + " setup configuration")
-print(" debug           : " + str(DEBUG_BUILD))
-print(" openmp          : " + str(ENABLE_OPENMP))
-print(" cuda            : " + str(ENABLE_CUDA))
-print(" safe_cuda_flags : " + str(SAFE_CUDA_FLAGS))
+print(" debug           : " + str(CAD_DEBUG))
+print(" openmp          : " + str(CAD_OPENMP))
+print(" gcc_native      : " + str(CAD_GCC_NATIVE))
+print(" cuda            : " + str(CAD_CUDA))
+print(" safe_cuda_flags : " + str(CAD_SAFE_CUDA_FLAGS))
 print("###")
 
 
@@ -105,19 +107,20 @@ print("###")
 def get_gcc_flags():
     # set up compiler flags for the C extensions
     cc_flags = ['-g', '-D_GLIBCXX_USE_CXX11_ABI=0']
-    if DEBUG_BUILD:
+    if CAD_DEBUG:
         cc_flags += ['-O0']
     else:
         cc_flags += ['-O3']
         if (find_in_path(['g++']) is not None):
-            cc_flags += ['-ffast-math']
-            cc_flags += ['-mtune=native']  # portable
-            if platform.processor() == 'x86_64':
-                cc_flags += ['-msse4.2']  # required for fast round() instruction
-                # cc_flags += ['-mavx']
-                # cc_flags += ['-march=native']
+            cc_flags += ['-ffast-math']  # essential to get vectorization and performance
+            if CAD_GCC_NATIVE:
+                cc_flags += ['-march=native']
+            else:
+                cc_flags += ['-mtune=native']  # optimize for the current CPU but preserve portability
+                if platform.processor() == 'x86_64':
+                    cc_flags += ['-msse4.2']  # required for fast round() instruction
             if not on_mac():
-                if ENABLE_OPENMP:
+                if CAD_OPENMP:
                     cc_flags += ['-fopenmp']
                 # cc_flags += ['-fopt-info-vec']
     return cc_flags
@@ -214,10 +217,10 @@ def cuda_compiler_flags():
     gcc_flags += ['-DCUDA_DEBUG']
     gcc_flags_string = " ".join(gcc_flags)
     nvcc_flags = ['-DCUDA_DEBUG']  # hardly adds overhead, recommended
-    if DEBUG_BUILD:
+    if CAD_DEBUG:
         nvcc_flags += ['-O0', '-g', '-G']
     else:
-        if SAFE_CUDA_FLAGS:
+        if CAD_SAFE_CUDA_FLAGS:
             nvcc_flags += ['-O2']
             nvcc_flags += ['-use_fast_math']
             nvcc_flags += ['--generate-code', 'arch=compute_35,code=compute_35']
@@ -237,7 +240,7 @@ def cuda_compiler_flags():
     nvcc_flags += ['--compiler-options=' + gcc_flags_string + ' -fPIC']
     return {'gcc': gcc_flags, 'nvcc': nvcc_flags}
 
-if ENABLE_CUDA:
+if CAD_CUDA:
     try:
         CUDA = locate_cuda()
         CUDAVER = get_cuda_ver(CUDA['nvcc'])
