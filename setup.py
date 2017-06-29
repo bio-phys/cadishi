@@ -113,11 +113,12 @@ def get_gcc_flags():
         cc_flags += ['-O3']
         if (find_in_path(['g++']) is not None):
             cc_flags += ['-ffast-math']  # essential to get vectorization and performance
-            if CAD_GCC_NATIVE:
-                cc_flags += ['-march=native']
-            else:
-                cc_flags += ['-mtune=native']  # optimize for the current CPU but preserve portability
-                if platform.processor() == 'x86_64':
+            cc_flags += ['-mtune=native']  # optimize for the current CPU but preserve portability
+            if platform.processor() == 'x86_64':
+                if CAD_GCC_NATIVE:
+                    # flag does not work e.g. on IBM Minsky systems
+                    cc_flags += ['-march=native']
+                else:
                     cc_flags += ['-msse4.2']  # required for fast round() instruction
             if not on_mac():
                 if CAD_OPENMP:
