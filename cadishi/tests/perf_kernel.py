@@ -44,6 +44,7 @@ parser.add_argument('--size', help='specify number of coordinate tuples to be us
 parser.add_argument('--bins', help='number of histogram bins', type=int, metavar='bins')
 parser.add_argument('--box', help='select orthorhombic or triclinic box', type=str, metavar='box')
 parser.add_argument('--threads', help='number of CPU threads', type=int, metavar='threads')
+parser.add_argument('--algorithm', help='select GPU algorithm', type=int, metavar='gpu_algo')
 parser.add_argument('--histo2', help='only run mixed species histogram computation', action="store_true")
 parser.add_argument('--check-input', help='activate input check in kernels', action="store_true")
 parser.add_argument('--double-precision', help='use double precision coordinates', action="store_true")
@@ -80,6 +81,11 @@ if p_args.threads:
     run_values['threads'] = p_args.threads
 else:
     run_values['threads'] = 1
+
+if (p_args.algorithm >= 0):
+    run_values['algorithm'] = p_args.algorithm
+else:
+    run_values['algorithm'] = -1
 
 if p_args.histo2:
     run_values['histo2'] = p_args.histo2
@@ -123,6 +129,7 @@ output_keys['size'] = 'text'
 output_keys['bins'] = 'integer'
 output_keys['box'] = 'text'
 output_keys['check_input'] = 'text'
+output_keys['algorithm'] = 'integer'
 output_keys['histo2'] = 'text'
 output_keys['bap'] = 'real'
 output_keys['time'] = 'real'
@@ -203,7 +210,9 @@ if run_values['kernel'] == "cudh":
                            run_values['bins'],
                            run_values['precision'],
                            check_input=run_values['check_input'],
-                           box=box, do_histo2_only=run_values['histo2'])
+                           box=box,
+                           do_histo2_only=run_values['histo2'],
+                           algorithm=run_values['algorithm'])
 else:
     pydh = pydh.histograms(coords,
                            r_max,
@@ -211,7 +220,8 @@ else:
                            run_values['precision'],
                            pydh_threads=run_values['threads'],
                            check_input=run_values['check_input'],
-                           box=box, do_histo2_only=run_values['histo2'])
+                           box=box,
+                           do_histo2_only=run_values['histo2'])
 t1 = time.time()
 dt = (t1 - t0)
 

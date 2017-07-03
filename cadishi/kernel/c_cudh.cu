@@ -376,9 +376,10 @@ void histo_gpu(TUPLE3_T *coords, int n_tot,
                FLOAT_T r_max, int *mask,
                int dev,
                /* --- optional arguments with defaults below --- */
-               int histo_tiled_block_x_inp = 0,
-               bool do_histo2_only = false,
-               bool verbose = false)
+               int histo_tiled_block_x_inp = 0,  // use specified grid block size if >0
+               bool do_histo2_only = false,  // call only histo2
+               bool verbose = false,
+               int algorithm = -1)  // '-1': use internal default heuristics
 {
    CU_CHECK( cudaSetDevice(dev) );
    cudaDeviceProp prop;
@@ -406,9 +407,6 @@ void histo_gpu(TUPLE3_T *coords, int n_tot,
       histo_tiled_block_x = 960;
       histo_tiled_nbins_threshold = 2*smem_n_bins_max;
    }
-   // --> for performance testing, the following values are useful:
-//   histo_tiled_nbins_threshold = 0;  // always use the simple kernels
-//   histo_tiled_nbins_threshold = (2 << 28);  // always use the tiled kernels
 
    if (histo_tiled_block_x_inp > 0) {
       printf("%s\n", SEP);
@@ -419,7 +417,21 @@ void histo_gpu(TUPLE3_T *coords, int n_tot,
          printf("GPU %d : IGNORING input : histo_tiled_block_x\n", dev);
       }
       printf("%s\n", SEP);
-      fflush(stdout);
+      // fflush(stdout);
+   }
+
+   int algorithm_id;
+   if (algorithm >= 0) {
+      algorithm_id = algorithm;
+      printf("%s\n", SEP);
+      printf("GPU %d : using algorithm %d\n", dev, algorithm_id);
+      printf("%s\n", SEP);
+      // fflush(stdout);
+   } else {
+      if (n_bins > histo_tiled_nbins_threshold)
+         algorithm_id = SIMPLE;
+      else
+         algorithm_id = TILED;
    }
 
    const FLOAT_T scal = FLOAT_T(n_bins)/r_max;
@@ -440,13 +452,8 @@ void histo_gpu(TUPLE3_T *coords, int n_tot,
    CU_CHECK( cudaMalloc((void**)&histo_d, histo_bytes + sizeof(COUNTER_T)) );
    CU_CHECK( cudaMemset(histo_d, 0, histo_bytes + sizeof(COUNTER_T)) );
 
-   int algorithm;
-   if (n_bins > histo_tiled_nbins_threshold)
-      algorithm = SIMPLE;
-   else
-      algorithm = TILED;
 
-   switch (algorithm) {
+   switch (algorithm_id) {
       case SIMPLE:
       {  // curly brackets define a separate scope within the case block
          int histogramIdx = 0;
@@ -628,7 +635,8 @@ void histograms_template_dispatcher(NP_TUPLE3_T *r_ptr,   // coordinate tuples
                                     int gpu_id,           // id of the GPU to be used
                                     int thread_block_x,   // CUDA thread block size
                                     int do_histo2_only,
-                                    int verbose) {
+                                    int verbose,
+                                    int algorithm = -1) {
    TUPLE3_T * r_copy;
    TUPLE3_T * box_copy;
    // box information is forwarded using the last n_box elements of r_copy (even if no box is present at all)
@@ -691,19 +699,22 @@ void histograms_template_dispatcher(NP_TUPLE3_T *r_ptr,   // coordinate tuples
             histo_gpu <TUPLE3_T, uint64_t, FLOAT_T, true, none>
                (r_copy, n_tot, nel_ptr, n_El, histo_loc, n_bins, n_Hij,
                 FLOAT_T(r_max), mask_ptr,
-                gpu_id, thread_block_x, do_histo2_only, (verbose != 0));
+                gpu_id, thread_block_x, do_histo2_only, (verbose != 0),
+                algorithm);
             break;
          case orthorhombic:
             histo_gpu <TUPLE3_T, uint64_t, FLOAT_T, true, orthorhombic>
                (r_copy, n_tot, nel_ptr, n_El, histo_loc, n_bins, n_Hij,
                 FLOAT_T(r_max), mask_ptr,
-                gpu_id, thread_block_x, do_histo2_only, (verbose != 0));
+                gpu_id, thread_block_x, do_histo2_only, (verbose != 0),
+                algorithm);
             break;
          case triclinic:
             histo_gpu <TUPLE3_T, uint64_t, FLOAT_T, true, triclinic>
                (r_copy, n_tot, nel_ptr, n_El, histo_loc, n_bins, n_Hij,
                 FLOAT_T(r_max), mask_ptr,
-                gpu_id, thread_block_x, do_histo2_only, (verbose != 0));
+                gpu_id, thread_block_x, do_histo2_only, (verbose != 0),
+                algorithm);
             break;
       }
    } else {
@@ -712,19 +723,22 @@ void histograms_template_dispatcher(NP_TUPLE3_T *r_ptr,   // coordinate tuples
             histo_gpu <TUPLE3_T, uint64_t, FLOAT_T, false, none>
                (r_copy, n_tot, nel_ptr, n_El, histo_loc, n_bins, n_Hij,
                 FLOAT_T(r_max), mask_ptr,
-                gpu_id, thread_block_x, do_histo2_only, (verbose != 0));
+                gpu_id, thread_block_x, do_histo2_only, (verbose != 0),
+                algorithm);
             break;
          case orthorhombic:
             histo_gpu <TUPLE3_T, uint64_t, FLOAT_T, false, orthorhombic>
                (r_copy, n_tot, nel_ptr, n_El, histo_loc, n_bins, n_Hij,
                 FLOAT_T(r_max), mask_ptr,
-                gpu_id, thread_block_x, do_histo2_only, (verbose != 0));
+                gpu_id, thread_block_x, do_histo2_only, (verbose != 0),
+                algorithm);
             break;
          case triclinic:
             histo_gpu <TUPLE3_T, uint64_t, FLOAT_T, false, triclinic>
                (r_copy, n_tot, nel_ptr, n_El, histo_loc, n_bins, n_Hij,
                 FLOAT_T(r_max), mask_ptr,
-                gpu_id, thread_block_x, do_histo2_only, (verbose != 0));
+                gpu_id, thread_block_x, do_histo2_only, (verbose != 0),
+                algorithm);
             break;
       }
    }
@@ -858,12 +872,14 @@ static PyObject* histograms(PyObject* self, PyObject* args)
    int check_input = 0;
    int verbose = 0;
    int exit_status;
+   int algorithm = -1;
 
    exit_status = 0;
    try {
-      if (!PyArg_ParseTuple(args, "OOOdOOi|iiiiii", &coords, &nelems, &histos, &r_max, &mask, &box, &box_type_id,
+      if (!PyArg_ParseTuple(args, "OOOdOOi|iiiiiii", &coords, &nelems, &histos, &r_max, &mask, &box, &box_type_id,
                /*optional parameters:*/ &precision, &gpu_id, &do_histo2_only,
-                                        &thread_block_x, &check_input, &verbose))
+                                        &thread_block_x, &check_input, &verbose,
+                                        &algorithm))
          return NULL;
 
       // --- 2D double precision coordinate array for all species
@@ -899,7 +915,7 @@ static PyObject* histograms(PyObject* self, PyObject* args)
             box_ptr, box_type_id,
             check_input,
             gpu_id, thread_block_x,
-            do_histo2_only, verbose);
+            do_histo2_only, verbose, algorithm);
       } else if ( precision == double_precision ) {
          histograms_template_dispatcher <np_tuple3d_t, tuple3d_t, double>
             (r_ptr, n_tot,
@@ -909,7 +925,7 @@ static PyObject* histograms(PyObject* self, PyObject* args)
              box_ptr, box_type_id,
              check_input,
              gpu_id, thread_block_x,
-             do_histo2_only, verbose);
+             do_histo2_only, verbose, algorithm);
       } else {
          RT_ERROR(std::string("unknown precision identifier passed"));
       }

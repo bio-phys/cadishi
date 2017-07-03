@@ -45,7 +45,8 @@ def histograms(coordinate_sets,
                scale_factors=[],
                mask_array=[],
                box=[],
-               verbose=False):
+               verbose=False,
+               algorithm=-1):
     """Distance histogram calculation on NVIDIA GPUs using CUDA.
 
     Calculate distance histograms for sets of species coordinates by calling the
@@ -163,7 +164,7 @@ def histograms(coordinate_sets,
     exit_status = c_cudh.histograms(np_coord, np_nelem, histos, r_max, np_mask, \
                                     np_box, box_type_id, \
                                     precision, gpu_id, do_histo2_only, thread_block_x, \
-                                    check_input, verbose)
+                                    check_input, verbose, algorithm)
 
     if (exit_status == 1):
         c_cudh.free()
