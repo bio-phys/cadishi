@@ -44,7 +44,8 @@ parser.add_argument('--size', help='specify number of coordinate tuples to be us
 parser.add_argument('--bins', help='number of histogram bins', type=int, metavar='bins')
 parser.add_argument('--box', help='select orthorhombic or triclinic box', type=str, metavar='box')
 parser.add_argument('--threads', help='number of CPU threads', type=int, metavar='threads')
-parser.add_argument('--algorithm', help='select GPU algorithm', type=int, metavar='gpu_algo')
+parser.add_argument('--algorithm', help='select GPU algorithm', type=int, metavar='0 simple, 1 advanced')
+parser.add_argument('--thread-block-x', help='set thread block size for the first dimension of GPU algorithm 1', type=int, metavar='gpu_algo')
 parser.add_argument('--histo2', help='only run mixed species histogram computation', action="store_true")
 parser.add_argument('--check-input', help='activate input check in kernels', action="store_true")
 parser.add_argument('--double-precision', help='use double precision coordinates', action="store_true")
@@ -86,6 +87,11 @@ if (p_args.algorithm >= 0):
     run_values['algorithm'] = p_args.algorithm
 else:
     run_values['algorithm'] = -1
+
+if (p_args.thread_block_x > 0):
+    run_values['thread_block_x'] = p_args.thread_block_x
+else:
+    run_values['thread_block_x'] = 0
 
 if p_args.histo2:
     run_values['histo2'] = p_args.histo2
@@ -209,6 +215,7 @@ if run_values['kernel'] == "cudh":
                            r_max,
                            run_values['bins'],
                            run_values['precision'],
+                           thread_block_x=run_values['thread_block_x'],
                            check_input=run_values['check_input'],
                            box=box,
                            do_histo2_only=run_values['histo2'],
