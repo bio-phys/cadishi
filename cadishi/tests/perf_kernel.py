@@ -25,31 +25,20 @@ from cadishi import version
 from collections import OrderedDict
 
 
-def quote(string):
-    """Add quotes to the beginning and the end of a string if not already present."""
-    string_elements = []
-    if not string.startswith('\''):
-        string_elements.append('\'')
-    string_elements.append(string)
-    if not string.endswith('\''):
-        string_elements.append('\'')
-    return "".join(string_elements)
-
-
 # --- set up and parse command line arguments
 parser = argparse.ArgumentParser()
-parser.add_argument('--cpu', help='run pydh CPU kernel (default)', action="store_true")
-parser.add_argument('--gpu', help='run cudh GPU kernel instead of pydh CPU kernel', action="store_true")
 parser.add_argument('--size', help='specify number of coordinate tuples to be used', type=str, metavar='N1,N2,N3,...')
-parser.add_argument('--bins', help='number of histogram bins', type=int, metavar='bins')
+parser.add_argument('--bins', help='number of histogram bins', type=int, metavar='N')
 parser.add_argument('--box', help='select orthorhombic or triclinic box', type=str, metavar='box')
-parser.add_argument('--threads', help='number of CPU threads', type=int, metavar='threads')
-parser.add_argument('--algorithm', help='select GPU algorithm', type=int, metavar='0 simple, 1 advanced')
-parser.add_argument('--thread-block-x', help='set thread block size for the first dimension of GPU algorithm 1', type=int, metavar='gpu_algo')
-parser.add_argument('--histo2', help='only run mixed species histogram computation', action="store_true")
 parser.add_argument('--check-input', help='activate input check in kernels', action="store_true")
 parser.add_argument('--double-precision', help='use double precision coordinates', action="store_true")
+parser.add_argument('--cpu', help='run pydh CPU kernel (default)', action="store_true")
+parser.add_argument('--threads', help='number of CPU threads', type=int, metavar='N')
 parser.add_argument('--numa', help='use numa process pinning', action="store_true")
+parser.add_argument('--gpu', help='run cudh GPU kernel instead of pydh CPU kernel', action="store_true")
+parser.add_argument('--thread-block-x', help='set thread block size for the first dimension of GPU algorithms 1, 2', type=int, metavar='N')
+parser.add_argument('--gpu-algorithm', help='select GPU algorithm (1 advanced, 2 global, 3 simple)', type=int, metavar='N')
+parser.add_argument('--histo2', help='only run mixed species histogram computation', action="store_true")
 parser.add_argument('--silent', help='do not print results to stdout', action="store_true")
 parser.add_argument('--sqlite', help='write results to sqlite table', action="store_true")
 p_args = parser.parse_args()
@@ -83,10 +72,10 @@ if p_args.threads:
 else:
     run_values['threads'] = 1
 
-if (p_args.algorithm >= 0):
-    run_values['algorithm'] = p_args.algorithm
+if (p_args.gpu_algorithm >= 0):
+    run_values['gpu_algorithm'] = p_args.gpu_algorithm
 else:
-    run_values['algorithm'] = -1
+    run_values['gpu_algorithm'] = -1
 
 if (p_args.thread_block_x > 0):
     run_values['thread_block_x'] = p_args.thread_block_x
@@ -135,7 +124,7 @@ output_keys['size'] = 'text'
 output_keys['bins'] = 'integer'
 output_keys['box'] = 'text'
 output_keys['check_input'] = 'text'
-output_keys['algorithm'] = 'integer'
+output_keys['gpu_algorithm'] = 'integer'
 output_keys['histo2'] = 'text'
 output_keys['bap'] = 'real'
 output_keys['time'] = 'real'
@@ -219,7 +208,7 @@ if run_values['kernel'] == "cudh":
                            check_input=run_values['check_input'],
                            box=box,
                            do_histo2_only=run_values['histo2'],
-                           algorithm=run_values['algorithm'])
+                           algorithm=run_values['gpu_algorithm'])
 else:
     pydh = pydh.histograms(coords,
                            r_max,
@@ -251,7 +240,7 @@ if p_args.sqlite:
         for key in output_keys:
             val = run_values[key]
             if (output_keys[key] == 'text'):
-                val = quote(str(val))
+                val = util.quote(str(val))
             data_str_lst.append(str(val))
         sql = "INSERT INTO cadishi VALUES (" + ', '.join(data_str_lst) + ")"
         # print sql

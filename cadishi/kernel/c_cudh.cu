@@ -1,11 +1,22 @@
 /**
-*  cudh --- high performance GPU distance histogram code
+*  c_cudh --- high performance GPU distance histogram code
+*
+*  Three types of kernel implementations are available:
+*  - ADVANCED: uses constant memory to cache coordinates and shared memory to cache partial histograms
+*  - GLOBAL: uses constant memory to cache coordinates but keeps histogram in global memory
+*  - SIMPLE: a simple naive implementation using global memory
+*
+*  The following interfaces are available:
+*  - Python interface via the histograms() function, compilation needs to
+*    be done using the setup.py file of the cadishi package (default)
+*  - C interface, compilation needs to take place using the Makefile
 *
 *  (C) Klaus Reuter, khr@rzg.mpg.de, 2015 - 2017
 *
 *  This file is part of the Cadishi package.  See README.rst,
 *  LICENSE.txt, and the documentation for details.
 */
+
 
 #ifdef BUILD_C_LIBRARY
 #include "cudh.h"
@@ -30,8 +41,9 @@
 
 
 enum _implementations {
-   SIMPLE,
-   TILED
+   ADVANCED=1, // kernel using constant memory (coordinate tiles) and shared memory (partial histograms)
+   GLOBAL=2,   // kernel using global memory for histogram bins
+   SIMPLE=3    // naive comparably slow kernel, not for production use
 };
 
 const int n_box = 6;
@@ -44,20 +56,18 @@ enum _box_indices {
    idx_half
 };
 
-// --- parameters for the tiled kernels
+// --- parameters for the global and advanced kernels
 // maximum number of bins fitting into the 48kB of shared memory available on relevant GPUs
 const int smem_n_bins_max = 12288;
-
-// GPU constant memory usage
-const int histo_tiled_cmem_bytes = 64000; // max 64k
+// GPU constant memory usage by global and advanced kernels
+const int histo_advanced_cmem_bytes = 64000; // max 64k
 // static GPU constant memory
-__constant__ char histo_tiled_coords_cmem[histo_tiled_cmem_bytes];
+__constant__ char histo_advanced_coords_cmem[histo_advanced_cmem_bytes];
 
 // --- parameters for the simple kernels
 // cuda thread block size
 const int histo_simple_block_x=8;
 const int histo_simple_block_y=8;
-
 // divisors to reduce the cuda grid below the n1 x n2 size,
 // this number is identical to the work_per_thread
 const int histo_simple_grid_x_div=50;
@@ -104,7 +114,7 @@ void increment(uint64_t *c) {
 }
 
 
-// --- one-species simple histogram kernel (global memory, no caching)
+// --- one-species simple histogram kernel
 template <typename TUPLE3_T, typename COUNTER_T, typename FLOAT_T, bool check_input, int box_type_id>
 __global__ void
 histo1_simple_knl(const TUPLE3_T* const r1, const int n1,
@@ -147,7 +157,7 @@ histo1_simple_knl(const TUPLE3_T* const r1, const int n1,
    }
 }
 
-// --- two-species simple histogram kernel (global memory, no caching)
+// --- two-species simple histogram kernel
 template <typename TUPLE3_T, typename COUNTER_T, typename FLOAT_T, bool check_input, int box_type_id>
 __global__ void
 histo2_simple_knl(const TUPLE3_T* const r1, const int n1,
@@ -192,7 +202,7 @@ histo2_simple_knl(const TUPLE3_T* const r1, const int n1,
    }
 }
 
-// --- driver (kernel) to launch the simple histogram kernels
+// --- driver to launch the simple histogram kernels
 template <typename TUPLE3_T, typename COUNTER_T, typename FLOAT_T, bool check_input, int box_type_id>
 inline void
 histo_simple_launch_knl(const TUPLE3_T* const r1, const int n1,
@@ -221,20 +231,20 @@ histo_simple_launch_knl(const TUPLE3_T* const r1, const int n1,
 }
 
 
-// --- one-species histogram kernel, const- and shared- memory tiling
+// --- one-species histogram kernel, uses const- and shared- memory tiling
 template <typename TUPLE3_T, typename COUNTER_T, typename FLOAT_T, bool check_input, int box_type_id>
 __global__ void
-histo1_tiled_knl(
+histo1_advanced_knl(
    const TUPLE3_T* const r2, const int n2,
    COUNTER_T *bins, const int n_bins,
    const FLOAT_T scal,
    const int n1_tile_global_offset, const int n1_tile_size,
-   const int histo_tiled_smem_nbins,
+   const int histo_advanced_smem_nbins,
    COUNTER_T *err_flag,
    const TUPLE3_T* const box)
 {
    TUPLE3_T *r1p;
-   r1p = (TUPLE3_T*) histo_tiled_coords_cmem;
+   r1p = (TUPLE3_T*) histo_advanced_coords_cmem;
 
    TUPLE3_T box_ortho, box_inv, box_half;
    switch (box_type_id) {
@@ -248,7 +258,7 @@ histo1_tiled_knl(
    }
 
    extern __shared__ uint32_t smem_bins[];
-   for (int i=threadIdx.x; i<histo_tiled_smem_nbins; i+=blockDim.x)
+   for (int i=threadIdx.x; i<histo_advanced_smem_nbins; i+=blockDim.x)
       smem_bins[i] = 0;
    __syncthreads();
 
@@ -258,12 +268,12 @@ histo1_tiled_knl(
    const int q1 = i2 - n1_tile_global_offset;
 
    // --- map the binning range via the y grid
-   const int bin_lo = histo_tiled_smem_nbins *  blockIdx.y;
+   const int bin_lo = histo_advanced_smem_nbins *  blockIdx.y;
    int n_bins_loc;  // n_bins local to the thread block
-   if (/* bin_hi == */ histo_tiled_smem_nbins*(blockIdx.y+1) > n_bins) {
+   if (/* bin_hi == */ histo_advanced_smem_nbins*(blockIdx.y+1) > n_bins) {
       n_bins_loc = n_bins - bin_lo;
    } else {
-      n_bins_loc = histo_tiled_smem_nbins;
+      n_bins_loc = histo_advanced_smem_nbins;
    }
 
    if (i2 < n2) {
@@ -299,17 +309,17 @@ histo1_tiled_knl(
 // --- two-species histogram kernel, const- and shared- memory tiling
 template <typename TUPLE3_T, typename COUNTER_T, typename FLOAT_T, bool check_input, int box_type_id>
 __global__ void
-histo2_tiled_knl(
+histo2_advanced_knl(
    const TUPLE3_T* const r2, const int n2,
    COUNTER_T *bins, const int n_bins,
    const FLOAT_T scal,
    const int n1_tile_size,
-   const int histo_tiled_smem_nbins,
+   const int histo_advanced_smem_nbins,
    COUNTER_T *err_flag,
    const TUPLE3_T* const box)
 {
    TUPLE3_T *r1p;
-   r1p = (TUPLE3_T*) histo_tiled_coords_cmem;
+   r1p = (TUPLE3_T*) histo_advanced_coords_cmem;
 
    TUPLE3_T box_ortho, box_inv, box_half;
    switch (box_type_id) {
@@ -323,19 +333,19 @@ histo2_tiled_knl(
    }
 
    extern __shared__ uint32_t smem_bins[];
-   for (int i=threadIdx.x; i<histo_tiled_smem_nbins; i+=blockDim.x)
+   for (int i=threadIdx.x; i<histo_advanced_smem_nbins; i+=blockDim.x)
       smem_bins[i] = 0;
    __syncthreads();
 
    const int i2 = blockIdx.x*blockDim.x + threadIdx.x;
 
    // --- map the range to be binned via the y grid
-   const int bin_lo = histo_tiled_smem_nbins *  blockIdx.y;
+   const int bin_lo = histo_advanced_smem_nbins *  blockIdx.y;
    int n_bins_loc;
-   if (/* bin_hi== */ histo_tiled_smem_nbins*(blockIdx.y+1) > n_bins) {
+   if (/* bin_hi== */ histo_advanced_smem_nbins*(blockIdx.y+1) > n_bins) {
       n_bins_loc = n_bins - bin_lo;
    } else {
-      n_bins_loc = histo_tiled_smem_nbins;
+      n_bins_loc = histo_advanced_smem_nbins;
    }
 
    if (i2 < n2) {
@@ -367,7 +377,105 @@ histo2_tiled_knl(
 
 
 
-// --- compute histograms for a single frame
+// --- one-species histogram kernel, const-memory tiling, histogram in global memory
+template <typename TUPLE3_T, typename COUNTER_T, typename FLOAT_T, bool check_input, int box_type_id>
+__global__ void
+histo1_global_knl(
+   const TUPLE3_T* const r2, const int n2,
+   COUNTER_T *bins, const int n_bins,
+   const FLOAT_T scal,
+   const int n1_tile_global_offset, const int n1_tile_size,
+   COUNTER_T *err_flag,
+   const TUPLE3_T* const box)
+{
+   TUPLE3_T *r1p;
+   r1p = (TUPLE3_T*) histo_advanced_coords_cmem;
+
+   TUPLE3_T box_ortho, box_inv, box_half;
+   switch (box_type_id) {
+      case orthorhombic:
+         box_ortho = box[idx_ortho];
+         box_inv = box[idx_inverse];
+         break;
+      case triclinic:
+         box_half = box[idx_half];
+         break;
+   }
+
+   // --- global i2 index for r2
+   const int i2 = blockIdx.x*blockDim.x + threadIdx.x;
+   // --- local upper limit for the i1-loop
+   const int q1 = i2 - n1_tile_global_offset;
+
+   if (i2 < n2) {
+      TUPLE3_T r2r = r2[i2];
+      for (int i1=0; i1<n1_tile_size; ++i1) {
+         if (i1 < q1) {
+            int idx = (int)(scal * dist<TUPLE3_T, FLOAT_T, box_type_id>(r1p[i1], r2r, box, box_ortho, box_inv, box_half));
+            // Error handling:
+            // * If no box is used and check_input is requested, outliers do trigger the error condition.
+            // * If a box is used and check_input is requested, outliers are simply ignored.
+            // * If check_input is disabled, the memory location at idx is incremented wherever it may be located.
+            if (check_input && (idx>=n_bins)) {
+               if (box_type_id == none) {
+                  *err_flag = 1;
+               }
+            } else {
+               increment( &bins[idx] );
+            }
+         }
+      }
+   }
+}
+
+// --- two-species histogram kernel, const- and shared- memory tiling
+template <typename TUPLE3_T, typename COUNTER_T, typename FLOAT_T, bool check_input, int box_type_id>
+__global__ void
+histo2_global_knl(
+   const TUPLE3_T* const r2, const int n2,
+   COUNTER_T *bins, const int n_bins,
+   const FLOAT_T scal,
+   const int n1_tile_size,
+   COUNTER_T *err_flag,
+   const TUPLE3_T* const box)
+{
+   TUPLE3_T *r1p;
+   r1p = (TUPLE3_T*) histo_advanced_coords_cmem;
+
+   TUPLE3_T box_ortho, box_inv, box_half;
+   switch (box_type_id) {
+      case orthorhombic:
+         box_ortho = box[idx_ortho];
+         box_inv = box[idx_inverse];
+         break;
+      case triclinic:
+         box_half = box[idx_half];
+         break;
+   }
+
+   const int i2 = blockIdx.x*blockDim.x + threadIdx.x;
+
+   if (i2 < n2) {
+      TUPLE3_T r2r = r2[i2];
+      for (int i1=0; i1<n1_tile_size; ++i1) {
+         int idx = (int)(scal * dist<TUPLE3_T, FLOAT_T, box_type_id>(r1p[i1], r2r, box, box_ortho, box_inv, box_half));
+         // Error handling:
+         // * If no box is used and check_input is requested, outliers do trigger the error condition.
+         // * If a box is used and check_input is requested, outliers are simply ignored.
+         // * If check_input is disabled, the memory location at idx is incremented wherever it may be located.
+         if (check_input && (idx>=n_bins)) {
+            if (box_type_id == none) {
+               *err_flag = 1;
+            }
+         } else {
+            increment( &bins[idx] );
+         }
+      }
+   }
+}
+
+
+// compute histograms for a single frame
 // throws std::runtime_error
 template <typename TUPLE3_T, typename COUNTER_T, typename FLOAT_T, bool check_input, int box_type_id>
 void histo_gpu(TUPLE3_T *coords, int n_tot,
@@ -376,7 +484,7 @@ void histo_gpu(TUPLE3_T *coords, int n_tot,
                FLOAT_T r_max, int *mask,
                int dev,
                /* --- optional arguments with defaults below --- */
-               int histo_tiled_block_x_inp = 0,  // use specified grid block size if >0
+               int histo_block_x_inp = 0,  // use specified grid block size if >0
                bool do_histo2_only = false,  // call only histo2
                bool verbose = false,
                int algorithm = -1)  // '-1': use internal default heuristics
@@ -393,30 +501,31 @@ void histo_gpu(TUPLE3_T *coords, int n_tot,
       printf("%s\n", SEP);
    }
 
-   // --- thread block size for the smem kernels
-   int histo_tiled_block_x;
-   // --- threshold value *below* which the tiled kernels should be used
-   int histo_tiled_nbins_threshold;
+   // --- thread block size for the global and advanced kernels
+   int histo_block_x;
+
+   // TODO: update threshold values
+   // --- threshold value *below* which the advanced kernels should be used
+   int histo_advanced_nbins_threshold;
    // --- set parameters depending on the compute capability based on simple performance measurements
    if (prop.major >= 5) {
       // MAXWELL
-      histo_tiled_block_x = 384;
-      histo_tiled_nbins_threshold = 4*smem_n_bins_max;
+      histo_block_x = 384;
+      histo_advanced_nbins_threshold = 4*smem_n_bins_max;
    } else {
       // earlier devices, tested with KEPLER
-      histo_tiled_block_x = 960;
-      histo_tiled_nbins_threshold = 2*smem_n_bins_max;
+      histo_block_x = 960;
+      histo_advanced_nbins_threshold = 2*smem_n_bins_max;
    }
 
-   if (histo_tiled_block_x_inp > 0) {
-      printf("%s\n", SEP);
-      if ((histo_tiled_block_x_inp % 32 == 0) && (histo_tiled_block_x_inp <= 1024)) {
-         printf("GPU %d : input parameter : histo_tiled_block_x=%d\n", dev, histo_tiled_block_x_inp);
-         histo_tiled_block_x = histo_tiled_block_x_inp;
-      } else {
-         printf("GPU %d : IGNORING input : histo_tiled_block_x\n", dev);
+   // print notification in case the CUDA block size is altered
+   if (histo_block_x_inp > 0) {
+      if ((histo_block_x_inp % 32 == 0) && (histo_block_x_inp <= 1024)) {
+         printf("%s\n", SEP);
+         printf("GPU %d: histo_block_x=%d selected\n", dev, histo_block_x_inp);
+         histo_block_x = histo_block_x_inp;
+         printf("%s\n", SEP);
       }
-      printf("%s\n", SEP);
       // fflush(stdout);
    }
 
@@ -424,14 +533,14 @@ void histo_gpu(TUPLE3_T *coords, int n_tot,
    if (algorithm >= 0) {
       algorithm_id = algorithm;
       printf("%s\n", SEP);
-      printf("GPU %d : using algorithm %d\n", dev, algorithm_id);
+      printf("GPU %d: algorithm %d selected\n", dev, algorithm_id);
       printf("%s\n", SEP);
       // fflush(stdout);
    } else {
-      if (n_bins > histo_tiled_nbins_threshold)
-         algorithm_id = SIMPLE;
+      if (n_bins > histo_advanced_nbins_threshold)
+         algorithm_id = GLOBAL;
       else
-         algorithm_id = TILED;
+         algorithm_id = ADVANCED;
    }
 
    const FLOAT_T scal = FLOAT_T(n_bins)/r_max;
@@ -454,8 +563,209 @@ void histo_gpu(TUPLE3_T *coords, int n_tot,
 
 
    switch (algorithm_id) {
+
+      case ADVANCED:
+      {
+         dim3 block;
+         dim3 grid;
+         block.x = histo_block_x;
+         block.y = 1;
+         block.z = 1;
+         grid.x  = 0; // grid parameter is set inside the loop
+         grid.y  = 0; // grid parameter is set below based on smem
+         grid.z  = 1;
+         // --- number of atom coordinate tuples fitting into one constant memory tile
+         const int cmem_tile_size = histo_advanced_cmem_bytes/sizeof(TUPLE3_T);
+         // Set up number of shared memory tiles required to hold the full histogram,
+         // which is equivalent to the grid size in y direction.
+         // The goal is to minimize the number of tiles under the contraint
+         // of having the shared memory size as small as possible for best
+         // occupancy.
+         // calculate the number of tiles required for n_bins
+         const int smem_n_tiles = (int)ceil(double(n_bins)/double(smem_n_bins_max));
+         // calculate the size of a tile
+         const int smem_tile_size = (int)ceil(double(n_bins)/double(smem_n_tiles));
+         // calculate the tilesize in bytes
+         const int smem_bytes = smem_tile_size*sizeof(uint32_t);
+         // the loop over the histogram tiles is mapped via the Y-grid
+         grid.y = (unsigned)smem_n_tiles;
+         if (verbose) {
+            printf("CUDA ADVANCED kernel configuration:\n");
+            printf("  block.x = %d\n", block.x);
+            printf("  cmem_tile_size = %d\n", cmem_tile_size);
+            printf("  smem_n_tiles = %d\n", smem_n_tiles);
+            printf("  smem_tile_size = %d\n", smem_tile_size);
+            printf("  smem_bytes = %d\n", smem_bytes);
+         }
+         // --- loop over species combinations
+         int histogramIdx = 0;
+         int iOffset = 0;
+         for (int i=0; i<n_el; ++i) {
+            // --- number of completely filled constant memory tiles
+            //     for the species indexed by "i"
+            const int cmem_n_tiles    = n_per_el[i] / cmem_tile_size;
+            const int cmem_rem_n_elem = n_per_el[i] % cmem_tile_size;
+            // --- copy of the outer iOffset value to restore it inside the i_tile loop
+            int iOffset_0 = iOffset;
+            // --- copy of the outer histogramIdx value to restore it inside the i_tile loop
+            int histogramIdx_0 = histogramIdx;
+            // --- loop over constant memory tiles,
+            //     this introduces the complication of getting the indices inside right
+            for (int i_tile = 0; i_tile <= cmem_n_tiles; ++i_tile) {
+               int cmem_tile_n_elem;
+               if (i_tile < cmem_n_tiles)
+                  cmem_tile_n_elem = cmem_tile_size;
+               else
+                  cmem_tile_n_elem = cmem_rem_n_elem;
+               const int cmem_tile_offset = i_tile*cmem_tile_size;
+               // --- copy coordinate set to GPU constant memory
+               CU_CHECK(
+                  cudaMemcpyToSymbol(histo_advanced_coords_cmem, &coord_d[iOffset], cmem_tile_n_elem*sizeof(TUPLE3_T));
+               );
+               int jOffset = iOffset_0;
+               histogramIdx = histogramIdx_0;
+               // --- allow histo2 to be timed
+               int j;
+               if (do_histo2_only) {
+                  if (n_el != 2) {
+                    RT_ERROR("Error: To time the histo2_*() routine, exactly two species must be used!");
+                  }
+                  j=i+1;
+                  jOffset += n_per_el[i];
+               } else {
+                  j=i;
+               }
+               // ---
+               for (/*int j=i*/; j<n_el; ++j) {
+                  ++histogramIdx;
+                  if (mask[histogramIdx - 1] > 0) {
+                     const int histoOffset = histogramIdx*n_bins;
+                     grid.x  = (unsigned)ceil(double(n_per_el[j])/double(block.x));
+                     if (i != j) {
+                        histo2_advanced_knl <TUPLE3_T,COUNTER_T,FLOAT_T,check_input, box_type_id>
+                           <<<grid,block,smem_bytes>>>
+                              (&coord_d[jOffset], n_per_el[j],
+                               &histo_d[histoOffset], n_bins,
+                               scal,
+                               cmem_tile_n_elem,
+                               smem_tile_size,
+                               &histo_d[idx_error_flag],
+                               box_d);
+                     } else {
+                        histo1_advanced_knl <TUPLE3_T,COUNTER_T,FLOAT_T,check_input, box_type_id>
+                           <<<grid,block,smem_bytes>>>
+                              (&coord_d[jOffset], n_per_el[j],
+                               &histo_d[histoOffset], n_bins,
+                               scal,
+                               cmem_tile_offset, cmem_tile_n_elem,
+                               smem_tile_size,
+                               &histo_d[idx_error_flag],
+                               box_d);
+                     }
+                     CU_CHECK(cudaDeviceSynchronize());
+                  }
+                  jOffset += n_per_el[j];
+               }
+               iOffset += cmem_tile_n_elem;
+            }
+         }
+      }
+      break;
+
+      case GLOBAL:
+      {
+         dim3 block;
+         dim3 grid;
+         block.x = histo_block_x;
+         block.y = 1;
+         block.z = 1;
+         grid.x  = 0; // grid parameter is set inside the loop
+         grid.y  = 1; // GLOBAL kernel does not use shared memory binning
+         grid.z  = 1;
+         // --- number of atom coordinate tuples fitting into one constant memory tile
+         const int cmem_tile_size = histo_advanced_cmem_bytes/sizeof(TUPLE3_T);
+
+         if (verbose) {
+            printf("CUDA GLOBAL kernel configuration:\n");
+            printf("  block.x = %d\n", block.x);
+            printf("  cmem_tile_size = %d\n", cmem_tile_size);
+         }
+
+         // --- loop over species combinations
+         int histogramIdx = 0;
+         int iOffset = 0;
+         for (int i=0; i<n_el; ++i) {
+            // --- number of completely filled constant memory tiles
+            //     for the species indexed by "i"
+            const int cmem_n_tiles    = n_per_el[i] / cmem_tile_size;
+            const int cmem_rem_n_elem = n_per_el[i] % cmem_tile_size;
+            // --- copy of the outer iOffset value to restore it inside the i_tile loop
+            int iOffset_0 = iOffset;
+            // --- copy of the outer histogramIdx value to restore it inside the i_tile loop
+            int histogramIdx_0 = histogramIdx;
+            // --- loop over constant memory tiles,
+            //     this introduces the complication of getting the indices inside right
+            for (int i_tile = 0; i_tile <= cmem_n_tiles; ++i_tile) {
+               int cmem_tile_n_elem;
+               if (i_tile < cmem_n_tiles)
+                  cmem_tile_n_elem = cmem_tile_size;
+               else
+                  cmem_tile_n_elem = cmem_rem_n_elem;
+               const int cmem_tile_offset = i_tile*cmem_tile_size;
+               // --- copy coordinate set to GPU constant memory
+               CU_CHECK(
+                  cudaMemcpyToSymbol(histo_advanced_coords_cmem, &coord_d[iOffset], cmem_tile_n_elem*sizeof(TUPLE3_T));
+               );
+               int jOffset = iOffset_0;
+               histogramIdx = histogramIdx_0;
+               // --- allow histo2 to be timed
+               int j;
+               if (do_histo2_only) {
+                  if (n_el != 2) {
+                    RT_ERROR("Error: To time the histo2_*() routine, exactly two species must be used!");
+                  }
+                  j=i+1;
+                  jOffset += n_per_el[i];
+               } else {
+                  j=i;
+               }
+               // ---
+               for (/*int j=i*/; j<n_el; ++j) {
+                  ++histogramIdx;
+                  if (mask[histogramIdx - 1] > 0) {
+                     const int histoOffset = histogramIdx*n_bins;
+                     grid.x  = (unsigned)ceil(double(n_per_el[j])/double(block.x));
+                     if (i != j) {
+                        histo2_global_knl <TUPLE3_T,COUNTER_T,FLOAT_T,check_input,box_type_id>
+                           <<<grid,block>>>
+                              (&coord_d[jOffset], n_per_el[j],
+                               &histo_d[histoOffset], n_bins,
+                               scal,
+                               cmem_tile_n_elem,
+                               &histo_d[idx_error_flag],
+                               box_d);
+                     } else {
+                        histo1_global_knl <TUPLE3_T,COUNTER_T,FLOAT_T,check_input,box_type_id>
+                           <<<grid,block>>>
+                              (&coord_d[jOffset], n_per_el[j],
+                               &histo_d[histoOffset], n_bins,
+                               scal,
+                               cmem_tile_offset, cmem_tile_n_elem,
+                               &histo_d[idx_error_flag],
+                               box_d);
+                     }
+                     CU_CHECK(cudaDeviceSynchronize());
+                  }
+                  jOffset += n_per_el[j];
+               }
+               iOffset += cmem_tile_n_elem;
+            }
+         }
+      }
+      break;
+
       case SIMPLE:
-      {  // curly brackets define a separate scope within the case block
+      {
          int histogramIdx = 0;
          int iOffset = 0;
          for (int i=0; i<n_el; ++i) {
@@ -492,116 +802,7 @@ void histo_gpu(TUPLE3_T *coords, int n_tot,
             iOffset += n_per_el[i];
          }
       }
-      break;
-
-      case TILED:
-      {
-         dim3 block;
-         dim3 grid;
-         block.x = histo_tiled_block_x;
-         block.y = 1;
-         block.z = 1;
-         grid.x  = 0; // grid parameter is set inside the loop
-         grid.y  = 0; // grid parameter is set below based on smem
-         grid.z  = 1;
-         // --- number of atom coordinate tuples fitting into one constant memory tile
-         const int cmem_tile_size = histo_tiled_cmem_bytes/sizeof(TUPLE3_T);
-         // --- Set up number of shared memory tiles required to hold the full histogram,
-         //     which is equivalent to the grid size in y direction.
-         //     The goal is to minimize the number of tiles under the contraint
-         //     of having the shared memory size as small as possible for best
-         //     occupancy.
-         //
-         // calculate the number of tiles required for n_bins
-         const int smem_n_tiles = (int)ceil(double(n_bins)/double(smem_n_bins_max));
-         // calculate the size of a tile
-         const int smem_tile_size = (int)ceil(double(n_bins)/double(smem_n_tiles));
-         // calculate the tilesize in bytes
-         const int smem_bytes = smem_tile_size*sizeof(uint32_t);
-         // the loop over the histogram tiles is mapped via the Y-grid
-         grid.y = (unsigned)smem_n_tiles;
-         if (verbose) {
-            printf("CUDA tiled kernel configuration:\n");
-            printf("  block.x = %d\n", block.x);
-            printf("  cmem_tile_size = %d\n", cmem_tile_size);
-            printf("  smem_n_tiles = %d\n", smem_n_tiles);
-            printf("  smem_tile_size = %d\n", smem_tile_size);
-            printf("  smem_bytes = %d\n", smem_bytes);
-         }
-         // --- loop over species combinations
-         int histogramIdx = 0;
-         int iOffset = 0;
-         for (int i=0; i<n_el; ++i) {
-            // --- number of completely filled constant memory tiles
-            //     for the species indexed by "i"
-            const int cmem_n_tiles    = n_per_el[i] / cmem_tile_size;
-            const int cmem_rem_n_elem = n_per_el[i] % cmem_tile_size;
-            // --- copy of the outer iOffset value to restore it inside the i_tile loop
-            int iOffset_0 = iOffset;
-            // --- copy of the outer histogramIdx value to restore it inside the i_tile loop
-            int histogramIdx_0 = histogramIdx;
-            // --- loop over constant memory tiles,
-            //     this introduces the complication of getting the indices inside right
-            for (int i_tile = 0; i_tile <= cmem_n_tiles; ++i_tile) {
-               int cmem_tile_n_elem;
-               if (i_tile < cmem_n_tiles)
-                  cmem_tile_n_elem = cmem_tile_size;
-               else
-                  cmem_tile_n_elem = cmem_rem_n_elem;
-               const int cmem_tile_offset = i_tile*cmem_tile_size;
-               // --- copy coordinate set to GPU constant memory
-               CU_CHECK(
-                  cudaMemcpyToSymbol(histo_tiled_coords_cmem, &coord_d[iOffset], cmem_tile_n_elem*sizeof(TUPLE3_T));
-               );
-               int jOffset = iOffset_0;
-               histogramIdx = histogramIdx_0;
-               // --- allow histo2 to be timed
-               int j;
-               if (do_histo2_only) {
-                  if (n_el != 2) {
-                    RT_ERROR("Error: To time the histo2_*() routine, exactly two species must be used!");
-                  }
-                  j=i+1;
-                  jOffset += n_per_el[i];
-               } else {
-                  j=i;
-               }
-               // ---
-               for (/*int j=i*/; j<n_el; ++j) {
-                  ++histogramIdx;
-                  if (mask[histogramIdx - 1] > 0) {
-                     const int histoOffset = histogramIdx*n_bins;
-                     grid.x  = (unsigned)ceil(double(n_per_el[j])/double(block.x));
-                     if (i != j) {
-                        histo2_tiled_knl <TUPLE3_T,COUNTER_T,FLOAT_T,check_input, box_type_id>
-                           <<<grid,block,smem_bytes>>>
-                              (&coord_d[jOffset], n_per_el[j],
-                               &histo_d[histoOffset], n_bins,
-                               scal,
-                               cmem_tile_n_elem,
-                               smem_tile_size,
-                               &histo_d[idx_error_flag],
-                               box_d);
-                     } else {
-                        histo1_tiled_knl <TUPLE3_T,COUNTER_T,FLOAT_T,check_input, box_type_id>
-                           <<<grid,block,smem_bytes>>>
-                              (&coord_d[jOffset], n_per_el[j],
-                               &histo_d[histoOffset], n_bins,
-                               scal,
-                               cmem_tile_offset, cmem_tile_n_elem,
-                               smem_tile_size,
-                               &histo_d[idx_error_flag],
-                               box_d);
-                     }
-                     CU_CHECK(cudaDeviceSynchronize());
-                  }
-                  jOffset += n_per_el[j];
-               }
-               iOffset += cmem_tile_n_elem;
-            }
-         }
-      }
-      break;
+      break;  // end of simple kernel launch block
 
       default:
          RT_ERROR("unknown implementation requested");
@@ -766,7 +967,8 @@ int histograms_gpu_single(np_tuple3s_t *r_ptr,  // coordinate tuples
                           int gpu_id,           // id of the GPU to be used
                           int thread_block_x,   // CUDA thread block size
                           int do_histo2_only,
-                          int verbose) {
+                          int verbose,
+                          int algorithm) {
    int exit_status = 0;
    try {
       histograms_template_dispatcher <np_tuple3s_t, tuple3s_t, float>
@@ -777,7 +979,7 @@ int histograms_gpu_single(np_tuple3s_t *r_ptr,  // coordinate tuples
           box_ptr, box_type_id,
           check_input,
           gpu_id, thread_block_x,
-          do_histo2_only, verbose);
+          do_histo2_only, verbose, algorithm);
    }
    catch (std::overflow_error & err) {
       const std::string msg = std::string(err.what());
@@ -811,7 +1013,8 @@ int histograms_gpu_double(np_tuple3d_t *r_ptr,  // coordinate tuples
                           int gpu_id,           // id of the GPU to be used
                           int thread_block_x,   // CUDA thread block size
                           int do_histo2_only,
-                          int verbose) {
+                          int verbose,
+                          int algorithm) {
    int exit_status = 0;
    try {
         histograms_template_dispatcher <np_tuple3d_t, tuple3d_t, double>
@@ -822,7 +1025,7 @@ int histograms_gpu_double(np_tuple3d_t *r_ptr,  // coordinate tuples
             box_ptr, box_type_id,
             check_input,
             gpu_id, thread_block_x,
-            do_histo2_only, verbose);
+            do_histo2_only, verbose, algorithm);
    }
    catch (std::overflow_error & err) {
       const std::string msg = std::string(err.what());

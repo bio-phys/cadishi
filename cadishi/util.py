@@ -580,3 +580,14 @@ class PrintWrapper():
         """Print at every nth invocation."""
         # Yet to be implemented.
         pass
+
+
+def quote(string):
+    """Add quotes to the beginning and the end of a string if not already present."""
+    string_elements = []
+    if not string.startswith('\''):
+        string_elements.append('\'')
+    string_elements.append(string)
+    if not string.endswith('\''):
+        string_elements.append('\'')
+    return "".join(string_elements)
