@@ -513,7 +513,7 @@ void histo_gpu(TUPLE3_T *coords, int n_tot,
       // PASCAL
       histo_block_x = 288;  // MAXWELL-value would be fine as well
       histo_advanced_nbins_threshold = 4*smem_n_bins_max;
-   if (prop.major == 5) {
+  } else if (prop.major == 5) {
       // MAXWELL
       histo_block_x = 384;
       histo_advanced_nbins_threshold = 4*smem_n_bins_max;
