@@ -508,14 +508,15 @@ void histo_gpu(TUPLE3_T *coords, int n_tot,
    // --- threshold value *below* which the advanced kernels should be used
    int histo_advanced_nbins_threshold;
    // --- set parameters depending on the compute capability based on
-   // simple performance measurements
+   // some performance measurements.  parameters were chosen to be optimal at
+   // 1**20 particles, 8k bins, two-species histogram calculation.
    if (prop.major >= 6) {
       // PASCAL
-      histo_block_x = 288;  // MAXWELL-value would be fine as well
+      histo_block_x = 512;
       histo_advanced_nbins_threshold = 4*smem_n_bins_max;
   } else if (prop.major == 5) {
       // MAXWELL
-      histo_block_x = 384;
+      histo_block_x = 512;
       histo_advanced_nbins_threshold = 4*smem_n_bins_max;
    } else {
       // earlier devices seem to prefer larger block sizes, tested with KEPLER
