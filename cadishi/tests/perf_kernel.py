@@ -35,7 +35,8 @@ parser.add_argument('--double-precision', help='use double precision coordinates
 parser.add_argument('--cpu', help='run pydh CPU kernel (default)', action="store_true")
 parser.add_argument('--threads', help='number of CPU threads', type=int, metavar='N')
 parser.add_argument('--numa', help='use numa process pinning', action="store_true")
-parser.add_argument('--gpu', help='run cudh GPU kernel instead of pydh CPU kernel', action="store_true")
+parser.add_argument('--gpu', help='run cudh GPU kernel (optionally on GPU N, default 0)', nargs='?',
+                    const=0, type=int, metavar='N')
 parser.add_argument('--thread-block-x', help='set thread block size for the first dimension of GPU algorithms 1, 2', type=int, metavar='N')
 parser.add_argument('--gpu-algorithm', help='select GPU algorithm (1 advanced, 2 global, 3 simple)', type=int, metavar='N')
 parser.add_argument('--histo2', help='only run mixed species histogram computation', action="store_true")
@@ -46,8 +47,9 @@ p_args = parser.parse_args()
 
 run_values = OrderedDict()
 
-
-if p_args.gpu:
+gpu_id = 0
+if p_args.gpu is not None:
+    gpu_id = p_args.gpu
     run_values['kernel'] = "cudh"
 else:
     run_values['kernel'] = "pydh"
@@ -205,6 +207,7 @@ if run_values['kernel'] == "cudh":
                            r_max,
                            run_values['bins'],
                            run_values['precision'],
+                           gpu_id=gpu_id,
                            thread_block_x=run_values['thread_block_x'],
                            check_input=run_values['check_input'],
                            box=box,
