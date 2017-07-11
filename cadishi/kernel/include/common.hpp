@@ -285,7 +285,9 @@ dist_new(const TUPLE3_T &p1, const TUPLE3_T &p2,
          mic_orthorhombic <TUPLE3_T, FLOAT_T> (dp, box_ortho, box_inv);
          break;
       case triclinic:
+        //  printf("@ %f %f %f\n", dp.x, dp.y, dp.z);
          triclinic_minimum_image_convention<TUPLE3_T, FLOAT_T>(dp);
+        //  printf("$ %f %f %f\n", dp.x, dp.y, dp.z);
          transform_to_cartesian_coordinates<TUPLE3_T, FLOAT_T>(dp, box_tri_inv);
          break;
       case none:

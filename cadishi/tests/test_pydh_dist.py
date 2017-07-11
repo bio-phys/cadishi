@@ -85,12 +85,12 @@ def test_dist_simple_sphere(random_spherical_coordinates):
     #     print distances
 
 
-def test_dist_simple_triclinic(random_coordinates):
-    """run the distance calculation on a data set with coordinates between 0 and 1"""
-    for prec in precision:
-        # distances = pydh.dist_driver(random_coordinates, precision=prec, box=mini_cube, force_triclinic=True)
-        distances = pydh.dist_driver(random_coordinates, precision=prec, box=mini_triclinic)
-        print distances
+# def test_dist_simple_triclinic(random_coordinates):
+#     """run the distance calculation on a data set with coordinates between 0 and 1"""
+#     for prec in precision:
+#         # distances = pydh.dist_driver(random_coordinates, precision=prec, box=mini_cube, force_triclinic=True)
+#         distances = pydh.dist_driver(random_coordinates, precision=prec, box=mini_triclinic)
+#         # print distances
 
 
 # def test_dist_unit_box(random_spherical_coordinates):

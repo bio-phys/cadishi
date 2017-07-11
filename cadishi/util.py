@@ -451,7 +451,6 @@ def generate_random_coordinate_set(n_atoms=[512, 1024, 2048], create_invalid=Fal
         f = 1.5
     else:
         f = 1.0
-    # ---
     for n in n_atoms:
         c = f * np.random.rand(n, 3)
         coords.append(c)
