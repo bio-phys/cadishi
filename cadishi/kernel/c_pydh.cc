@@ -779,7 +779,7 @@ void dist_driver_template_dispatcher(np_tuple3d_t *r_ptr,
       box_copy = NULL;
    }
 
-   // --- box-related values, to be passed as constant references
+   // --- box-related values
    TUPLE3_T box_ortho = {0.0};
    TUPLE3_T box_inv = {0.0};
    TUPLE3_T box_tri_inv[3];
@@ -806,15 +806,16 @@ void dist_driver_template_dispatcher(np_tuple3d_t *r_ptr,
          break;
    }
 
-/*
-   if (box_type_id != none) {
-      printf("# %f %f %f\n", box_inv.x, box_inv.y, box_inv.z);
-      printf("# %f %f %f\n", box_half.x, box_half.y, box_half.z);
+   if (box_type_id == triclinic) {
+      printf("triclinic box\n");
       for (int i=0; i<3; ++i) {
          printf("# %i: %f %f %f\n", i, box_copy[i].x, box_copy[i].y, box_copy[i].z);
       }
+      printf("triclinic box inverse\n");
+      for (int i=0; i<3; ++i) {
+         printf("# %i: %f %f %f\n", i, box_tri_inv[i].x, box_tri_inv[i].y, box_tri_inv[i].z);
+      }
    }
-*/
 
    if (box_type_id == triclinic) {
       for (int j=0; j<n_tot; ++j) {

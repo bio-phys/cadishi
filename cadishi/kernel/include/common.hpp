@@ -138,9 +138,9 @@ calclulate_inverse_triclinic_box(const TUPLE3_T * const box,
   box_tri_inv[1].x = FLOAT_T(0.);
   box_tri_inv[1].y = FLOAT_T(1.)/y1;
   box_tri_inv[1].z = FLOAT_T(-1.) * y2 / (y1 * z2);
-  box_tri_inv[0].x = FLOAT_T(0.);
-  box_tri_inv[0].y = FLOAT_T(0.);
-  box_tri_inv[0].z = FLOAT_T(1.)/z2;
+  box_tri_inv[2].x = FLOAT_T(0.);
+  box_tri_inv[2].y = FLOAT_T(0.);
+  box_tri_inv[2].z = FLOAT_T(1.)/z2;
 }
 
 

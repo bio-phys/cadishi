@@ -85,33 +85,41 @@ def test_dist_simple_sphere(random_spherical_coordinates):
     #     print distances
 
 
-def test_dist_unit_box(random_spherical_coordinates):
-    """check if the orthorhombic and triclinic box implementations give the same answer for a simple unit box"""
+def test_dist_simple_triclinic(random_coordinates):
+    """run the distance calculation on a data set with coordinates between 0 and 1"""
     for prec in precision:
-        distances_ortho = pydh.dist_driver(random_spherical_coordinates, precision=prec, box=unit_cube)
-        distances_tricl = pydh.dist_driver(random_spherical_coordinates, precision=prec, box=unit_cube, force_triclinic=True)
-#         print max(distances_ortho - distances_tricl)
-        assert(np.allclose(distances_ortho, distances_tricl, atol=tolerance[prec]))
+        # distances = pydh.dist_driver(random_coordinates, precision=prec, box=mini_cube, force_triclinic=True)
+        distances = pydh.dist_driver(random_coordinates, precision=prec, box=mini_triclinic)
+        print distances
 
 
-def test_dist_mini_box(random_spherical_coordinates):
-    """check if the orthorhombic and triclinic box implementations give the same answer for a simple small box"""
-    for prec in precision:
-        distances_ortho = pydh.dist_driver(random_spherical_coordinates, precision=prec, box=mini_cube)
-        distances_tricl = pydh.dist_driver(random_spherical_coordinates, precision=prec, box=mini_cube, force_triclinic=True)
-#         print max(distances_ortho), max(distances_tricl)
-        assert(np.allclose(distances_ortho, distances_tricl, atol=tolerance[prec]))
-
-
-def test_dist_huge_box(random_spherical_coordinates):
-    """check if the orthorhombic and triclinic box implementations give the same answer for a simple small box"""
-    for prec in precision:
-        distances_nobox = pydh.dist_driver(random_spherical_coordinates, precision=prec)
-        distances_ortho = pydh.dist_driver(random_spherical_coordinates, precision=prec, box=huge_cube)
-        distances_tricl = pydh.dist_driver(random_spherical_coordinates, precision=prec, box=huge_cube, force_triclinic=True)
-#         print max(distances_ortho), max(distances_tricl)
-        assert(np.allclose(distances_ortho, distances_nobox, atol=tolerance[prec]))
-        assert(np.allclose(distances_ortho, distances_tricl, atol=tolerance[prec]))
+# def test_dist_unit_box(random_spherical_coordinates):
+#     """check if the orthorhombic and triclinic box implementations give the same answer for a simple unit box"""
+#     for prec in precision:
+#         distances_ortho = pydh.dist_driver(random_spherical_coordinates, precision=prec, box=unit_cube)
+#         distances_tricl = pydh.dist_driver(random_spherical_coordinates, precision=prec, box=unit_cube, force_triclinic=True)
+# #         print max(distances_ortho - distances_tricl)
+#         assert(np.allclose(distances_ortho, distances_tricl, atol=tolerance[prec]))
+#
+#
+# def test_dist_mini_box(random_spherical_coordinates):
+#     """check if the orthorhombic and triclinic box implementations give the same answer for a simple small box"""
+#     for prec in precision:
+#         distances_ortho = pydh.dist_driver(random_spherical_coordinates, precision=prec, box=mini_cube)
+#         distances_tricl = pydh.dist_driver(random_spherical_coordinates, precision=prec, box=mini_cube, force_triclinic=True)
+# #         print max(distances_ortho), max(distances_tricl)
+#         assert(np.allclose(distances_ortho, distances_tricl, atol=tolerance[prec]))
+#
+#
+# def test_dist_huge_box(random_spherical_coordinates):
+#     """check if the orthorhombic and triclinic box implementations give the same answer for a simple small box"""
+#     for prec in precision:
+#         distances_nobox = pydh.dist_driver(random_spherical_coordinates, precision=prec)
+#         distances_ortho = pydh.dist_driver(random_spherical_coordinates, precision=prec, box=huge_cube)
+#         distances_tricl = pydh.dist_driver(random_spherical_coordinates, precision=prec, box=huge_cube, force_triclinic=True)
+# #         print max(distances_ortho), max(distances_tricl)
+#         assert(np.allclose(distances_ortho, distances_nobox, atol=tolerance[prec]))
+#         assert(np.allclose(distances_ortho, distances_tricl, atol=tolerance[prec]))
 
 
 # --- the following tests are (partly) wrong ---
@@ -178,4 +186,3 @@ def test_dist_huge_box(random_spherical_coordinates):
 #         max_tricl = np.max(distances_tricl)
 #         print("max(nobox) = {}, max(triclinic) = {}".format(max_nobox, max_tricl))
 #     setup_spherical_surface = None
-
