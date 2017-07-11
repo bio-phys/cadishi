@@ -461,6 +461,17 @@ void histo_cpu(TUPLE3_T *coords, int n_tot, int *n_per_el, int n_el,
    moved_into_box = (bool*) malloc(n_bytes);
    memset(moved_into_box, 0, n_bytes);
 
+   if (box_type_id == triclinic) {
+      printf("triclinic box\n");
+      for (int i=0; i<3; ++i) {
+         printf("# %i: %f %f %f\n", i, box[i].x, box[i].y, box[i].z);
+      }
+      printf("triclinic box inverse\n");
+      for (int i=0; i<3; ++i) {
+         printf("# %i: %f %f %f\n", i, box_tri_inv[i].x, box_tri_inv[i].y, box_tri_inv[i].z);
+      }
+   }
+
    int histogramIdx = 0;
    int iOffset = 0;
    for (int i=0; i<n_el; ++i) {
