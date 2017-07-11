@@ -119,6 +119,63 @@ DEVICE inline T get_mic_triclinic_factor(const T &dp, const T &box_half) {
 }
 
 
+template <typename TUPLE3_T, typename FLOAT_T>
+void
+calclulate_inverse_triclinic_box(const TUPLE3_T * const box,
+                                 TUPLE3_T * box_tri_inv) {
+  FLOAT_T x0, x1, x2;
+  FLOAT_T y1, y2;
+  FLOAT_T z2;
+  x0 = box[0].x;
+  x1 = box[1].x;
+  x2 = box[2].x;
+  y1 = box[1].y;
+  y2 = box[2].y;
+  z2 = box[2].z;
+  box_tri_inv[0].x = FLOAT_T(1.)/x0;
+  box_tri_inv[0].y = FLOAT_T(-1.) * x1 / (x0*y1);
+  box_tri_inv[0].z = (x1*y2 - x2*y1)/(x0 * y1 * z2);
+  box_tri_inv[1].x = FLOAT_T(0.);
+  box_tri_inv[1].y = FLOAT_T(1.)/y1;
+  box_tri_inv[1].z = FLOAT_T(-1.) * y2 / (y1 * z2);
+  box_tri_inv[0].x = FLOAT_T(0.);
+  box_tri_inv[0].y = FLOAT_T(0.);
+  box_tri_inv[0].z = FLOAT_T(1.)/z2;
+}
+
+
+template <typename TUPLE3_T, typename FLOAT_T>
+inline void
+transform_to_scaled_coordinates(TUPLE3_T &p, const TUPLE3_T * const box_tri_inv) {
+  // We are allowed to overwrite the p components like that because of
+  // zero-valued entries in box_tri_inv.
+  p.x = box_tri_inv[0].x*p.x + box_tri_inv[0].y*p.y + box_tri_inv[0].z*p.z;
+  p.y =                        box_tri_inv[1].y*p.y + box_tri_inv[1].z*p.z;
+  p.z =                                               box_tri_inv[2].z*p.z;
+}
+
+
+template <typename TUPLE3_T, typename FLOAT_T>
+inline void
+transform_to_cartesian_coordinates(TUPLE3_T &p, const TUPLE3_T * const box) {
+  // Again, we are allowed to overwrite the p components like that because of
+  // zero-valued entries in box.
+  // TODO: check correctness
+  p.x = box[0].x*p.x + box[1].x*p.y + box[2].x*p.z;
+  p.y =                box[1].y*p.y + box[2].y*p.z;
+  p.z =                               box[2].z*p.z;
+}
+
+
+template <typename TUPLE3_T, typename FLOAT_T>
+inline void
+triclinic_minimum_image_convention(TUPLE3_T &p) {
+  p.x = p.x - my_round(p.x);
+  p.y = p.y - my_round(p.y);
+  p.z = p.z - my_round(p.z);
+}
+
+
 // --- moves coordinates into triclinic cell (host function) ---
 template <typename TUPLE3_T, typename FLOAT_T>
 inline void
@@ -211,5 +268,32 @@ dist(const TUPLE3_T &p1, const TUPLE3_T &p2,
    FLOAT_T arg = dp.x * dp.x + dp.y * dp.y + dp.z * dp.z;
    return std::sqrt(arg);
 }
+
+
+// --- distance calculation, templated version
+template <typename TUPLE3_T, typename FLOAT_T, int box_type_id>
+DEVICE inline FLOAT_T
+dist_new(const TUPLE3_T &p1, const TUPLE3_T &p2,
+     const TUPLE3_T * const box, const TUPLE3_T &box_ortho,
+     const TUPLE3_T &box_inv, const TUPLE3_T * const box_tri_inv) {
+   TUPLE3_T dp;
+   dp.x = p1.x - p2.x;
+   dp.y = p1.y - p2.y;
+   dp.z = p1.z - p2.z;
+   switch (box_type_id) {
+      case orthorhombic:
+         mic_orthorhombic <TUPLE3_T, FLOAT_T> (dp, box_ortho, box_inv);
+         break;
+      case triclinic:
+         triclinic_minimum_image_convention<TUPLE3_T, FLOAT_T>(dp);
+         transform_to_cartesian_coordinates<TUPLE3_T, FLOAT_T>(dp, box_tri_inv);
+         break;
+      case none:
+         break;
+   }
+   FLOAT_T arg = dp.x * dp.x + dp.y * dp.y + dp.z * dp.z;
+   return std::sqrt(arg);
+}
+
 
 #endif
