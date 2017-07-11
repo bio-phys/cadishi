@@ -444,15 +444,16 @@ def get_executable_name():
     return os.path.basename(sys.argv[0])
 
 
-def generate_random_coordinate_set(n_atoms=[512, 1024, 2048], create_invalid=False):
-    """Return pseudo-random coordinate sets in a unit box."""
+def generate_random_coordinate_set(n_atoms=[512, 1024, 2048],
+                                   coord_min=(0.,0.,0.),
+                                   coord_max=(1.,1.,1.),):
+    """Return pseudo-random coordinate sets in a box."""
     coords = []
-    if create_invalid:
-        f = 1.5
-    else:
-        f = 1.0
+    coord_min = np.asanyarray(coord_min)
+    coord_max = np.asanyarray(coord_max)
+    coord_width = coord_max - coord_min
     for n in n_atoms:
-        c = f * np.random.rand(n, 3)
+        c = np.random.rand(n, 3) * coord_width + coord_min
         coords.append(c)
     return coords
 
