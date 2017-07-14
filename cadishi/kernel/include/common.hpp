@@ -55,10 +55,10 @@ const char SEP[] = "------------------------------------------------------------
 
 
 // --- round wrapper functions for both the precisions ---
-DEVICE inline float my_round(const float &val) {
+DEVICE inline float round_wrapper(const float &val) {
    return roundf(val);
 }
-DEVICE inline double my_round(const double &val) {
+DEVICE inline double round_wrapper(const double &val) {
    return round(val);
 }
 
@@ -113,12 +113,17 @@ DEVICE inline float negative_signum(const float &f) {
 
 
 // compute triclinic shift factor, branch-free version (see mic_triclinic() below)
+// Note: Wrong treatment of triclinic box, see below!
 template <typename T>
 DEVICE inline T get_mic_triclinic_factor(const T &dp, const T &box_half) {
    return T(std::fabs(dp) > box_half) * negative_signum(dp);
 }
 
 
+// --- reimplementation of basic functions for triclinic periodic box handling,
+// closely following Tuckerman ---
+
+// calculate the inverse (h^{-1}) of the triclinic box matrix
 template <typename TUPLE3_T, typename FLOAT_T>
 void
 calclulate_inverse_triclinic_box(const TUPLE3_T * const box,
@@ -143,10 +148,9 @@ calclulate_inverse_triclinic_box(const TUPLE3_T * const box,
   box_tri_inv[2].z = FLOAT_T(1.)/z2;
 }
 
-
 template <typename TUPLE3_T, typename FLOAT_T>
 inline void
-transform_to_scaled_coordinates(TUPLE3_T &p, const TUPLE3_T * const box_tri_inv) {
+transform_to_triclinic_coordinates(TUPLE3_T &p, const TUPLE3_T * const box_tri_inv) {
   // We are allowed to overwrite the p components like that because of
   // zero-valued entries in box_tri_inv.
   p.x = box_tri_inv[0].x*p.x + box_tri_inv[0].y*p.y + box_tri_inv[0].z*p.z;
@@ -160,23 +164,22 @@ inline void
 transform_to_cartesian_coordinates(TUPLE3_T &p, const TUPLE3_T * const box) {
   // Again, we are allowed to overwrite the p components like that because of
   // zero-valued entries in box.
-  // TODO: check correctness
   p.x = box[0].x*p.x + box[1].x*p.y + box[2].x*p.z;
   p.y =                box[1].y*p.y + box[2].y*p.z;
   p.z =                               box[2].z*p.z;
 }
 
-
 template <typename TUPLE3_T, typename FLOAT_T>
 inline void
 triclinic_minimum_image_convention(TUPLE3_T &p) {
-  p.x = p.x - my_round(p.x);
-  p.y = p.y - my_round(p.y);
-  p.z = p.z - my_round(p.z);
+  p.x = p.x - round_wrapper(p.x);
+  p.y = p.y - round_wrapper(p.y);
+  p.z = p.z - round_wrapper(p.z);
 }
+// --- end of reimplemented basic functions for triclic boxes ---
 
 
-// --- moves coordinates into triclinic cell (host function) ---
+// moves coordinates into triclinic cell (host function), WRONG!!!
 template <typename TUPLE3_T, typename FLOAT_T>
 inline void
 move_coordinates_into_triclinic_box(TUPLE3_T &p,
@@ -205,13 +208,13 @@ mic_orthorhombic(TUPLE3_T &dp, const TUPLE3_T &box, const TUPLE3_T &box_inv) {
    t.z = box_inv.z * dp.z;
 
    // Note: C++11 would provide std::round()
-   dp.x = box.x * (t.x - my_round(t.x));
-   dp.y = box.y * (t.y - my_round(t.y));
-   dp.z = box.z * (t.z - my_round(t.z));
+   dp.x = box.x * (t.x - round_wrapper(t.x));
+   dp.y = box.y * (t.y - round_wrapper(t.y));
+   dp.z = box.z * (t.z - round_wrapper(t.z));
 }
 
 
-// --- apply minimum image convention for triclinic systems
+// apply minimum image convention for triclinic systems.  WRONG!!!
 template <typename TUPLE3_T, typename FLOAT_T>
 DEVICE inline void
 mic_triclinic(TUPLE3_T &dp, const TUPLE3_T * const box, const TUPLE3_T &box_half) {
@@ -226,27 +229,11 @@ mic_triclinic(TUPLE3_T &dp, const TUPLE3_T * const box, const TUPLE3_T &box_half
    dp.y += f * box[1].y;
    f = get_mic_triclinic_factor(dp.x, box_half.x);
    dp.x += f * box[0].x;
-
-   // --- previous naive code (performs much worse on the CPU) ---
-//   if (std::fabs(dp.z) > box_half.z) {
-//      FLOAT_T f = negative_signum(dp.z);
-//      dp.x += f * box[2].x;
-//      dp.y += f * box[2].y;
-//      dp.z += f * box[2].z;
-//   }
-//   if (std::fabs(dp.y) > box_half.y) {
-//      FLOAT_T f = negative_signum(dp.y);
-//      dp.x += f * box[1].x;
-//      dp.y += f * box[1].y;
-//   }
-//   if (std::fabs(dp.x) > box_half.x) {
-//      FLOAT_T f = negative_signum(dp.x);
-//      dp.x += f * box[0].x;
-//   }
 }
 
 
-// --- distance calculation, templated version
+// distance calculation, templated version,
+// triclinic periodic box is buggy
 template <typename TUPLE3_T, typename FLOAT_T, int box_type_id>
 DEVICE inline FLOAT_T
 dist(const TUPLE3_T &p1, const TUPLE3_T &p2,
@@ -270,10 +257,11 @@ dist(const TUPLE3_T &p1, const TUPLE3_T &p2,
 }
 
 
-// --- distance calculation, templated version
+// distance calculation, templated version,
+// with fixes for the triclinic periodic box
 template <typename TUPLE3_T, typename FLOAT_T, int box_type_id>
 DEVICE inline FLOAT_T
-dist_new(const TUPLE3_T &p1, const TUPLE3_T &p2,
+dist_fixed(const TUPLE3_T &p1, const TUPLE3_T &p2,
      const TUPLE3_T * const box, const TUPLE3_T &box_ortho,
      const TUPLE3_T &box_inv, const TUPLE3_T * const box_tri_inv) {
    TUPLE3_T dp;
@@ -285,9 +273,7 @@ dist_new(const TUPLE3_T &p1, const TUPLE3_T &p2,
          mic_orthorhombic <TUPLE3_T, FLOAT_T> (dp, box_ortho, box_inv);
          break;
       case triclinic:
-        //  printf("@ %f %f %f\n", dp.x, dp.y, dp.z);
          triclinic_minimum_image_convention<TUPLE3_T, FLOAT_T>(dp);
-        //  printf("$ %f %f %f\n", dp.x, dp.y, dp.z);
          transform_to_cartesian_coordinates<TUPLE3_T, FLOAT_T>(dp, box_tri_inv);
          break;
       case none:
