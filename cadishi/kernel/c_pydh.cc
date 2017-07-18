@@ -155,7 +155,7 @@ void hist_1(TUPLE3_T * __restrict__ p,
             for (int k=0; k<block_n_elem; ++k) {
                // d[k] = (int) (scal * dist<TUPLE3_T, FLOAT_T, box_type_id>
                //             (p[i+k], p[j], box, box_ortho, box_ortho_inv, box_half));
-               d[k] = (int)(scal * dist_fixed<TUPLE3_T, FLOAT_T, box_type_id>
+               d[k] = (int)(scal * dist<TUPLE3_T, FLOAT_T, box_type_id>
                                 (p[i+k], p[j], box, box_ortho, box_ortho_inv));
             }
             /**
@@ -195,7 +195,7 @@ void hist_1(TUPLE3_T * __restrict__ p,
 #else
          // loop vectorizes well (GCC >=4.9, checked using Intel VTUNE & Advisor)
          for (int i=0; i<j; ++i) {
-            d[i] = (int) (scal * dist_fixed<TUPLE3_T, FLOAT_T, box_type_id>
+            d[i] = (int) (scal * dist<TUPLE3_T, FLOAT_T, box_type_id>
                                  (p[i], p[j], box, box_ortho, box_ortho_inv));
          }
          /**
@@ -312,7 +312,7 @@ void hist_2(TUPLE3_T * __restrict__ p1,
                block_n_elem = inner_loop_blocksize;
             }
             for (int k=0; k<block_n_elem; ++k) {
-               d[k] = (int)(scal * dist_fixed<TUPLE3_T, FLOAT_T, box_type_id>
+               d[k] = (int)(scal * dist<TUPLE3_T, FLOAT_T, box_type_id>
                               (p2[i+k], p1[j], box, box_ortho, box_ortho_inv));
             }
             /**
@@ -352,7 +352,7 @@ void hist_2(TUPLE3_T * __restrict__ p1,
 #else
          // loop vectorizes well (gcc >=4.9, checked using Intel VTUNE & Advisor)
          for (int i=0; i<nelem2; ++i) {
-            d[i] = (int)(scal * dist_fixed<TUPLE3_T, FLOAT_T, box_type_id>
+            d[i] = (int)(scal * dist<TUPLE3_T, FLOAT_T, box_type_id>
                                  (p2[i], p1[j], box, box_ortho, box_ortho_inv));
          }
          /**
@@ -812,7 +812,6 @@ void dist_driver_template_dispatcher(np_tuple3d_t *r_ptr,
 
    if (box_type_id == triclinic) {
       for (int j=0; j<n_tot; ++j) {
-         // move_coordinates_into_triclinic_box <TUPLE3_T, FLOAT_T> (r_copy[j], box_copy, box_ortho_inv);
          transform_to_triclinic_coordinates<TUPLE3_T, FLOAT_T>(r_copy[j], box_tri_inv);
       }
    }
@@ -822,15 +821,15 @@ void dist_driver_template_dispatcher(np_tuple3d_t *r_ptr,
       for (int i=0; i<j; ++i) {
          switch (box_type_id) {
             case none:
-               distances_ptr[idx] = dist_fixed <TUPLE3_T, FLOAT_T, none>
+               distances_ptr[idx] = dist <TUPLE3_T, FLOAT_T, none>
                                        (r_copy[j], r_copy[i], box_copy, box_ortho, box_ortho_inv);
                break;
             case orthorhombic:
-               distances_ptr[idx] = dist_fixed <TUPLE3_T, FLOAT_T, orthorhombic>
+               distances_ptr[idx] = dist <TUPLE3_T, FLOAT_T, orthorhombic>
                                        (r_copy[j], r_copy[i], box_copy, box_ortho, box_ortho_inv);
                break;
             case triclinic:
-               distances_ptr[idx] = dist_fixed <TUPLE3_T, FLOAT_T, triclinic>
+               distances_ptr[idx] = dist <TUPLE3_T, FLOAT_T, triclinic>
                                        (r_copy[j], r_copy[i], box_copy, box_ortho, box_ortho_inv);
                break;
          }

@@ -46,7 +46,12 @@ enum _implementations {
    SIMPLE=3    // naive comparably slow kernel, not for production use
 };
 
-const int n_box = 6;  // number of TUPLE3_T elements for box vector
+// number of TUPLE3_T elements for box vector
+const int n_box = 6;
+// first three elements are the box vectors
+// the inverse box vectors start at 3
+const int idx_box_tri_inv = 3;
+// alternatively, orthorhombic boxes start at 3, the 5th element is unused
 const int idx_box_ortho = 3;
 const int idx_box_ortho_inv = 4;
 
@@ -82,33 +87,33 @@ print_setup(const dim3 &grid, const dim3 &block, const int div_x, const int div_
 
 
 __device__ __forceinline__
-uint32_t myAtomicAdd(uint32_t *address, uint32_t val) {
+uint32_t atomic_add_wrapper(uint32_t *address, uint32_t val) {
    return (uint32_t)atomicAdd((unsigned int *)address, (unsigned int)val);
 }
 
 __device__ __forceinline__
-uint64_t myAtomicAdd(uint64_t *address, uint64_t val) {
+uint64_t atomic_add_wrapper(uint64_t *address, uint64_t val) {
    return (uint64_t)atomicAdd((unsigned long long int *)address, (unsigned long long int)val);
 }
 
 __device__ __forceinline__
-uint64_t myAtomicAdd(uint64_t *address, uint32_t val) {
+uint64_t atomic_add_wrapper(uint64_t *address, uint32_t val) {
    uint64_t val_uint64 = (uint64_t)val;
-   return myAtomicAdd(address, val_uint64);
+   return atomic_add_wrapper(address, val_uint64);
 }
 
 __device__ __forceinline__
 void increment(uint32_t *c) {
-   myAtomicAdd(c, (uint32_t)1);
+   atomic_add_wrapper(c, (uint32_t)1);
 }
 
 __device__ __forceinline__
 void increment(uint64_t *c) {
-   myAtomicAdd(c, (uint64_t)1);
+   atomic_add_wrapper(c, (uint64_t)1);
 }
 
 
-// --- one-species simple histogram kernel
+// one-species simple histogram kernel
 template <typename TUPLE3_T, typename COUNTER_T, typename FLOAT_T, bool check_input, int box_type_id>
 __global__ void
 histo1_simple_knl(const TUPLE3_T* const r1, const int n1,
@@ -124,7 +129,7 @@ histo1_simple_knl(const TUPLE3_T* const r1, const int n1,
 
    for (int ii=i; ii<n1; ii+=di) {
       for (int jj=j; jj<ii; jj+=dj) {
-         int idx = (int)(scal * dist_fixed<TUPLE3_T, FLOAT_T, box_type_id>
+         int idx = (int)(scal * dist<TUPLE3_T, FLOAT_T, box_type_id>
                (r1[jj], r1[ii], box, box[idx_box_ortho], box[idx_box_ortho_inv]));
          // Error handling:
          // * If no box is used and check_input is requested, outliers do trigger the error condition.
@@ -141,7 +146,7 @@ histo1_simple_knl(const TUPLE3_T* const r1, const int n1,
    }
 }
 
-// --- two-species simple histogram kernel
+// two-species simple histogram kernel
 template <typename TUPLE3_T, typename COUNTER_T, typename FLOAT_T, bool check_input, int box_type_id>
 __global__ void
 histo2_simple_knl(const TUPLE3_T* const r1, const int n1,
@@ -159,7 +164,7 @@ histo2_simple_knl(const TUPLE3_T* const r1, const int n1,
 
    for (int ii=i; ii<n1; ii+=ni) {
       for (int jj=j; jj<n2; jj+=nj) {
-         int idx = (int)(scal * dist_fixed<TUPLE3_T, FLOAT_T, box_type_id>
+         int idx = (int)(scal * dist<TUPLE3_T, FLOAT_T, box_type_id>
             (r2[jj], r1[ii], box, box[idx_box_ortho], box[idx_box_ortho_inv]));
          // Error handling:
          // * If no box is used and check_input is requested, outliers do trigger the error condition.
@@ -176,7 +181,7 @@ histo2_simple_knl(const TUPLE3_T* const r1, const int n1,
    }
 }
 
-// --- driver to launch the simple histogram kernels
+// driver to launch the simple histogram kernels
 template <typename TUPLE3_T, typename COUNTER_T, typename FLOAT_T, bool check_input, int box_type_id>
 inline void
 histo_simple_launch_knl(const TUPLE3_T* const r1, const int n1,
@@ -205,7 +210,7 @@ histo_simple_launch_knl(const TUPLE3_T* const r1, const int n1,
 }
 
 
-// --- one-species histogram kernel, uses const- and shared- memory tiling
+// one-species histogram kernel, uses const- and shared- memory tiling
 template <typename TUPLE3_T, typename COUNTER_T, typename FLOAT_T, bool check_input, int box_type_id>
 __global__ void
 histo1_advanced_knl(
@@ -243,7 +248,7 @@ histo1_advanced_knl(
       TUPLE3_T r2r = r2[i2];
       for (int i1=0; i1<n1_tile_size; ++i1) {
          if (i1 < q1) {
-            int idx = (int)(scal * dist_fixed<TUPLE3_T, FLOAT_T, box_type_id>
+            int idx = (int)(scal * dist<TUPLE3_T, FLOAT_T, box_type_id>
                (r1p[i1], r2r, box, box[idx_box_ortho], box[idx_box_ortho_inv]));
             // Error handling:
             // * If no box is used and check_input is requested, outliers do trigger the error condition.
@@ -267,10 +272,10 @@ histo1_advanced_knl(
 
    bins += bin_lo;
    for (int i=threadIdx.x; i<n_bins_loc; i+=blockDim.x)
-      myAtomicAdd(&bins[i], smem_bins[i]);
+      atomic_add_wrapper(&bins[i], smem_bins[i]);
 }
 
-// --- two-species histogram kernel, const- and shared- memory tiling
+// two-species histogram kernel, const- and shared- memory tiling
 template <typename TUPLE3_T, typename COUNTER_T, typename FLOAT_T, bool check_input, int box_type_id>
 __global__ void
 histo2_advanced_knl(
@@ -304,7 +309,7 @@ histo2_advanced_knl(
    if (i2 < n2) {
       TUPLE3_T r2r = r2[i2];
       for (int i1=0; i1<n1_tile_size; ++i1) {
-         int idx = (int)(scal * dist_fixed<TUPLE3_T, FLOAT_T, box_type_id>
+         int idx = (int)(scal * dist<TUPLE3_T, FLOAT_T, box_type_id>
                (r1p[i1], r2r, box, box[idx_box_ortho], box[idx_box_ortho_inv]));
          // Error handling:
          // * If no box is used and check_input is requested, outliers do trigger the error condition.
@@ -326,12 +331,12 @@ histo2_advanced_knl(
 
    bins += bin_lo;
    for (int i=threadIdx.x; i<n_bins_loc; i+=blockDim.x)
-      myAtomicAdd( &bins[i], smem_bins[i] );
+      atomic_add_wrapper( &bins[i], smem_bins[i] );
 }
 
 
 
-// --- one-species histogram kernel, const-memory tiling, histogram in global memory
+// one-species histogram kernel, const-memory tiling, histogram in global memory
 template <typename TUPLE3_T, typename COUNTER_T, typename FLOAT_T, bool check_input, int box_type_id>
 __global__ void
 histo1_global_knl(
@@ -354,7 +359,7 @@ histo1_global_knl(
       TUPLE3_T r2r = r2[i2];
       for (int i1=0; i1<n1_tile_size; ++i1) {
          if (i1 < q1) {
-            int idx = (int)(scal * dist_fixed<TUPLE3_T, FLOAT_T, box_type_id>
+            int idx = (int)(scal * dist<TUPLE3_T, FLOAT_T, box_type_id>
                (r1p[i1], r2r, box, box[idx_box_ortho], box[idx_box_ortho_inv]));
             // Error handling:
             // * If no box is used and check_input is requested, outliers do trigger the error condition.
@@ -372,7 +377,7 @@ histo1_global_knl(
    }
 }
 
-// --- two-species histogram kernel, const- and shared- memory tiling
+// two-species histogram kernel, const- and shared- memory tiling
 template <typename TUPLE3_T, typename COUNTER_T, typename FLOAT_T, bool check_input, int box_type_id>
 __global__ void
 histo2_global_knl(
@@ -391,7 +396,7 @@ histo2_global_knl(
    if (i2 < n2) {
       TUPLE3_T r2r = r2[i2];
       for (int i1=0; i1<n1_tile_size; ++i1) {
-         int idx = (int)(scal * dist_fixed<TUPLE3_T, FLOAT_T, box_type_id>
+         int idx = (int)(scal * dist<TUPLE3_T, FLOAT_T, box_type_id>
                (r1p[i1], r2r, box, box[idx_box_ortho], box[idx_box_ortho_inv]));
          // Error handling:
          // * If no box is used and check_input is requested, outliers do trigger the error condition.
@@ -779,7 +784,7 @@ void histograms_template_dispatcher(NP_TUPLE3_T *r_ptr,   // coordinate tuples
                                     int verbose,
                                     int algorithm = -1) {
    TUPLE3_T * r_copy;
-   TUPLE3_T * box_copy;
+   TUPLE3_T * box;
    // box information is forwarded using the last n_box elements of r_copy (even if no box is present at all)
    CU_CHECK( cudaMallocHost((void **)&r_copy, (n_tot+n_box)*sizeof(TUPLE3_T)) );
    for (int i=0; i<n_tot; ++i) {
@@ -788,31 +793,33 @@ void histograms_template_dispatcher(NP_TUPLE3_T *r_ptr,   // coordinate tuples
       r_copy[i].z = FLOAT_T(r_ptr[i].z);
    }
    // pointer to the first element of the box data
-   box_copy = &r_copy[n_tot];
-   memset(box_copy, 0, n_box*sizeof(TUPLE3_T));
+   box = &r_copy[n_tot];
+   memset(box, 0, n_box*sizeof(TUPLE3_T));
    switch (box_type_id) {
       case none:
          break;
       case orthorhombic:
          // "box_ortho"
-         box_copy[idx_box_ortho].x = FLOAT_T(box_ptr[0]);  // concatenate box vectors
-         box_copy[idx_box_ortho].y = FLOAT_T(box_ptr[4]);  // into a
-         box_copy[idx_box_ortho].z = FLOAT_T(box_ptr[8]);  // single tuple
+         box[idx_box_ortho].x = FLOAT_T(box_ptr[0]);  // concatenate box vectors
+         box[idx_box_ortho].y = FLOAT_T(box_ptr[4]);  // into a
+         box[idx_box_ortho].z = FLOAT_T(box_ptr[8]);  // single tuple
          // "box_ortho_inv"
-         box_copy[idx_box_ortho_inv].x = FLOAT_T(1.) / box_copy[idx_box_ortho].x;
-         box_copy[idx_box_ortho_inv].y = FLOAT_T(1.) / box_copy[idx_box_ortho].y;
-         box_copy[idx_box_ortho_inv].z = FLOAT_T(1.) / box_copy[idx_box_ortho].z;
+         box[idx_box_ortho_inv].x = FLOAT_T(1.) / box[idx_box_ortho].x;
+         box[idx_box_ortho_inv].y = FLOAT_T(1.) / box[idx_box_ortho].y;
+         box[idx_box_ortho_inv].z = FLOAT_T(1.) / box[idx_box_ortho].z;
          break;
       case triclinic:
          for (int i=0; i<3; ++i) {
-            box_copy[i].x = FLOAT_T(box_ptr[3*i  ]);
-            box_copy[i].y = FLOAT_T(box_ptr[3*i+1]);
-            box_copy[i].z = FLOAT_T(box_ptr[3*i+2]);
+            box[i].x = FLOAT_T(box_ptr[3*i  ]);
+            box[i].y = FLOAT_T(box_ptr[3*i+1]);
+            box[i].z = FLOAT_T(box_ptr[3*i+2]);
          }
-         // ---
+         calclulate_inverse_triclinic_box<TUPLE3_T, FLOAT_T>
+            (box, &box[idx_box_tri_inv]);
 #pragma omp parallel for default(shared) schedule(guided)
          for (int i=0; i<n_tot; ++i) {
-            move_coordinates_into_triclinic_box<TUPLE3_T, FLOAT_T>(r_copy[i], box_copy, box_copy[idx_box_ortho_inv]);
+            transform_to_triclinic_coordinates<TUPLE3_T, FLOAT_T>
+               (r_copy[i], &box[idx_box_tri_inv]);
          }
          break;
    }
