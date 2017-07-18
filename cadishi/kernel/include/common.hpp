@@ -262,19 +262,19 @@ dist(const TUPLE3_T &p1, const TUPLE3_T &p2,
 template <typename TUPLE3_T, typename FLOAT_T, int box_type_id>
 DEVICE inline FLOAT_T
 dist_fixed(const TUPLE3_T &p1, const TUPLE3_T &p2,
-     const TUPLE3_T * const box, const TUPLE3_T &box_ortho,
-     const TUPLE3_T &box_inv, const TUPLE3_T * const box_tri_inv) {
+           const TUPLE3_T * const box,
+           const TUPLE3_T &box_ortho, const TUPLE3_T &box_ortho_inv) {
    TUPLE3_T dp;
    dp.x = p1.x - p2.x;
    dp.y = p1.y - p2.y;
    dp.z = p1.z - p2.z;
    switch (box_type_id) {
       case orthorhombic:
-         mic_orthorhombic <TUPLE3_T, FLOAT_T> (dp, box_ortho, box_inv);
+         mic_orthorhombic <TUPLE3_T, FLOAT_T> (dp, box_ortho, box_ortho_inv);
          break;
       case triclinic:
          triclinic_minimum_image_convention<TUPLE3_T, FLOAT_T>(dp);
-         transform_to_cartesian_coordinates<TUPLE3_T, FLOAT_T>(dp, box_tri_inv);
+         transform_to_cartesian_coordinates<TUPLE3_T, FLOAT_T>(dp, box);
          break;
       case none:
          break;

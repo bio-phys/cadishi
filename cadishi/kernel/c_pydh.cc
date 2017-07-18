@@ -156,7 +156,7 @@ void hist_1(TUPLE3_T * __restrict__ p,
                // d[k] = (int) (scal * dist<TUPLE3_T, FLOAT_T, box_type_id>
                //             (p[i+k], p[j], box, box_ortho, box_ortho_inv, box_half));
                d[k] = (int)(scal * dist_fixed<TUPLE3_T, FLOAT_T, box_type_id>
-                        (p[i+k], p[j], box, box_ortho, box_ortho_inv, box_tri_inv));
+                                (p[i+k], p[j], box, box_ortho, box_ortho_inv));
             }
             /**
              * Checks of the previously calculated integer-converted distances.
@@ -196,7 +196,7 @@ void hist_1(TUPLE3_T * __restrict__ p,
          // loop vectorizes well (GCC >=4.9, checked using Intel VTUNE & Advisor)
          for (int i=0; i<j; ++i) {
             d[i] = (int) (scal * dist_fixed<TUPLE3_T, FLOAT_T, box_type_id>
-                           (p[i], p[j], box, box_ortho, box_ortho_inv, box_tri_inv));
+                                 (p[i], p[j], box, box_ortho, box_ortho_inv));
          }
          /**
           * Checks of the previously calculated integer-converted distances.
@@ -313,7 +313,7 @@ void hist_2(TUPLE3_T * __restrict__ p1,
             }
             for (int k=0; k<block_n_elem; ++k) {
                d[k] = (int)(scal * dist_fixed<TUPLE3_T, FLOAT_T, box_type_id>
-                       (p2[i+k], p1[j], box, box_ortho, box_ortho_inv, box_tri_inv));
+                              (p2[i+k], p1[j], box, box_ortho, box_ortho_inv));
             }
             /**
              * Checks of the previously calculated integer-converted distances.
@@ -353,7 +353,7 @@ void hist_2(TUPLE3_T * __restrict__ p1,
          // loop vectorizes well (gcc >=4.9, checked using Intel VTUNE & Advisor)
          for (int i=0; i<nelem2; ++i) {
             d[i] = (int)(scal * dist_fixed<TUPLE3_T, FLOAT_T, box_type_id>
-                          (p2[i], p1[j], box, box_ortho, box_ortho_inv, box_tri_inv));
+                                 (p2[i], p1[j], box, box_ortho, box_ortho_inv));
          }
          /**
           * Checks of the previously calculated integer-converted distances.
@@ -823,15 +823,15 @@ void dist_driver_template_dispatcher(np_tuple3d_t *r_ptr,
          switch (box_type_id) {
             case none:
                distances_ptr[idx] = dist_fixed <TUPLE3_T, FLOAT_T, none>
-                                       (r_copy[j], r_copy[i], box_copy, box_ortho, box_ortho_inv, box_tri_inv);
+                                       (r_copy[j], r_copy[i], box_copy, box_ortho, box_ortho_inv);
                break;
             case orthorhombic:
                distances_ptr[idx] = dist_fixed <TUPLE3_T, FLOAT_T, orthorhombic>
-                                       (r_copy[j], r_copy[i], box_copy, box_ortho, box_ortho_inv, box_tri_inv);
+                                       (r_copy[j], r_copy[i], box_copy, box_ortho, box_ortho_inv);
                break;
             case triclinic:
                distances_ptr[idx] = dist_fixed <TUPLE3_T, FLOAT_T, triclinic>
-                                       (r_copy[j], r_copy[i], box_copy, box_ortho, box_ortho_inv, box_tri_inv);
+                                       (r_copy[j], r_copy[i], box_copy, box_ortho, box_ortho_inv);
                break;
          }
          ++idx;
