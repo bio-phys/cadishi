@@ -149,7 +149,7 @@ calclulate_inverse_triclinic_box(const TUPLE3_T * const box,
 }
 
 template <typename TUPLE3_T, typename FLOAT_T>
-inline void
+DEVICE inline void
 transform_to_triclinic_coordinates(TUPLE3_T &p, const TUPLE3_T * const box_tri_inv) {
   // We are allowed to overwrite the p components like that because of
   // zero-valued entries in box_tri_inv.
@@ -160,17 +160,17 @@ transform_to_triclinic_coordinates(TUPLE3_T &p, const TUPLE3_T * const box_tri_i
 
 
 template <typename TUPLE3_T, typename FLOAT_T>
-inline void
+DEVICE inline void
 transform_to_cartesian_coordinates(TUPLE3_T &p, const TUPLE3_T * const box) {
   // Again, we are allowed to overwrite the p components like that because of
-  // zero-valued entries in box.
+  // zero-valued entries in the box.
   p.x = box[0].x*p.x + box[1].x*p.y + box[2].x*p.z;
   p.y =                box[1].y*p.y + box[2].y*p.z;
   p.z =                               box[2].z*p.z;
 }
 
 template <typename TUPLE3_T, typename FLOAT_T>
-inline void
+DEVICE inline void
 triclinic_minimum_image_convention(TUPLE3_T &p) {
   p.x = p.x - round_wrapper(p.x);
   p.y = p.y - round_wrapper(p.y);
@@ -232,8 +232,7 @@ mic_triclinic(TUPLE3_T &dp, const TUPLE3_T * const box, const TUPLE3_T &box_half
 }
 
 
-// distance calculation, templated version,
-// triclinic periodic box is buggy
+// distance calculation (BEWARE: triclinic periodic box is buggy)
 template <typename TUPLE3_T, typename FLOAT_T, int box_type_id>
 DEVICE inline FLOAT_T
 dist(const TUPLE3_T &p1, const TUPLE3_T &p2,
@@ -257,8 +256,7 @@ dist(const TUPLE3_T &p1, const TUPLE3_T &p2,
 }
 
 
-// distance calculation, templated version,
-// with fixes for the triclinic periodic box
+// distance calculation (with fixes for the triclinic periodic box)
 template <typename TUPLE3_T, typename FLOAT_T, int box_type_id>
 DEVICE inline FLOAT_T
 dist_fixed(const TUPLE3_T &p1, const TUPLE3_T &p2,

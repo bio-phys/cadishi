@@ -46,15 +46,9 @@ enum _implementations {
    SIMPLE=3    // naive comparably slow kernel, not for production use
 };
 
-const int n_box = 6;
-enum _box_indices {
-   idx_tri_0,
-   idx_tri_1,
-   idx_tri_2,
-   idx_ortho,
-   idx_inverse,
-   idx_half
-};
+const int n_box = 6;  // number of TUPLE3_T elements for box vector
+const int idx_box_ortho = 3;
+const int idx_box_ortho_inv = 4;
 
 // --- parameters for the global and advanced kernels
 // maximum number of bins fitting into the 48kB of shared memory available on relevant GPUs
@@ -128,20 +122,10 @@ histo1_simple_knl(const TUPLE3_T* const r1, const int n1,
    const int di = blockDim.x * gridDim.x;
    const int dj = blockDim.y * gridDim.y;
 
-   TUPLE3_T box_ortho, box_inv, box_half;
-   switch (box_type_id) {
-      case orthorhombic:
-         box_ortho = box[idx_ortho];
-         box_inv = box[idx_inverse];
-         break;
-      case triclinic:
-         box_half = box[idx_half];
-         break;
-   }
-
    for (int ii=i; ii<n1; ii+=di) {
       for (int jj=j; jj<ii; jj+=dj) {
-         int idx = (int)(scal * dist<TUPLE3_T, FLOAT_T, box_type_id>(r1[jj], r1[ii], box, box_ortho, box_inv, box_half));
+         int idx = (int)(scal * dist_fixed<TUPLE3_T, FLOAT_T, box_type_id>
+               (r1[jj], r1[ii], box, box[idx_box_ortho], box[idx_box_ortho_inv]));
          // Error handling:
          // * If no box is used and check_input is requested, outliers do trigger the error condition.
          // * If a box is used and check_input is requested, outliers are simply ignored.
@@ -173,20 +157,10 @@ histo2_simple_knl(const TUPLE3_T* const r1, const int n1,
    const int ni = blockDim.x * gridDim.x;
    const int nj = blockDim.y * gridDim.y;
 
-   TUPLE3_T box_ortho, box_inv, box_half;
-   switch (box_type_id) {
-      case orthorhombic:
-         box_ortho = box[idx_ortho];
-         box_inv = box[idx_inverse];
-         break;
-      case triclinic:
-         box_half = box[idx_half];
-         break;
-   }
-
    for (int ii=i; ii<n1; ii+=ni) {
       for (int jj=j; jj<n2; jj+=nj) {
-         int idx = (int)(scal * dist<TUPLE3_T, FLOAT_T, box_type_id>(r2[jj], r1[ii], box, box_ortho, box_inv, box_half));
+         int idx = (int)(scal * dist_fixed<TUPLE3_T, FLOAT_T, box_type_id>
+            (r2[jj], r1[ii], box, box[idx_box_ortho], box[idx_box_ortho_inv]));
          // Error handling:
          // * If no box is used and check_input is requested, outliers do trigger the error condition.
          // * If a box is used and check_input is requested, outliers are simply ignored.
@@ -246,17 +220,6 @@ histo1_advanced_knl(
    TUPLE3_T *r1p;
    r1p = (TUPLE3_T*) histo_advanced_coords_cmem;
 
-   TUPLE3_T box_ortho, box_inv, box_half;
-   switch (box_type_id) {
-      case orthorhombic:
-         box_ortho = box[idx_ortho];
-         box_inv = box[idx_inverse];
-         break;
-      case triclinic:
-         box_half = box[idx_half];
-         break;
-   }
-
    extern __shared__ uint32_t smem_bins[];
    for (int i=threadIdx.x; i<histo_advanced_smem_nbins; i+=blockDim.x)
       smem_bins[i] = 0;
@@ -280,7 +243,8 @@ histo1_advanced_knl(
       TUPLE3_T r2r = r2[i2];
       for (int i1=0; i1<n1_tile_size; ++i1) {
          if (i1 < q1) {
-            int idx = (int)(scal * dist<TUPLE3_T, FLOAT_T, box_type_id>(r1p[i1], r2r, box, box_ortho, box_inv, box_half));
+            int idx = (int)(scal * dist_fixed<TUPLE3_T, FLOAT_T, box_type_id>
+               (r1p[i1], r2r, box, box[idx_box_ortho], box[idx_box_ortho_inv]));
             // Error handling:
             // * If no box is used and check_input is requested, outliers do trigger the error condition.
             // * If a box is used and check_input is requested, outliers are simply ignored.
@@ -321,17 +285,6 @@ histo2_advanced_knl(
    TUPLE3_T *r1p;
    r1p = (TUPLE3_T*) histo_advanced_coords_cmem;
 
-   TUPLE3_T box_ortho, box_inv, box_half;
-   switch (box_type_id) {
-      case orthorhombic:
-         box_ortho = box[idx_ortho];
-         box_inv = box[idx_inverse];
-         break;
-      case triclinic:
-         box_half = box[idx_half];
-         break;
-   }
-
    extern __shared__ uint32_t smem_bins[];
    for (int i=threadIdx.x; i<histo_advanced_smem_nbins; i+=blockDim.x)
       smem_bins[i] = 0;
@@ -351,7 +304,8 @@ histo2_advanced_knl(
    if (i2 < n2) {
       TUPLE3_T r2r = r2[i2];
       for (int i1=0; i1<n1_tile_size; ++i1) {
-         int idx = (int)(scal * dist<TUPLE3_T, FLOAT_T, box_type_id>(r1p[i1], r2r, box, box_ortho, box_inv, box_half));
+         int idx = (int)(scal * dist_fixed<TUPLE3_T, FLOAT_T, box_type_id>
+               (r1p[i1], r2r, box, box[idx_box_ortho], box[idx_box_ortho_inv]));
          // Error handling:
          // * If no box is used and check_input is requested, outliers do trigger the error condition.
          // * If a box is used and check_input is requested, outliers are simply ignored.
@@ -391,17 +345,6 @@ histo1_global_knl(
    TUPLE3_T *r1p;
    r1p = (TUPLE3_T*) histo_advanced_coords_cmem;
 
-   TUPLE3_T box_ortho, box_inv, box_half;
-   switch (box_type_id) {
-      case orthorhombic:
-         box_ortho = box[idx_ortho];
-         box_inv = box[idx_inverse];
-         break;
-      case triclinic:
-         box_half = box[idx_half];
-         break;
-   }
-
    // --- global i2 index for r2
    const int i2 = blockIdx.x*blockDim.x + threadIdx.x;
    // --- local upper limit for the i1-loop
@@ -411,7 +354,8 @@ histo1_global_knl(
       TUPLE3_T r2r = r2[i2];
       for (int i1=0; i1<n1_tile_size; ++i1) {
          if (i1 < q1) {
-            int idx = (int)(scal * dist<TUPLE3_T, FLOAT_T, box_type_id>(r1p[i1], r2r, box, box_ortho, box_inv, box_half));
+            int idx = (int)(scal * dist_fixed<TUPLE3_T, FLOAT_T, box_type_id>
+               (r1p[i1], r2r, box, box[idx_box_ortho], box[idx_box_ortho_inv]));
             // Error handling:
             // * If no box is used and check_input is requested, outliers do trigger the error condition.
             // * If a box is used and check_input is requested, outliers are simply ignored.
@@ -442,23 +386,13 @@ histo2_global_knl(
    TUPLE3_T *r1p;
    r1p = (TUPLE3_T*) histo_advanced_coords_cmem;
 
-   TUPLE3_T box_ortho, box_inv, box_half;
-   switch (box_type_id) {
-      case orthorhombic:
-         box_ortho = box[idx_ortho];
-         box_inv = box[idx_inverse];
-         break;
-      case triclinic:
-         box_half = box[idx_half];
-         break;
-   }
-
    const int i2 = blockIdx.x*blockDim.x + threadIdx.x;
 
    if (i2 < n2) {
       TUPLE3_T r2r = r2[i2];
       for (int i1=0; i1<n1_tile_size; ++i1) {
-         int idx = (int)(scal * dist<TUPLE3_T, FLOAT_T, box_type_id>(r1p[i1], r2r, box, box_ortho, box_inv, box_half));
+         int idx = (int)(scal * dist_fixed<TUPLE3_T, FLOAT_T, box_type_id>
+               (r1p[i1], r2r, box, box[idx_box_ortho], box[idx_box_ortho_inv]));
          // Error handling:
          // * If no box is used and check_input is requested, outliers do trigger the error condition.
          // * If a box is used and check_input is requested, outliers are simply ignored.
@@ -861,13 +795,13 @@ void histograms_template_dispatcher(NP_TUPLE3_T *r_ptr,   // coordinate tuples
          break;
       case orthorhombic:
          // "box_ortho"
-         box_copy[idx_ortho].x = FLOAT_T(box_ptr[0]);  // concatenate box vectors
-         box_copy[idx_ortho].y = FLOAT_T(box_ptr[4]);  // into a
-         box_copy[idx_ortho].z = FLOAT_T(box_ptr[8]);  // single tuple
-         // "box_inv"
-         box_copy[idx_inverse].x = FLOAT_T(1.) / box_copy[idx_ortho].x;
-         box_copy[idx_inverse].y = FLOAT_T(1.) / box_copy[idx_ortho].y;
-         box_copy[idx_inverse].z = FLOAT_T(1.) / box_copy[idx_ortho].z;
+         box_copy[idx_box_ortho].x = FLOAT_T(box_ptr[0]);  // concatenate box vectors
+         box_copy[idx_box_ortho].y = FLOAT_T(box_ptr[4]);  // into a
+         box_copy[idx_box_ortho].z = FLOAT_T(box_ptr[8]);  // single tuple
+         // "box_ortho_inv"
+         box_copy[idx_box_ortho_inv].x = FLOAT_T(1.) / box_copy[idx_box_ortho].x;
+         box_copy[idx_box_ortho_inv].y = FLOAT_T(1.) / box_copy[idx_box_ortho].y;
+         box_copy[idx_box_ortho_inv].z = FLOAT_T(1.) / box_copy[idx_box_ortho].z;
          break;
       case triclinic:
          for (int i=0; i<3; ++i) {
@@ -875,18 +809,10 @@ void histograms_template_dispatcher(NP_TUPLE3_T *r_ptr,   // coordinate tuples
             box_copy[i].y = FLOAT_T(box_ptr[3*i+1]);
             box_copy[i].z = FLOAT_T(box_ptr[3*i+2]);
          }
-         // "box_inv"
-         box_copy[idx_inverse].x = FLOAT_T(1.) / box_copy[0].x;
-         box_copy[idx_inverse].y = FLOAT_T(1.) / box_copy[1].y;
-         box_copy[idx_inverse].z = FLOAT_T(1.) / box_copy[2].z;
-         // "box_half"
-         box_copy[idx_half].x = FLOAT_T(0.5) * box_copy[0].x;
-         box_copy[idx_half].y = FLOAT_T(0.5) * box_copy[1].y;
-         box_copy[idx_half].z = FLOAT_T(0.5) * box_copy[2].z;
          // ---
 #pragma omp parallel for default(shared) schedule(guided)
          for (int i=0; i<n_tot; ++i) {
-            move_coordinates_into_triclinic_box<TUPLE3_T, FLOAT_T>(r_copy[i], box_copy, box_copy[idx_inverse]);
+            move_coordinates_into_triclinic_box<TUPLE3_T, FLOAT_T>(r_copy[i], box_copy, box_copy[idx_box_ortho_inv]);
          }
          break;
    }
