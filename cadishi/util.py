@@ -446,12 +446,13 @@ def get_executable_name():
 
 def generate_random_coordinate_set(n_atoms=[512, 1024, 2048],
                                    coord_min=(0.,0.,0.),
-                                   coord_max=(1.,1.,1.),):
+                                   coord_max=(1.,1.,1.),
+                                   blowup_factor=1.0):
     """Return pseudo-random coordinate sets in a box."""
     coords = []
     coord_min = np.asanyarray(coord_min)
     coord_max = np.asanyarray(coord_max)
-    coord_width = coord_max - coord_min
+    coord_width = (coord_max - coord_min) * blowup_factor
     for n in n_atoms:
         c = np.random.rand(n, 3) * coord_width + coord_min
         coords.append(c)
