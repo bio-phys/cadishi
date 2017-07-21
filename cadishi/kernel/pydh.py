@@ -34,6 +34,7 @@ def histograms(coordinate_sets,
                scale_factors=[],
                mask_array=[],
                box=[],
+               force_triclinic=False,
                do_histo2_only=False):
     """Distance histogram calculation."""
 
@@ -65,7 +66,8 @@ def histograms(coordinate_sets,
     else:
         np_mask = np.ones(n_Hij, dtype=np.int32)
 
-    np_box, box_type_id, box_type = pbc.get_standard_box(box, verbose=False)
+    np_box, box_type_id, box_type = pbc.get_standard_box(box, \
+                                 force_triclinic=force_triclinic, verbose=False)
 
     if (len(box) > 0):
         print(common.indent + "pydh box_type: " + str(box_type))

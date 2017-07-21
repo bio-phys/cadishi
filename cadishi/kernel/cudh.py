@@ -45,6 +45,7 @@ def histograms(coordinate_sets,
                scale_factors=[],
                mask_array=[],
                box=[],
+               force_triclinic=False,
                verbose=False,
                algorithm=-1):
     """Distance histogram calculation on NVIDIA GPUs using CUDA.
@@ -153,7 +154,8 @@ def histograms(coordinate_sets,
     # --- To see the bins contiguously in memory from C, we use the following layout:
     histos = np.zeros((n_bins, n_Hij + 1), dtype=np.uint64, order='F')
 
-    np_box, box_type_id, box_type = pbc.get_standard_box(box, verbose=False)
+    np_box, box_type_id, box_type = pbc.get_standard_box(box, \
+                                 force_triclinic=force_triclinic, verbose=False)
 
     if (len(box) > 0):
         print(common.indent + "cudh box_type: " + str(box_type))

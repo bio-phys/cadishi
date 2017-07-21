@@ -86,6 +86,7 @@ def get_orthorhombic_box():
 testcase_small = None
 @pytest.fixture
 def fixture_small():
+    """Create a reference case using the very first dist implementation."""
     global testcase_small
     if testcase_small is None:
         n_el = 2
@@ -103,6 +104,7 @@ def fixture_small():
 testcase_small_orthorhombic = None
 @pytest.fixture
 def fixture_small_orthorhombic():
+    """Create a orthorhombic reference case in double precision using pydh."""
     global testcase_small_orthorhombic
     if testcase_small_orthorhombic is None:
         n_el = 2
@@ -120,6 +122,7 @@ def fixture_small_orthorhombic():
 testcase_small_triclinic = None
 @pytest.fixture
 def fixture_small_triclinic():
+    """Create a triclinic reference case in double precision using pydh."""
     global testcase_small_triclinic
     if testcase_small_triclinic is None:
         n_el = 2
@@ -136,12 +139,14 @@ def fixture_small_triclinic():
 
 if TEST_PYDH:
     def test_pydh_small_double(fixture_small):
+        """Test if pydh gives the same answer as dist()."""
         n_el, n_atoms, n_bins, coords, histo_ref = fixture_small
         for check_input in [True, False]:
             histo_pydh = pydh.histograms(coords, r_max, n_bins, precision="double", pydh_threads=1, check_input=check_input)
             util.compare(histo_ref, histo_pydh)
 
     def test_pydh_threads_small_double(fixture_small):
+        """Test if pydh gives the same answer as dist()."""
         n_el, n_atoms, n_bins, coords, histo_ref = fixture_small
         for check_input in [True, False]:
             for nt in pydh_threads:
@@ -149,12 +154,14 @@ if TEST_PYDH:
                 util.compare(histo_ref, histo_pydh)
 
     def test_pydh_small_single(fixture_small):
+        """Test if pydh gives the same answer as dist()."""
         n_el, n_atoms, n_bins, coords, histo_ref = fixture_small
         for check_input in [True, False]:
             histo_pydh = pydh.histograms(coords, r_max, n_bins, precision="single", pydh_threads=1, check_input=check_input)
             util.compare(histo_ref, histo_pydh)
 
     def test_pydh_threads_small_single(fixture_small):
+        """Test if pydh gives the same answer as dist()."""
         n_el, n_atoms, n_bins, coords, histo_ref = fixture_small
         for check_input in [True, False]:
             for nt in pydh_threads:
@@ -162,6 +169,7 @@ if TEST_PYDH:
                 util.compare(histo_ref, histo_pydh)
 
     def test_pydh_small_orthorhombic_single(fixture_small_orthorhombic):
+        """Test if the orthorhombic implementation gives the same answer in single precision."""
         n_el, n_atoms, n_bins, coords, box, histo_ref = fixture_small_orthorhombic
         for check_input in [True, False]:
             histo = pydh.histograms(coords, r_max, n_bins, box=box, precision="single", pydh_threads=1, check_input=check_input)
@@ -171,6 +179,7 @@ if TEST_PYDH:
                 util.dump_histograms(file_name, histo, r_max, n_bins)
 
     def test_pydh_small_triclinic_single(fixture_small_triclinic):
+        """Test if the triclinic implementation gives the same answer in single precision."""
         n_el, n_atoms, n_bins, coords, box, histo_ref = fixture_small_triclinic
         for check_input in [True, False]:
             histo = pydh.histograms(coords, r_max, n_bins, box=box, precision="single", pydh_threads=1, check_input=check_input)
@@ -178,6 +187,17 @@ if TEST_PYDH:
             if DUMP_DATA:
                 file_name = sys._getframe().f_code.co_name + ".dat"
                 util.dump_histograms(file_name, histo, r_max, n_bins)
+
+    def test_pydh_small_orthorhombic_triclinic(fixture_small_triclinic):
+        """Test if the triclinic and orthorhombic implementations give the same answer for an orthorhombic box."""
+        n_el, n_atoms, n_bins, coords, box, histo_ref = fixture_small_triclinic
+        box_ort = get_orthorhombic_box()
+        box_tri = get_orthorhombic_triclinic_box()
+        for precision in ['single','double']:
+            for check_input in [True, False]:
+                histo_ort = pydh.histograms(coords, r_max, n_bins, box=box_ort, force_triclinic=False, precision=precision, pydh_threads=1, check_input=check_input)
+                histo_tri = pydh.histograms(coords, r_max, n_bins, box=box_tri, force_triclinic=True, precision=precision, pydh_threads=1, check_input=check_input)
+                util.compare(histo_ort, histo_tri)
 
 if TEST_CUDH:
     def test_cudh_small_double(fixture_small):
@@ -202,23 +222,35 @@ if TEST_CUDH:
                         file_name = sys._getframe().f_code.co_name + "_gpu" + str(gpu_id) + ".dat"
                         util.dump_histograms(file_name, histo, r_max, n_bins)
 
-    def test_cudh_small_orthorhombic_single(fixture_small_orthorhombic):
+    def test_cudh_small_orthorhombic(fixture_small_orthorhombic):
+        """Check if pydh and cudh give the same answer with orthorhombic boxes."""
         n_el, n_atoms, n_bins, coords, box, histo_ref = fixture_small_orthorhombic
-        for check_input in [True, False]:
-            histo = cudh.histograms(coords, r_max, n_bins, box=box, precision="single", check_input=check_input)
-            util.compare(histo_ref, histo)
-            if DUMP_DATA:
-                file_name = sys._getframe().f_code.co_name + ".dat"
-                util.dump_histograms(file_name, histo, r_max, n_bins)
+        for precision in ['single','double']:
+            for check_input in [True, False]:
+                for algo in [1,2,3]:
+                    histo = cudh.histograms(coords, r_max, n_bins, box=box, precision=precision, check_input=check_input, algorithm=algo)
+                    util.compare(histo_ref, histo)
 
-    def test_cudh_small_triclinic_single(fixture_small_triclinic):
+    def test_cudh_small_triclinic(fixture_small_triclinic):
+        """Check if pydh and cudh give the same answer with triclinic boxes."""
         n_el, n_atoms, n_bins, coords, box, histo_ref = fixture_small_triclinic
-        for check_input in [True, False]:
-            histo = cudh.histograms(coords, r_max, n_bins, box=box, precision="single", check_input=check_input)
-            util.compare(histo_ref, histo)
-            if DUMP_DATA:
-                file_name = sys._getframe().f_code.co_name + ".dat"
-                util.dump_histograms(file_name, histo, r_max, n_bins)
+        for precision in ['single','double']:
+            for check_input in [True, False]:
+                for algo in [1,2,3]:
+                    histo = cudh.histograms(coords, r_max, n_bins, box=box, precision=precision, check_input=check_input, algorithm=algo)
+                    util.compare(histo_ref, histo)
+
+    def test_cudh_small_orthorhombic_triclinic(fixture_small_triclinic):
+        """Test if the triclinic and orthorhombic implementations give the same answer for an orthorhombic box."""
+        n_el, n_atoms, n_bins, coords, box, histo_ref = fixture_small_triclinic
+        box_ort = get_orthorhombic_box()
+        box_tri = get_orthorhombic_triclinic_box()
+        for precision in ['single','double']:
+            for check_input in [True, False]:
+                for algo in [1,2,3]:
+                    histo_ort = cudh.histograms(coords, r_max, n_bins, box=box_ort, force_triclinic=False, precision=precision, check_input=check_input, algorithm=algo)
+                    histo_tri = cudh.histograms(coords, r_max, n_bins, box=box_tri, force_triclinic=True, precision=precision, check_input=check_input, algorithm=algo)
+                    util.compare(histo_ort, histo_tri)
 
 
 testcase_small_invalid = None
