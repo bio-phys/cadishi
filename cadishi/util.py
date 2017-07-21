@@ -387,6 +387,13 @@ def load_parameter_file(filename):
             raise RuntimeError("PyYAML is not available.")
 
 
+def compare(histo1, histo2):
+    if (histo1.dtype == histo2.dtype) and (histo1.dtype == np.float64):
+        compare_strictly(histo1, histo2)
+    else:
+        compare_approximately(histo1, histo2)
+
+
 def compare_strictly(histo1, histo2):
     """Check if two histograms (1D numpy arrays) or two sets of histograms (2D
     numpy arrays) are identical, only suitable to check the results of double
