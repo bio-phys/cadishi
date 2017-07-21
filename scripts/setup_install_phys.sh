@@ -4,6 +4,9 @@
 
 set -e
 
+cd "$( cd "$( dirname "${BASH_SOURCE[0]}" )/.." && pwd )"
+./scripts/update_git_hash.py
+
 if [[ -z "${CAPRIQORN_HOME}" ]]; then
     echo "(create and) load a capriqorn module first"
 else
@@ -15,4 +18,3 @@ mkdir -p ${CAPRIQORN_HOME}/lib/python2.7/site-packages
 python setup.py clean config build install --prefix=${CAPRIQORN_HOME}
 
 fi
-
