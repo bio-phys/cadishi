@@ -70,7 +70,7 @@ def histograms(coordinate_sets,
     np_box, box_type_id, box_type = pbc.get_standard_box(box, \
                                  force_triclinic=force_triclinic, verbose=False)
 
-    if verbose and (box_type is not None):
+    if (box_type is not None):
         print(common.indent + "pydh box_type: " + str(box_type))
 
     precision = common.precision_to_enum(precision)
