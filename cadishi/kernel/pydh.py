@@ -35,7 +35,8 @@ def histograms(coordinate_sets,
                mask_array=[],
                box=[],
                force_triclinic=False,
-               do_histo2_only=False):
+               do_histo2_only=False,
+               verbose=False):
     """Distance histogram calculation."""
 
     if not have_c_pydh:
@@ -69,7 +70,7 @@ def histograms(coordinate_sets,
     np_box, box_type_id, box_type = pbc.get_standard_box(box, \
                                  force_triclinic=force_triclinic, verbose=False)
 
-    if (len(box) > 0):
+    if verbose and (box_type is not None):
         print(common.indent + "pydh box_type: " + str(box_type))
 
     precision = common.precision_to_enum(precision)

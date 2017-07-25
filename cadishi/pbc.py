@@ -56,6 +56,8 @@ def _triclinic_angles_to_matrix(box_tup):
 def get_standard_box(box_in, force_triclinic=False, verbose=False):
     """Convert any valid and non-valid box specification into a 3x3 matrix
     that can be understood by the CUDH and PYDH kernels."""
+    if box_in is None:
+        box_in = []
     box = np.asarray(box_in)
     if (box.shape == (3,)) and (box[0] * box[1] * box[2] != 0.0):
         box_type = "orthorhombic"
