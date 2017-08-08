@@ -231,7 +231,10 @@ class H5Writer(base.Writer):
         the dump() routine drives it by providing the final sink.
         """
         for frm in self.src.next():
-            assert isinstance(frm, base.Container)
-            if self.verb:
-                print "H5Writer.dump() : ", frm.i
-            self.put_frame(frm)
+            if isinstance(frm, base.Container):
+                if self.verb:
+                    print "H5Writer.dump() : ", frm.i
+                self.put_frame(frm)
+            else:
+                # None objects
+                pass

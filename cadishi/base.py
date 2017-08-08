@@ -18,6 +18,7 @@ from . import dict_util
 # --- some string constants ---
 # Locations (loc_*) used to store data either in memory using container/dictfs
 # as well as on disk using HDF5 files.  (Comparable to paths of a file system.)
+loc_parallel = 'parallel.tmp'
 loc_coordinates = 'coordinates'
 loc_dimensions = 'dimensions'  # 6-tuple periodic-box specifier
 loc_volumes = 'volumes'
