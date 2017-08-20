@@ -241,6 +241,7 @@ def cuda_compiler_flags():
     nvcc_flags += ['--compiler-options=' + gcc_flags_string + ' -fPIC']
     return {'gcc': gcc_flags, 'nvcc': nvcc_flags}
 
+
 if CAD_CUDA:
     try:
         CUDA = locate_cuda()
@@ -254,6 +255,8 @@ else:
 ############################
 # Setuptools modifications #
 ############################
+
+
 class cuda_build_ext(build_ext):
     @staticmethod
     def customize_compiler_for_nvcc(compiler):
@@ -300,10 +303,13 @@ class CleanCommand(Command):
     """Custom clean command to tidy up the project root."""
     # https://stackoverflow.com/questions/3779915/why-does-python-setup-py-sdist-create-unwanted-project-egg-info-in-project-r
     user_options = []
+
     def initialize_options(self):
         pass
+
     def finalize_options(self):
         pass
+
     def run(self):
         os.system('rm -vrf ./*.so')
         os.system('rm -vrf build')
@@ -363,7 +369,7 @@ entry_points = {
     ]
 }
 
-#update_git_hash("cadishi")
+# update_git_hash("cadishi")
 
 setup(
     name="cadishi",

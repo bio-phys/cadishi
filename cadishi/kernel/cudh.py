@@ -107,7 +107,6 @@ def histograms(coordinate_sets,
     else:
         np_mask = np.ones(n_Hij, dtype=np.int32)
 
-
     if do_reorder:
         # --- create lists containing (indices,sizes) sorted by size
         el_idx = list(range(n_El))
@@ -154,8 +153,8 @@ def histograms(coordinate_sets,
     # --- To see the bins contiguously in memory from C, we use the following layout:
     histos = np.zeros((n_bins, n_Hij + 1), dtype=np.uint64, order='F')
 
-    np_box, box_type_id, box_type = pbc.get_standard_box(box, \
-                                 force_triclinic=force_triclinic, verbose=False)
+    np_box, box_type_id, box_type = pbc.get_standard_box(box,
+                                                         force_triclinic=force_triclinic, verbose=False)
 
     if (box_type is not None):
         print(common.indent + "cudh box_type: " + str(box_type))
@@ -163,9 +162,9 @@ def histograms(coordinate_sets,
     precision = common.precision_to_enum(precision)
 
     # --- run the CUDH distance histogram kernel
-    exit_status = c_cudh.histograms(np_coord, np_nelem, histos, r_max, np_mask, \
-                                    np_box, box_type_id, \
-                                    precision, gpu_id, do_histo2_only, thread_block_x, \
+    exit_status = c_cudh.histograms(np_coord, np_nelem, histos, r_max, np_mask,
+                                    np_box, box_type_id,
+                                    precision, gpu_id, do_histo2_only, thread_block_x,
                                     check_input, verbose, algorithm)
 
     if (exit_status == 1):

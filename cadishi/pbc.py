@@ -114,7 +114,7 @@ def get_box_volume(box_in):
         alpha = np.deg2rad(box[3])
         beta = np.deg2rad(box[4])
         gamma = np.deg2rad(box[5])
-        volume = a * b * c * np.sqrt(1.0 - np.cos(alpha) ** 2 - np.cos(beta) ** 2 - np.cos(gamma) ** 2 \
+        volume = a * b * c * np.sqrt(1.0 - np.cos(alpha) ** 2 - np.cos(beta) ** 2 - np.cos(gamma) ** 2
                                      + 2.0 * np.cos(alpha) * np.cos(beta) * np.cos(gamma))
         # reference e.g. http://www.fxsolver.com/browse/formulas/Triclinic+crystal+system+(Unit+cell's+volume)
     else:

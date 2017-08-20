@@ -76,7 +76,7 @@ class PickleWriter(base.Writer):
         self.src = source
         self.verb = verbose
         self.info = ''
-                # ---
+        # ---
         self._depends.extend(super(base.Writer, self)._depends)
         self._conflicts.extend(super(base.Writer, self)._conflicts)
 

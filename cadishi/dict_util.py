@@ -56,7 +56,7 @@ def scale_values(X, C, skip_keys=['radii', 'frame']):
     list skip_keys.
     Typically, the values of X are NumPy arrays (histograms) that are rescaled
     after summation using a scalar C (e.g. to implement averaging operation).
-    
+
     Parameters
     ----------
     X : dict

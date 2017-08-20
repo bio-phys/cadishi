@@ -7,7 +7,8 @@ LICENSE.txt, and the documentation for details.
 """
 
 
-import os, sys
+import os
+import sys
 import numpy as np
 from cadishi import util
 from cadishi.kernel import pydh

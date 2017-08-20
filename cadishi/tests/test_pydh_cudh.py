@@ -82,8 +82,9 @@ def get_orthorhombic_box():
     return box
 
 
-
 testcase_small = None
+
+
 @pytest.fixture
 def fixture_small():
     """Create a reference case using the very first dist implementation."""
@@ -102,6 +103,8 @@ def fixture_small():
 
 
 testcase_small_orthorhombic = None
+
+
 @pytest.fixture
 def fixture_small_orthorhombic():
     """Create a orthorhombic reference case in double precision using pydh."""
@@ -119,7 +122,10 @@ def fixture_small_orthorhombic():
         testcase_small_orthorhombic = (n_el, n_atoms, n_bins, coords, box, histo)
     return testcase_small_orthorhombic
 
+
 testcase_small_triclinic = None
+
+
 @pytest.fixture
 def fixture_small_triclinic():
     """Create a triclinic reference case in double precision using pydh."""
@@ -137,12 +143,14 @@ def fixture_small_triclinic():
         testcase_small_triclinic = (n_el, n_atoms, n_bins, coords, box, histo)
     return testcase_small_triclinic
 
+
 if TEST_PYDH:
     def test_pydh_small_double(fixture_small):
         """Test if pydh gives the same answer as dist()."""
         n_el, n_atoms, n_bins, coords, histo_ref = fixture_small
         for check_input in [True, False]:
-            histo_pydh = pydh.histograms(coords, r_max, n_bins, precision="double", pydh_threads=1, check_input=check_input)
+            histo_pydh = pydh.histograms(coords, r_max, n_bins, precision="double",
+                                         pydh_threads=1, check_input=check_input)
             util.compare(histo_ref, histo_pydh)
 
     def test_pydh_threads_small_double(fixture_small):
@@ -150,14 +158,16 @@ if TEST_PYDH:
         n_el, n_atoms, n_bins, coords, histo_ref = fixture_small
         for check_input in [True, False]:
             for nt in pydh_threads:
-                histo_pydh = pydh.histograms(coords, r_max, n_bins, precision="double", pydh_threads=nt, check_input=check_input)
+                histo_pydh = pydh.histograms(coords, r_max, n_bins, precision="double",
+                                             pydh_threads=nt, check_input=check_input)
                 util.compare(histo_ref, histo_pydh)
 
     def test_pydh_small_single(fixture_small):
         """Test if pydh gives the same answer as dist()."""
         n_el, n_atoms, n_bins, coords, histo_ref = fixture_small
         for check_input in [True, False]:
-            histo_pydh = pydh.histograms(coords, r_max, n_bins, precision="single", pydh_threads=1, check_input=check_input)
+            histo_pydh = pydh.histograms(coords, r_max, n_bins, precision="single",
+                                         pydh_threads=1, check_input=check_input)
             util.compare(histo_ref, histo_pydh)
 
     def test_pydh_threads_small_single(fixture_small):
@@ -165,14 +175,16 @@ if TEST_PYDH:
         n_el, n_atoms, n_bins, coords, histo_ref = fixture_small
         for check_input in [True, False]:
             for nt in pydh_threads:
-                histo_pydh = pydh.histograms(coords, r_max, n_bins, precision="single", pydh_threads=nt, check_input=check_input)
+                histo_pydh = pydh.histograms(coords, r_max, n_bins, precision="single",
+                                             pydh_threads=nt, check_input=check_input)
                 util.compare(histo_ref, histo_pydh)
 
     def test_pydh_small_orthorhombic_single(fixture_small_orthorhombic):
         """Test if the orthorhombic implementation gives the same answer in single precision."""
         n_el, n_atoms, n_bins, coords, box, histo_ref = fixture_small_orthorhombic
         for check_input in [True, False]:
-            histo = pydh.histograms(coords, r_max, n_bins, box=box, precision="single", pydh_threads=1, check_input=check_input)
+            histo = pydh.histograms(coords, r_max, n_bins, box=box, precision="single",
+                                    pydh_threads=1, check_input=check_input)
             util.compare(histo_ref, histo)
             if DUMP_DATA:
                 file_name = sys._getframe().f_code.co_name + ".dat"
@@ -182,7 +194,8 @@ if TEST_PYDH:
         """Test if the triclinic implementation gives the same answer in single precision."""
         n_el, n_atoms, n_bins, coords, box, histo_ref = fixture_small_triclinic
         for check_input in [True, False]:
-            histo = pydh.histograms(coords, r_max, n_bins, box=box, precision="single", pydh_threads=1, check_input=check_input)
+            histo = pydh.histograms(coords, r_max, n_bins, box=box, precision="single",
+                                    pydh_threads=1, check_input=check_input)
             util.compare(histo_ref, histo)
             if DUMP_DATA:
                 file_name = sys._getframe().f_code.co_name + ".dat"
@@ -193,10 +206,12 @@ if TEST_PYDH:
         n_el, n_atoms, n_bins, coords, box, histo_ref = fixture_small_triclinic
         box_ort = get_orthorhombic_box()
         box_tri = get_orthorhombic_triclinic_box()
-        for precision in ['single','double']:
+        for precision in ['single', 'double']:
             for check_input in [True, False]:
-                histo_ort = pydh.histograms(coords, r_max, n_bins, box=box_ort, force_triclinic=False, precision=precision, pydh_threads=1, check_input=check_input)
-                histo_tri = pydh.histograms(coords, r_max, n_bins, box=box_tri, force_triclinic=True, precision=precision, pydh_threads=1, check_input=check_input)
+                histo_ort = pydh.histograms(coords, r_max, n_bins, box=box_ort, force_triclinic=False,
+                                            precision=precision, pydh_threads=1, check_input=check_input)
+                histo_tri = pydh.histograms(coords, r_max, n_bins, box=box_tri, force_triclinic=True,
+                                            precision=precision, pydh_threads=1, check_input=check_input)
                 util.compare(histo_ort, histo_tri)
 
 if TEST_CUDH:
@@ -204,8 +219,9 @@ if TEST_CUDH:
         n_el, n_atoms, n_bins, coords, histo_ref = fixture_small
         for check_input in [True, False]:
             for gpu_id in range(cudh.get_num_devices()):
-                for algo in [1,2,3]:
-                    histo = cudh.histograms(coords, r_max, n_bins, precision="double", gpu_id=gpu_id, check_input=check_input, algorithm=algo)
+                for algo in [1, 2, 3]:
+                    histo = cudh.histograms(coords, r_max, n_bins, precision="double",
+                                            gpu_id=gpu_id, check_input=check_input, algorithm=algo)
                     util.compare(histo_ref, histo)
                     if DUMP_DATA:
                         file_name = sys._getframe().f_code.co_name + "_gpu" + str(gpu_id) + ".dat"
@@ -215,8 +231,9 @@ if TEST_CUDH:
         n_el, n_atoms, n_bins, coords, histo_ref = fixture_small
         for check_input in [True, False]:
             for gpu_id in range(cudh.get_num_devices()):
-                for algo in [1,2,3]:
-                    histo = cudh.histograms(coords, r_max, n_bins, precision="single", gpu_id=gpu_id, check_input=check_input, algorithm=algo)
+                for algo in [1, 2, 3]:
+                    histo = cudh.histograms(coords, r_max, n_bins, precision="single",
+                                            gpu_id=gpu_id, check_input=check_input, algorithm=algo)
                     util.compare(histo_ref, histo)
                     if DUMP_DATA:
                         file_name = sys._getframe().f_code.co_name + "_gpu" + str(gpu_id) + ".dat"
@@ -225,19 +242,21 @@ if TEST_CUDH:
     def test_cudh_small_orthorhombic(fixture_small_orthorhombic):
         """Check if pydh and cudh give the same answer with orthorhombic boxes."""
         n_el, n_atoms, n_bins, coords, box, histo_ref = fixture_small_orthorhombic
-        for precision in ['single','double']:
+        for precision in ['single', 'double']:
             for check_input in [True, False]:
-                for algo in [1,2,3]:
-                    histo = cudh.histograms(coords, r_max, n_bins, box=box, precision=precision, check_input=check_input, algorithm=algo)
+                for algo in [1, 2, 3]:
+                    histo = cudh.histograms(coords, r_max, n_bins, box=box, precision=precision,
+                                            check_input=check_input, algorithm=algo)
                     util.compare(histo_ref, histo)
 
     def test_cudh_small_triclinic(fixture_small_triclinic):
         """Check if pydh and cudh give the same answer with triclinic boxes."""
         n_el, n_atoms, n_bins, coords, box, histo_ref = fixture_small_triclinic
-        for precision in ['single','double']:
+        for precision in ['single', 'double']:
             for check_input in [True, False]:
-                for algo in [1,2,3]:
-                    histo = cudh.histograms(coords, r_max, n_bins, box=box, precision=precision, check_input=check_input, algorithm=algo)
+                for algo in [1, 2, 3]:
+                    histo = cudh.histograms(coords, r_max, n_bins, box=box, precision=precision,
+                                            check_input=check_input, algorithm=algo)
                     util.compare(histo_ref, histo)
 
     def test_cudh_small_orthorhombic_triclinic(fixture_small_triclinic):
@@ -245,15 +264,19 @@ if TEST_CUDH:
         n_el, n_atoms, n_bins, coords, box, histo_ref = fixture_small_triclinic
         box_ort = get_orthorhombic_box()
         box_tri = get_orthorhombic_triclinic_box()
-        for precision in ['single','double']:
+        for precision in ['single', 'double']:
             for check_input in [True, False]:
-                for algo in [1,2,3]:
-                    histo_ort = cudh.histograms(coords, r_max, n_bins, box=box_ort, force_triclinic=False, precision=precision, check_input=check_input, algorithm=algo)
-                    histo_tri = cudh.histograms(coords, r_max, n_bins, box=box_tri, force_triclinic=True, precision=precision, check_input=check_input, algorithm=algo)
+                for algo in [1, 2, 3]:
+                    histo_ort = cudh.histograms(coords, r_max, n_bins, box=box_ort, force_triclinic=False,
+                                                precision=precision, check_input=check_input, algorithm=algo)
+                    histo_tri = cudh.histograms(coords, r_max, n_bins, box=box_tri, force_triclinic=True,
+                                                precision=precision, check_input=check_input, algorithm=algo)
                     util.compare(histo_ort, histo_tri)
 
 
 testcase_small_invalid = None
+
+
 @pytest.fixture
 def fixture_small_invalid():
     global testcase_small_invalid
@@ -265,6 +288,7 @@ def fixture_small_invalid():
         histo_ref = None
         testcase_small_invalid = (n_el, n_atoms, n_bins, coords, histo_ref)
     return testcase_small_invalid
+
 
 if TEST_PYDH:
     def test_pydh_invalid_small_double(fixture_small_invalid):
@@ -304,6 +328,8 @@ if TEST_CUDH:
 
 
 testcase_medium = None
+
+
 @pytest.fixture
 def fixture_medium():
     global testcase_medium
@@ -317,6 +343,7 @@ def fixture_medium():
             util.dump_histograms("histo_ref_medium.dat", histo_ref, r_max, n_bins)
         testcase_medium = (n_el, n_atoms, n_bins, coords, histo_ref)
     return testcase_medium
+
 
 if TEST_PYDH:
     def test_pydh_medium_double(fixture_medium):
@@ -373,7 +400,7 @@ if TEST_CUDH:
         n_el, n_atoms, n_bins, coords, histo_ref = fixture_medium
         for check_input in [True, False]:
             for gpu_id in range(cudh.get_num_devices()):
-                for algo in [1,2,3]:
+                for algo in [1, 2, 3]:
                     histo_cudh = cudh.histograms(coords, r_max, n_bins, precision="double",
                                                  gpu_id=gpu_id, check_input=check_input, algorithm=algo)
                     util.compare(histo_ref, histo_cudh)
@@ -382,7 +409,7 @@ if TEST_CUDH:
         n_el, n_atoms, n_bins, coords, histo_ref = fixture_medium
         for check_input in [True, False]:
             for gpu_id in range(cudh.get_num_devices()):
-                for algo in [1,2,3]:
+                for algo in [1, 2, 3]:
                     histo_cudh = cudh.histograms(coords, r_max, n_bins, precision="single",
                                                  gpu_id=gpu_id, check_input=check_input, algorithm=algo)
                     util.compare(histo_ref, histo_cudh)
@@ -393,7 +420,7 @@ if TEST_CUDH:
         mask_array[::2] = 0
         for check_input in [True, False]:
             for gpu_id in range(cudh.get_num_devices()):
-                for algo in [1,2,3]:
+                for algo in [1, 2, 3]:
                     histo_cudh = cudh.histograms(coords, r_max, n_bins, precision="single",
                                                  gpu_id=gpu_id, mask_array=mask_array, check_input=check_input, algorithm=algo)
                     col_sum = histo_cudh.sum(axis=0)
@@ -405,7 +432,7 @@ if TEST_CUDH:
         scale_factors *= 0.5
         for check_input in [True, False]:
             for gpu_id in range(cudh.get_num_devices()):
-                for algo in [1,2,3]:
+                for algo in [1, 2, 3]:
                     histo_cudh = cudh.histograms(coords, r_max, n_bins, precision="single", gpu_id=gpu_id,
                                                  scale_factors=scale_factors, check_input=check_input, algorithm=algo)
                     assert(histo_ref.sum() == 2.0 * histo_cudh.sum())
@@ -413,6 +440,8 @@ if TEST_CUDH:
 
 # test case designed to select the simple kernels in cudh
 testcase_medium_manybins = None
+
+
 @pytest.fixture
 def fixture_medium_manybins():
     global testcase_medium_manybins
@@ -427,31 +456,36 @@ def fixture_medium_manybins():
         testcase_medium_manybins = (n_el, n_atoms, n_bins, coords, histo_ref)
     return testcase_medium_manybins
 
+
 if TEST_PYDH:
     def test_pydh_medium_manybins_double(fixture_medium_manybins):
         n_el, n_atoms, n_bins, coords, histo_ref = fixture_medium_manybins
         for check_input in [True, False]:
-            histo_pydh = pydh.histograms(coords, r_max, n_bins, precision="double", pydh_threads=1, check_input=check_input)
+            histo_pydh = pydh.histograms(coords, r_max, n_bins, precision="double",
+                                         pydh_threads=1, check_input=check_input)
             util.compare(histo_ref, histo_pydh)
 
     def test_pydh_threads_medium_manybins_double(fixture_medium_manybins):
         n_el, n_atoms, n_bins, coords, histo_ref = fixture_medium_manybins
         for check_input in [True, False]:
             for nt in pydh_threads:
-                histo_pydh = pydh.histograms(coords, r_max, n_bins, precision="double", pydh_threads=nt, check_input=check_input)
+                histo_pydh = pydh.histograms(coords, r_max, n_bins, precision="double",
+                                             pydh_threads=nt, check_input=check_input)
                 util.compare(histo_ref, histo_pydh)
 
     def test_pydh_medium_manybins_single(fixture_medium_manybins):
         n_el, n_atoms, n_bins, coords, histo_ref = fixture_medium_manybins
         for check_input in [True, False]:
-            histo_pydh = pydh.histograms(coords, r_max, n_bins, precision="single", pydh_threads=1, check_input=check_input)
+            histo_pydh = pydh.histograms(coords, r_max, n_bins, precision="single",
+                                         pydh_threads=1, check_input=check_input)
             util.compare(histo_ref, histo_pydh)
 
     def test_pydh_threads_medium_manybins_single(fixture_medium_manybins):
         n_el, n_atoms, n_bins, coords, histo_ref = fixture_medium_manybins
         for check_input in [True, False]:
             for nt in pydh_threads:
-                histo_pydh = pydh.histograms(coords, r_max, n_bins, precision="single", pydh_threads=nt, check_input=check_input)
+                histo_pydh = pydh.histograms(coords, r_max, n_bins, precision="single",
+                                             pydh_threads=nt, check_input=check_input)
                 util.compare(histo_ref, histo_pydh)
 
 if TEST_CUDH:
@@ -459,22 +493,24 @@ if TEST_CUDH:
         n_el, n_atoms, n_bins, coords, histo_ref = fixture_medium_manybins
         for check_input in [True, False]:
             for gpu_id in range(cudh.get_num_devices()):
-                for algo in [1,2,3]:
-                    histo_cudh = cudh.histograms(coords, r_max, n_bins, precision="double", gpu_id=gpu_id, check_input=check_input, algorithm=algo)
+                for algo in [1, 2, 3]:
+                    histo_cudh = cudh.histograms(coords, r_max, n_bins, precision="double",
+                                                 gpu_id=gpu_id, check_input=check_input, algorithm=algo)
                     util.compare(histo_ref, histo_cudh)
 
     def test_cudh_medium_manybins_single(fixture_medium_manybins):
         n_el, n_atoms, n_bins, coords, histo_ref = fixture_medium_manybins
         for check_input in [True, False]:
             for gpu_id in range(cudh.get_num_devices()):
-                for algo in [1,2,3]:
-                    histo_cudh = cudh.histograms(coords, r_max, n_bins, precision="single", gpu_id=gpu_id, check_input=check_input, algorithm=algo)
+                for algo in [1, 2, 3]:
+                    histo_cudh = cudh.histograms(coords, r_max, n_bins, precision="single",
+                                                 gpu_id=gpu_id, check_input=check_input, algorithm=algo)
                     util.compare(histo_ref, histo_cudh)
-
 
 
 if TEST_LARGE:
     testcase_large = None
+
     @pytest.fixture
     def fixture_large():
         global testcase_large
@@ -507,21 +543,23 @@ if TEST_LARGE:
         def test_cudh_large_double(fixture_large):
             n_el, n_atoms, n_bins, coords, histo_ref = fixture_large
             for gpu_id in range(cudh.get_num_devices()):
-                for algo in [1,2,3]:
-                    histo_cudh = cudh.histograms(coords, r_max, n_bins, precision="double", gpu_id=gpu_id, algorithm=algo)
+                for algo in [1, 2, 3]:
+                    histo_cudh = cudh.histograms(coords, r_max, n_bins, precision="double",
+                                                 gpu_id=gpu_id, algorithm=algo)
                     util.compare(histo_ref, histo_cudh)
 
         def test_cudh_large_single(fixture_large):
             n_el, n_atoms, n_bins, coords, histo_ref = fixture_large
             for gpu_id in range(cudh.get_num_devices()):
-                for algo in [1,2,3]:
-                    histo_cudh = cudh.histograms(coords, r_max, n_bins, precision="single", gpu_id=gpu_id, algorithm=algo)
+                for algo in [1, 2, 3]:
+                    histo_cudh = cudh.histograms(coords, r_max, n_bins, precision="single",
+                                                 gpu_id=gpu_id, algorithm=algo)
                     util.compare(histo_ref, histo_cudh)
-
 
 
 if TEST_XLARGE:
     testcase_xlarge = None
+
     @pytest.fixture
     def fixture_xlarge():
         global testcase_xlarge
@@ -547,13 +585,15 @@ if TEST_XLARGE:
         def test_cudh_xlarge_double(fixture_xlarge):
             n_el, n_atoms, n_bins, coords, histo_ref = fixture_xlarge
             for gpu_id in range(cudh.get_num_devices()):
-                for algo in [1,2,3]:
-                    histo_cudh = cudh.histograms(coords, r_max, n_bins, precision="double", gpu_id=gpu_id, algorithm=algo)
+                for algo in [1, 2, 3]:
+                    histo_cudh = cudh.histograms(coords, r_max, n_bins, precision="double",
+                                                 gpu_id=gpu_id, algorithm=algo)
                     util.compare(histo_ref, histo_cudh)
 
         def test_cudh_xlarge_single(fixture_xlarge):
             n_el, n_atoms, n_bins, coords, histo_ref = fixture_xlarge
             for gpu_id in range(cudh.get_num_devices()):
-                for algo in [1,2,3]:
-                    histo_cudh = cudh.histograms(coords, r_max, n_bins, precision="single", gpu_id=gpu_id, algorithm=algo)
+                for algo in [1, 2, 3]:
+                    histo_cudh = cudh.histograms(coords, r_max, n_bins, precision="single",
+                                                 gpu_id=gpu_id, algorithm=algo)
                     util.compare(histo_ref, histo_cudh)

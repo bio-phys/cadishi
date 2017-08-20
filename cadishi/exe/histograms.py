@@ -42,7 +42,8 @@ def configure_cli(subparsers):
     """Attach a parser (specifying command name and flags) to the argparse subparsers object."""
     parser = subparsers.add_parser('histo', help='run distance histogram calculation')
 #     parser.add_argument('--input', '-i', type=str, help='input parameter file', metavar='par.yml')
-    parser.add_argument('input', nargs=argparse.REMAINDER, help='histograms parameter file (optional)', metavar='histograms.yaml')
+    parser.add_argument('input', nargs=argparse.REMAINDER,
+                        help='histograms parameter file (optional)', metavar='histograms.yaml')
     parser.set_defaults(func=main)
 
 
@@ -118,7 +119,8 @@ def check_parameters(histoparam):
 
     util.check_parameter(histoparam, 'output:directory', basestring, './histograms_output/')
     util.check_parameter(histoparam, 'output:file', basestring, 'histograms.h5')
-    util.check_parameter(histoparam, 'output:compression', (myNoneType, basestring), None, valid_values=[None, 'gzip', 'lzf'])
+    util.check_parameter(histoparam, 'output:compression', (myNoneType, basestring),
+                         None, valid_values=[None, 'gzip', 'lzf'])
 
     util.check_parameter(histoparam, 'output:write_h5', bool, True)
     util.check_parameter(histoparam, 'output:write_npx', bool, False)
@@ -135,6 +137,7 @@ def check_parameters(histoparam):
 
 # global list of all the worker processes, needed by the shutdown signal handler
 mp_all_workers_list = []
+
 
 def unexpectedShutdownHandler(signum, frame):
     """Singnal handler, to catch SIGUSR1 sent by child processes, and SIGTERM."""
@@ -178,7 +181,7 @@ def main(argparse_args):
 
     try:
         template_file = os.path.abspath(os.path.dirname(os.path.abspath(__file__))
-                                + "/../data/histograms_template.yaml")
+                                        + "/../data/histograms_template.yaml")
         valid_parameters = util.load_parameter_file(template_file)
         util.check_parameter_labels(histoparam, valid_parameters)
         check_parameters(histoparam)
@@ -223,7 +226,6 @@ def main(argparse_args):
     dr = histoparam['histogram']['dr']
     nbins = int(math.ceil(r_max / dr))
 
-
     print version.get_printable_version_string()
     print util.SEP
     print " parameter file:       " + parameter_file
@@ -236,7 +238,6 @@ def main(argparse_args):
         print " cpu threads:          " + str(histoparam['cpu']['threads'])
     print " gpu workers:          " + str(histoparam['gpu']['workers'])
     print util.SEP
-
 
     elements = ti.species
 
@@ -300,7 +301,8 @@ def main(argparse_args):
     util.save_yaml(histoparam, histoparam['output']['directory'] + "histograms.yaml")
 
     # --- save particle numbers of each frame to calculate densities and fluctuations
-    nr_part_fp = open(histoparam['output']['directory'] + "nrPart.%d.%d.dat" % (histoparam['input']['first'], histoparam['input']['last']), 'w')
+    nr_part_fp = open(histoparam['output']['directory'] + "nrPart.%d.%d.dat" %
+                      (histoparam['input']['first'], histoparam['input']['last']), 'w')
     nr_header = "# " + "%s " * len(elements) % tuple(elements) + "\n"
     nr_part_fp.write(nr_header)
 
@@ -336,7 +338,7 @@ def main(argparse_args):
                     volCrds.append(triple)
                     volSpecies.append(el)
             util.write_xyzFile(volCrds, volSpecies, histoparam['output']['directory'] +
-                                 "volume.fr%d.xyz" % frm.i)
+                               "volume.fr%d.xyz" % frm.i)
             volCrds = []
             volSpecies = []
 
@@ -363,7 +365,7 @@ def main(argparse_args):
         dimensions = frm.get_data(base.loc_dimensions)
         box_volume = pbc.get_box_volume(dimensions)
         if box_volume is not None:
-            frm.put_data(base.loc_volumes, {'box' : box_volume})
+            frm.put_data(base.loc_volumes, {'box': box_volume})
 
         if not frm.has_key(base.loc_histogram_scale_factors):
             frm.put_data(base.loc_histogram_scale_factors, [])

@@ -24,7 +24,8 @@ default_h5file = "random.h5"
 def configure_cli(subparsers):
     """Attach a parser (specifying command name and flags) to the argparse subparsers object."""
     parser = subparsers.add_parser('random', help='generate a input data file with random coordinates')
-    parser.add_argument('--size', '-s', help='specify the number of objects per species', type=str, metavar='N1,N2,N3,...')
+    parser.add_argument('--size', '-s', help='specify the number of objects per species',
+                        type=str, metavar='N1,N2,N3,...')
     parser.add_argument('--frames', '-f', help='number of frames', type=int, metavar='n_frames')
     parser.add_argument('--output', '-o', help='output path and file name', type=str, metavar=default_h5file)
     parser.set_defaults(func=main)

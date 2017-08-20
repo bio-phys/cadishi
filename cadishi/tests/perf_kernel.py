@@ -37,8 +37,10 @@ parser.add_argument('--threads', help='number of CPU threads', type=int, metavar
 parser.add_argument('--numa', help='use numa process pinning', action="store_true")
 parser.add_argument('--gpu', help='run cudh GPU kernel (optionally on GPU N, default 0)', nargs='?',
                     const=0, type=int, metavar='N')
-parser.add_argument('--thread-block-x', help='set thread block size for the first dimension of GPU algorithms 1, 2', type=int, metavar='N')
-parser.add_argument('--gpu-algorithm', help='select GPU algorithm (1 advanced, 2 global, 3 simple)', type=int, metavar='N')
+parser.add_argument('--thread-block-x',
+                    help='set thread block size for the first dimension of GPU algorithms 1, 2', type=int, metavar='N')
+parser.add_argument('--gpu-algorithm', help='select GPU algorithm (1 advanced, 2 global, 3 simple)',
+                    type=int, metavar='N')
 parser.add_argument('--histo2', help='only run mixed species histogram computation', action="store_true")
 parser.add_argument('--silent', help='do not print results to stdout', action="store_true")
 parser.add_argument('--sqlite', help='write results to sqlite table', action="store_true")

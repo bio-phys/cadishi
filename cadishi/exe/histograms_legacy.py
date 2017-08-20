@@ -49,7 +49,6 @@ def main():
     if usePydh:
         import pydh_knl as pydh
 
-
     def savetxtHeader(name, header, array):
         """
         save data including header
@@ -61,7 +60,6 @@ def main():
         np.savetxt(fp, array)
         fp.close()
 
-
     def write_xyzFile(coords, names, fileName):
         fp = open(fileName, 'w')
         fp.write("%d \n generated with histograms.py\n" % len(coords))
@@ -70,7 +68,6 @@ def main():
                      tuple([names[i]] + list(coords[i])))
         fp.close()
         return
-
 
     def sphereGeom(coords, R):
         lengthsSqr = (coords ** 2).sum(axis=1)
@@ -120,7 +117,6 @@ def main():
         print " Making \"%s\"." % opath
         os.mkdir(opath)
 
-
     V = 4. * math.pi * R ** 3 / 3.
     rmax = 2 * R
 
@@ -149,7 +145,6 @@ def main():
     # print elList[:10]
 
     # print "nrPart =", nrPart
-
 
     opath = opath[:-1] + "/"
     print " opath =", opath
@@ -258,7 +253,7 @@ def main():
                         # Calculate histogram of distances between particles
                         # belonging to different species.
                         pydh.pwd2(speciesCrds[i], speciesCrds[j], tmpHistoUInt64,
-                                 rmax, precision, pydh_threads)
+                                  rmax, precision, pydh_threads)
                     if not useDist:
                         histo[:, speciesIndex] += tmpHistoUInt64[:]
 

@@ -31,14 +31,16 @@ beta = 60.
 gamma = 60.
 mini_triclinic = [a, b, c, alpha, beta, gamma]
 unit_triclinic = [1.0, 1.0, 1.0, alpha, beta, gamma]
-huge_triclinic = [10.*a, 10.*b, 10.*c, alpha, beta, gamma]
+huge_triclinic = [10. * a, 10. * b, 10. * c, alpha, beta, gamma]
 
 # precisions to be tested below
 precision = ["single", "double"]  # ["double"]  #
-tolerance = {"single" : 1.e-7,
-             "double" : 1.e-15}
+tolerance = {"single": 1.e-7,
+             "double": 1.e-15}
 
 setup = None
+
+
 @pytest.fixture
 def random_coordinates():
     global setup
@@ -48,6 +50,8 @@ def random_coordinates():
 
 
 setup_sphere = None
+
+
 @pytest.fixture
 def random_spherical_coordinates():
     global setup_sphere
@@ -60,6 +64,8 @@ def random_spherical_coordinates():
 
 
 setup_spherical_surface = None
+
+
 @pytest.fixture
 def random_spherical_surface():
     global setup_spherical_surface

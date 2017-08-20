@@ -67,8 +67,8 @@ def histograms(coordinate_sets,
     else:
         np_mask = np.ones(n_Hij, dtype=np.int32)
 
-    np_box, box_type_id, box_type = pbc.get_standard_box(box, \
-                                 force_triclinic=force_triclinic, verbose=False)
+    np_box, box_type_id, box_type = pbc.get_standard_box(box,
+                                                         force_triclinic=force_triclinic, verbose=False)
 
     if (box_type is not None):
         print(common.indent + "pydh box_type: " + str(box_type))
@@ -76,9 +76,9 @@ def histograms(coordinate_sets,
     precision = common.precision_to_enum(precision)
 
     # --- run the CUDH distance histogram kernel
-    exit_status = c_pydh.histograms(np_coord, np_nelem, np_histos, r_max, np_mask, \
-                                    np_box, box_type_id, \
-                                    precision, pydh_threads, check_input, \
+    exit_status = c_pydh.histograms(np_coord, np_nelem, np_histos, r_max, np_mask,
+                                    np_box, box_type_id,
+                                    precision, pydh_threads, check_input,
                                     do_histo2_only)
 
     if (exit_status == 1):
@@ -92,7 +92,6 @@ def histograms(coordinate_sets,
         np_histos = common.scale_histograms(np_histos, np_scales)
 
     return np_histos
-
 
 
 def dist_driver(coordinates,

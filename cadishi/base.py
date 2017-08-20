@@ -43,6 +43,7 @@ class Container:
     """Central container to hold/accumulate data while it is proparaged through
     the pipeline.  Heavily uses dictfs internally.
     """
+
     def __init__(self, number=-1, mkdir=[]):
         self.i = number  # frame number
         # any other data is to be stored in the data dictionary
@@ -149,6 +150,7 @@ class Container:
 
 class TrajectoryInformation:
     """Handle trajectory meta data."""
+
     def __init__(self):
         self.species = []
         self.frame_numbers = []
@@ -178,8 +180,10 @@ class PipelineElement(object):
     """
     _depends = []
     _conflicts = []
+
     def depends(self):
         return self._depends
+
     def conflicts(self):
         return self._conflicts
 
@@ -187,6 +191,7 @@ class PipelineElement(object):
 class Filter(PipelineElement):
     """Filter base class, to be overloaded by an actual implementation."""
     _depends = ["Reader"]
+
     def __init__(self, source=-1, verbose=False):
         self._depends.extend(super(Filter, self)._depends)
         self.src = source
@@ -209,6 +214,7 @@ class Filter(PipelineElement):
 class Reader(PipelineElement):
     _conflicts = ['Reader']
     """Reader base class, to be overloaded by an actual implementation."""
+
     def get_meta(self):
         """Return information on the present filter, ready to be added to a frame
         object's list of pipeline meta information.
@@ -224,5 +230,6 @@ class Writer(PipelineElement):
     _depends = ['Reader']
     _conflicts = ['Writer']
     """Writer base class, to be overloaded by an actual implementation."""
+
     def set_input(self, source):
         self.src = source

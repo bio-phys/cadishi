@@ -17,6 +17,7 @@ from .. import dict_util
 
 class ASCIIReader(base.Reader):
     """ASCII data reader, currently not implemented."""
+
     def __init__(self):
         raise NotImplementedError()
 

@@ -22,6 +22,7 @@ from .. import dict_util
 
 data = {}
 
+
 def test_dict_util_sum():
     global data
     # ---

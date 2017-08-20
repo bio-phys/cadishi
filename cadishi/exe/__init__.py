@@ -3,5 +3,3 @@
 """
 # This file is part of the Cadishi package.  See README.rst,
 # LICENSE.txt, and the documentation for details.
-
-

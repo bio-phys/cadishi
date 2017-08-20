@@ -11,6 +11,7 @@ a user executable `cadishi` is created via an entry_point in setup.py.
 import sys
 import argparse
 
+
 def parse_args():
     """"Set up the cadishi command line interface using argparse.
 

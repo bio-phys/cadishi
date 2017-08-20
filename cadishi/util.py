@@ -64,6 +64,7 @@ def timefunc(f):
 # inspired by https://zapier.com/engineering/profiling-python-boss/
 try:
     from line_profiler import LineProfiler
+
     def do_lprofile(follow=[]):
         def inner(func):
             def profiled_func(*args, **kwargs):
@@ -452,8 +453,8 @@ def get_executable_name():
 
 
 def generate_random_coordinate_set(n_atoms=[512, 1024, 2048],
-                                   coord_min=(0.,0.,0.),
-                                   coord_max=(1.,1.,1.),
+                                   coord_min=(0., 0., 0.),
+                                   coord_max=(1., 1., 1.),
                                    blowup_factor=1.0):
     """Return pseudo-random coordinate sets in a box."""
     coords = []
@@ -572,11 +573,13 @@ def timeStamp(dateAndTime=False, t0=0.0):
 
 class PrintWrapper():
     """Wrapper to implement infrequent message printing."""
+
     def __init__(self):
         self.context_dict = {}
+
     def once(self, context, msg, time_stamp=None):
         """Print context and message exactly once."""
-        if (context not in self.context_dict) or ((context in self.context_dict) and \
+        if (context not in self.context_dict) or ((context in self.context_dict) and
                                                   (self.context_dict[context] is not True)):
             if time_stamp is not None:
                 stamp = " " + time_stamp
@@ -584,6 +587,7 @@ class PrintWrapper():
                 stamp = ""
             print(stamp + " " + context + ": " + msg)
             self.context_dict[context] = True
+
     def every(self, context, msg):
         """Print at every nth invocation."""
         # Yet to be implemented.

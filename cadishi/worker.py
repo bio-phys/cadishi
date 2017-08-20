@@ -119,7 +119,8 @@ def _compute(histoparam, worker_id, worker_type, taskQueue, resultQueue, r_max, 
                         elif (histoparam['cpu']['module'] == 'dist'):
                             histograms = dist.histograms(species_Crds, r_max, n_bins)
                         else:
-                            raise RuntimeError("unsupported CPU histogram kernel requested: " + str(histoparam['cpu']['module']))
+                            raise RuntimeError("unsupported CPU histogram kernel requested: " +
+                                               str(histoparam['cpu']['module']))
                     elif (worker_type == "gpu"):
                         histograms = cudh.histograms(species_Crds, r_max, n_bins,
                                                      histoparam['gpu']['precision'],
@@ -326,10 +327,10 @@ def sum(histoparam, resultQueue, n_El, n_bins, dr, header_str, t0):
                     # ---
                     if (n_cpu > 0):
                         print "   CPU: %d frames, %.3f (%.3f) avg comp (io) time [s], %.3f bapps"\
-                                % (n_cpu, time_cpu / float(n_cpu), wait_cpu / float(n_cpu), bap_cpu / time_cpu)
+                            % (n_cpu, time_cpu / float(n_cpu), wait_cpu / float(n_cpu), bap_cpu / time_cpu)
                     if (n_gpu > 0):
                         print "   GPU: %d frames, %.3f (%.3f) avg comp (io) time [s], %.3f bapps"\
-                                % (n_gpu, time_gpu / float(n_gpu), wait_gpu / float(n_gpu), bap_gpu / time_gpu)
+                            % (n_gpu, time_gpu / float(n_gpu), wait_gpu / float(n_gpu), bap_gpu / time_gpu)
                     print util.SEP
                 #
                 if (icount % histoparam['output']['flush_interval'] == 0):
