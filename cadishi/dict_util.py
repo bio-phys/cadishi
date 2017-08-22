@@ -1,12 +1,19 @@
-# vim:fileencoding=utf-8
+# -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding: utf-8 -*-
+# vim: tabstop=4 expandtab shiftwidth=4 softtabstop=4 fileencoding=utf-8
+#
+# Cadishi --- CAlculation of DIStance HIstograms
+#
+# Copyright (c) Klaus Reuter, Juergen Koefinger
+# See the file AUTHORS.rst for the full list of contributors.
+#
+# Released under the MIT License, see the file LICENSE.txt.
+
 """Dictionary utilities.
 
-Implement add, append, and scale operations for numerical data
-(ie. NumPy arrays) stored in dictionaries.  In addition, an
-ASCII output routine is provided.
+Implement add, append, and scale operations for numerical data (ie. NumPy
+arrays) stored in dictionaries.  In addition, an ASCII output routine is
+provided.
 """
-# This file is part of the Cadishi package.  See README.rst,
-# LICENSE.txt, and the documentation for details.
 
 
 import copy
@@ -27,7 +34,7 @@ def sum_values(X, Y, skip_keys=['radii', 'frame']):
     ----------
     X : dict
         X is a dictionary with string keys that contains NumPy arrays.
-    Y : dict 
+    Y : dict
         Y is a dictionary with string keys that contains NumPy arrays.
     skip_keys : list of strings
         skip_keys is a list of strings for which the sum operation is skipped.
@@ -61,7 +68,7 @@ def scale_values(X, C, skip_keys=['radii', 'frame']):
     ----------
     X : dict
         X is a dictionary with string keys that contains NumPy arrays.
-    C : scalar, NumPy array 
+    C : scalar, NumPy array
         C is a multiplier, either a scalar of a NumPy array of size compatible
         with the contents of X.
     skip_keys : list of strings
@@ -90,7 +97,7 @@ def append_values(X, Y, skip_keys=['radii']):
     ----------
     X : dict
         X is a dictionary with string keys that contains NumPy arrays.
-    Y : dict 
+    Y : dict
         Y is a dictionary with string keys that contains NumPy arrays.
     skip_keys : list of strings
         skip_keys is a list of strings for which the append operation is skipped.

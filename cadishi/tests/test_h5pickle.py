@@ -1,15 +1,15 @@
-#!/usr/bin/env python2.7
+# -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding: utf-8 -*-
+# vim: tabstop=4 expandtab shiftwidth=4 softtabstop=4 fileencoding=utf-8
+#
+# Cadishi --- CAlculation of DIStance HIstograms
+#
+# Copyright (c) Klaus Reuter, Juergen Koefinger
+# See the file AUTHORS.rst for the full list of contributors.
+#
+# Released under the MIT License, see the file LICENSE.txt.
 
 """A set of unit tests of h5pickle.
-
-This file is part of the Cadishi package.  See README.rst,
-LICENSE.txt, and the documentation for details.
 """
-
-
-__author__ = "Klaus Reuter"
-__copyright__ = "Copyright (C) 2015-2016 Klaus Reuter"
-__license__ = "license_tba"
 
 
 import os

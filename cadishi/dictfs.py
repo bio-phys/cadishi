@@ -1,11 +1,18 @@
-# vim:fileencoding=utf-8
-"""dictfs, the dictionary file system
+# -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding: utf-8 -*-
+# vim: tabstop=4 expandtab shiftwidth=4 softtabstop=4 fileencoding=utf-8
+#
+# Cadishi --- CAlculation of DIStance HIstograms
+#
+# Copyright (c) Klaus Reuter, Juergen Koefinger
+# See the file AUTHORS.rst for the full list of contributors.
+#
+# Released under the MIT License, see the file LICENSE.txt.
+
+"""dictfs, the dictionary-based "file system".
 
 Store and retrieve data from nested dictionaries in memory using path name
 strings similar to a UNIX file system.  Can be used in tandem with HDF5 IO.
 """
-# This file is part of the Cadishi package.  See README.rst,
-# LICENSE.txt, and the documentation for details.
 
 
 import copy

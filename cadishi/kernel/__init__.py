@@ -1,14 +1,16 @@
-# vim:fileencoding=utf-8
+# -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding: utf-8 -*-
+# vim: tabstop=4 expandtab shiftwidth=4 softtabstop=4 fileencoding=utf-8
+#
+# Cadishi --- CAlculation of DIStance HIstograms
+#
+# Copyright (c) Klaus Reuter, Juergen Koefinger
+# See the file AUTHORS.rst for the full list of contributors.
+#
+# Released under the MIT License, see the file LICENSE.txt.
+
 """Cadishi distance histogram kernels.
 """
-# This file is part of the Cadishi package.  See README.rst,
-# LICENSE.txt, and the documentation for details.
 
-__author__ = "Juergen Koefinger, Klaus Reuter"
-__copyright__ = "Copyright (C) 2015-2017 Juergen Koefinger, Klaus Reuter"
-__license__ = "license_tba"
-
-# __all__ = ["dist", "pydh", "cudh"]
 from . import dist
 from . import pydh
 from . import cudh

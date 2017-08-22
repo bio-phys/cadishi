@@ -1,5 +1,14 @@
 #!/usr/bin/env python2.7
-# vim:fileencoding=utf-8
+# -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding: utf-8 -*-
+# vim: tabstop=4 expandtab shiftwidth=4 softtabstop=4 fileencoding=utf-8
+#
+# Cadishi --- CAlculation of DIStance HIstograms
+#
+# Copyright (c) Klaus Reuter, Juergen Koefinger
+# See the file AUTHORS.rst for the full list of contributors.
+#
+# Released under the MIT License, see the file LICENSE.txt.
+
 """Distance histogram calculation driver, serial version.
 
 This (legacy) distance histogram calculation program uses the dist
@@ -8,14 +17,9 @@ parallel version `histograms_par`.
 
 This file remains only for documentation purposes and shall not be used.
 """
-# This file is part of the Cadishi package.  See README.rst,
-# LICENSE.txt, and the documentation for details.
+
 # Copyright 2015 Juergen Koefinger (juergen.koefinger@biophys.mpg.de),
 # MPI Biophysics, Frankfurt am Main, Germany
-
-__author__ = "Juergen Koefinger"
-__copyright__ = "Copyright (C) 2015 Juergen Koefinger"
-__license__ = "license_tba"
 
 
 def main():

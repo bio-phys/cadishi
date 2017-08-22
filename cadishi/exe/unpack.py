@@ -1,14 +1,19 @@
-#!/usr/bin/env python2.7
-# vim:fileencoding=utf-8
+# -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding: utf-8 -*-
+# vim: tabstop=4 expandtab shiftwidth=4 softtabstop=4 fileencoding=utf-8
+#
+# Cadishi --- CAlculation of DIStance HIstograms
+#
+# Copyright (c) Klaus Reuter, Juergen Koefinger
+# See the file AUTHORS.rst for the full list of contributors.
+#
+# Released under the MIT License, see the file LICENSE.txt.
+
 """Extract data from HDF5 to legacy (NumPy, JSON) text data.
 
-unpack_h5 creates a directory structure from the HDF5 file's
+unpack creates a directory structure from the HDF5 file's
 group structure and writes the HDF5 datasets to text files
-located in the correct directories.  It is mainly useful for
-quick debugging tasks.
+located in the correct directories.
 """
-# This file is part of the Cadishi package.  See README.rst,
-# LICENSE.txt, and the documentation for details.
 
 
 import os

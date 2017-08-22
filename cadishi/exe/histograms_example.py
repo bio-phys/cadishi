@@ -1,5 +1,13 @@
-#!/usr/bin/env python2.7
-# vim:fileencoding=utf-8
+# -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding: utf-8 -*-
+# vim: tabstop=4 expandtab shiftwidth=4 softtabstop=4 fileencoding=utf-8
+#
+# Cadishi --- CAlculation of DIStance HIstograms
+#
+# Copyright (c) Klaus Reuter, Juergen Koefinger
+# See the file AUTHORS.rst for the full list of contributors.
+#
+# Released under the MIT License, see the file LICENSE.txt.
+
 """Parameter file generator for cadishi.
 
 Generates a parameter file in YAML or JSON format for `cadishi histo`,
@@ -13,8 +21,6 @@ testcase that is included with the Cadishi package.
 This program is not intended to be invoked directly. It is launched via cli.py
 which in turn is called as the `cadishi` command via an entry_point in setup.py.
 """
-# This file is part of the Cadishi package.  See README.rst,
-# LICENSE.txt, and the documentation for details.
 
 
 import os
