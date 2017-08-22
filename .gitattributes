@@ -1,4 +1,3 @@
-MISC/*   linguist-vendored
 *.py     linguist-language=Python
 *.cu     linguist-language=CUDA
 *.cpp    linguist-language=C++
