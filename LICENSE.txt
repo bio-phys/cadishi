@@ -5,9 +5,6 @@ Copyright (c) 2015-2017 Klaus Reuter, Max Planck Computing and Data Facility,
 Copyright (c) 2015-2017 Juergen Koefinger, Max Planck Institute of Biophysics,
                         Max-von-Laue-Straße 3, 60438 Frankfurt am Main, Germany.
 
-and contributors (see the file AUTHORS.rst for the full list of names)
-
-
 Permission is hereby granted, free of charge, to any person obtaining a copy of
 this software and associated documentation files (the "Software"), to deal in
 the Software without restriction, including without limitation the rights to
