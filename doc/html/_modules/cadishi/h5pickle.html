@@ -62,11 +62,13 @@
 
 <span class="sd">h5pickle.py provides load() and save() routines to write Python data structures</span>
 <span class="sd">into HDF5 files.  It works with NumPy arrays and basic Python data types.</span>
-<span class="sd">Nested dictionaries are used to map HDF5 group hierarchies.  The code is likely</span>
-<span class="sd">to fail with more complicated Python data types.</span>
+<span class="sd">Nested dictionaries are used to map HDF5 group hierarchies.</span>
 
-<span class="sd">Working with typical data sets used with Cadishi, the HDF5 serialization turns</span>
-<span class="sd">out to be a factor of 10 faster than Pickle.</span>
+<span class="sd">Note: The code is likely to fail with more complicated Python data types.</span>
+
+<span class="sd">Working with the typical data sets used with Cadishi and Capriqorn, the HDF5</span>
+<span class="sd">serialization implemented by h5pickle turns out to be a factor of 10 faster than</span>
+<span class="sd">Python&#39;s native Pickle.</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
 

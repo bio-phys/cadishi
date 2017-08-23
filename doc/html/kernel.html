@@ -83,7 +83,7 @@ identification used inside the kernels PYDH and CUDH.</p>
 </div>
 <div class="section" id="module-cadishi.kernel.dist">
 <span id="cadishi-kernel-dist"></span><h2>cadishi.kernel.dist<a class="headerlink" href="#module-cadishi.kernel.dist" title="Permalink to this headline">¶</a></h2>
-<p>dist Python module</p>
+<p>dist Python interface to c_dist.</p>
 <p>Initial implementation of the distance histogram computation using Cython.
 Legacy code, do not use for production. This code is only used by the test
 suite to compare the results of (small) problems between the kernels.</p>
@@ -120,6 +120,7 @@ the atom coordinates for all the atoms of a species.</li>
 <div class="section" id="module-cadishi.kernel.pydh">
 <span id="cadishi-kernel-pydh"></span><h2>cadishi.kernel.pydh<a class="headerlink" href="#module-cadishi.kernel.pydh" title="Permalink to this headline">¶</a></h2>
 <p>pydh Python interface.</p>
+<p>Calls the c_pydh Python module.</p>
 <dl class="function">
 <dt id="cadishi.kernel.pydh.dist_driver">
 <code class="descclassname">cadishi.kernel.pydh.</code><code class="descname">dist_driver</code><span class="sig-paren">(</span><em>coordinates</em>, <em>precision='single'</em>, <em>box=[]</em>, <em>force_triclinic=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cadishi/kernel/pydh.html#dist_driver"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cadishi.kernel.pydh.dist_driver" title="Permalink to this definition">¶</a></dt>
@@ -136,6 +137,7 @@ the atom coordinates for all the atoms of a species.</li>
 <div class="section" id="module-cadishi.kernel.cudh">
 <span id="cadishi-kernel-cudh"></span><h2>cadishi.kernel.cudh<a class="headerlink" href="#module-cadishi.kernel.cudh" title="Permalink to this headline">¶</a></h2>
 <p>cudh Python interface.</p>
+<p>Calls the c_cudh Python module.</p>
 <dl class="function">
 <dt id="cadishi.kernel.cudh.get_num_devices">
 <code class="descclassname">cadishi.kernel.cudh.</code><code class="descname">get_num_devices</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/cadishi/kernel/cudh.html#get_num_devices"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cadishi.kernel.cudh.get_num_devices" title="Permalink to this definition">¶</a></dt>

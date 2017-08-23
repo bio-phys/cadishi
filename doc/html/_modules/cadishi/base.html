@@ -60,8 +60,11 @@
 
 <span class="sd">&quot;&quot;&quot;Cadishi base library.</span>
 
-<span class="sd">Provides the basic data container and some more base classes that are used</span>
-<span class="sd">throughout the code.</span>
+<span class="sd">Provides the basic data container class and some more base classes that are used</span>
+<span class="sd">throughout the Cadishi (and Capriqorn) code.</span>
+
+<span class="sd">Moreover, the loc_* strings are defined here centrally to point to the default</span>
+<span class="sd">locations for various data in dictfs and, consequently, in HDF5 files.</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
 
@@ -75,7 +78,6 @@
 <span class="c1"># --- some string constants ---</span>
 <span class="c1"># Locations (loc_*) used to store data either in memory using container/dictfs</span>
 <span class="c1"># as well as on disk using HDF5 files.  (Comparable to paths of a file system.)</span>
-<span class="n">loc_parallel</span> <span class="o">=</span> <span class="s1">&#39;parallel.tmp&#39;</span>
 <span class="n">loc_coordinates</span> <span class="o">=</span> <span class="s1">&#39;coordinates&#39;</span>
 <span class="n">loc_dimensions</span> <span class="o">=</span> <span class="s1">&#39;dimensions&#39;</span>  <span class="c1"># 6-tuple periodic-box specifier</span>
 <span class="n">loc_volumes</span> <span class="o">=</span> <span class="s1">&#39;volumes&#39;</span>
@@ -94,11 +96,13 @@
 <span class="n">loc_shell_Hxx</span> <span class="o">=</span> <span class="s1">&#39;shell_Hxx&#39;</span>
 <span class="c1"># Miscellaneous string constants.</span>
 <span class="n">id_radii</span> <span class="o">=</span> <span class="s1">&#39;radii&#39;</span>
+<span class="c1"># temporary payload added and removed by Capriqorn&#39;s ParallelJoin() and ParallelFork() filters</span>
+<span class="n">loc_parallel</span> <span class="o">=</span> <span class="s1">&#39;parallel.tmp&#39;</span>
 
 
 <div class="viewcode-block" id="Container"><a class="viewcode-back" href="../../modules.html#cadishi.base.Container">[docs]</a><span class="k">class</span> <span class="nc">Container</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;Central container to hold/accumulate data while it is proparaged through</span>
-<span class="sd">    the pipeline.  Heavily uses dictfs internally.</span>
+<span class="sd">    Cadishi&#39;s workers or Capriqorn&#39;s pipelines.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">number</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">mkdir</span><span class="o">=</span><span class="p">[]):</span>
@@ -139,8 +143,8 @@
 
 <div class="viewcode-block" id="Container.get_geometry"><a class="viewcode-back" href="../../modules.html#cadishi.base.Container.get_geometry">[docs]</a>    <span class="k">def</span> <span class="nf">get_geometry</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">valid_geom</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;Sphere&#39;</span><span class="p">,</span> <span class="s1">&#39;Cuboid&#39;</span><span class="p">,</span> <span class="s1">&#39;Ellipsoid&#39;</span><span class="p">,</span>
                                        <span class="s1">&#39;ReferenceStructure&#39;</span><span class="p">,</span> <span class="s1">&#39;MultiReferenceStructure&#39;</span><span class="p">,</span> <span class="s1">&#39;Voxels&#39;</span><span class="p">]):</span>
-        <span class="sd">&quot;&quot;&quot;Search the pipeline log backwards for the geometry filter that was</span>
-<span class="sd">        used, and return the result as a string.&quot;&quot;&quot;</span>
+        <span class="sd">&quot;&quot;&quot;Search the pipeline log backwards for a geometry filter that was potentially</span>
+<span class="sd">        used, and return the result as a string, or return None.&quot;&quot;&quot;</span>
         <span class="c1"># ---</span>
         <span class="k">for</span> <span class="n">geom</span> <span class="ow">in</span> <span class="n">valid_geom</span><span class="p">:</span>
             <span class="n">entry</span> <span class="o">=</span> <span class="n">util</span><span class="o">.</span><span class="n">search_pipeline</span><span class="p">(</span><span class="n">geom</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_meta</span><span class="p">())</span>
@@ -149,12 +153,15 @@
         <span class="k">return</span> <span class="kc">None</span></div>
 
 <div class="viewcode-block" id="Container.put_data"><a class="viewcode-back" href="../../modules.html#cadishi.base.Container.put_data">[docs]</a>    <span class="k">def</span> <span class="nf">put_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">location</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Add data to the container at location.&quot;&quot;&quot;</span>
         <span class="n">dictfs</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">location</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="Container.get_data"><a class="viewcode-back" href="../../modules.html#cadishi.base.Container.get_data">[docs]</a>    <span class="k">def</span> <span class="nf">get_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">location</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get data at location from the container.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">dictfs</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">location</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="Container.del_data"><a class="viewcode-back" href="../../modules.html#cadishi.base.Container.del_data">[docs]</a>    <span class="k">def</span> <span class="nf">del_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">location</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Delete data at location from the container.&quot;&quot;&quot;</span>
         <span class="n">dictfs</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">location</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="Container.sum_data"><a class="viewcode-back" href="../../modules.html#cadishi.base.Container.sum_data">[docs]</a>    <span class="k">def</span> <span class="nf">sum_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">,</span> <span class="n">location</span><span class="p">,</span> <span class="n">skip_keys</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;radii&#39;</span><span class="p">,</span> <span class="s1">&#39;frame&#39;</span><span class="p">]):</span>
