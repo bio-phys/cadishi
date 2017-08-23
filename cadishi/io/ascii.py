@@ -10,8 +10,8 @@
 
 """Cadishi ASCII IO library.
 
-ASCII data writer for base.Container instances, mainly designed
-for debugging purposes.  A reader is currently not implemented.
+ASCII data writer for base.Container instances, mainly designed for debugging
+purposes.  A reader is currently not implemented.
 """
 
 

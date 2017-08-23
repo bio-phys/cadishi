@@ -9,12 +9,9 @@
 # Released under the MIT License, see the file LICENSE.txt.
 
 """cudh Python interface.
+
+Calls the c_cudh Python module.
 """
-
-
-__author__ = "Klaus Reuter"
-__copyright__ = "Copyright (C) 2015-2016 Klaus Reuter"
-__license__ = "license_tba"
 
 
 import numpy as np

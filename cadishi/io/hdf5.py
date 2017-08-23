@@ -10,7 +10,8 @@
 
 """Cadishi HDF5 IO library.
 
-HDF5 data reader/writer for base.Container instances.
+HDF5 data reader/writer for base.Container instances.  Heavily used by Cadishi
+and Capriqorn.
 """
 
 

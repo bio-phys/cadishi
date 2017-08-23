@@ -8,7 +8,7 @@
 #
 # Released under the MIT License, see the file LICENSE.txt.
 
-"""Cadishi dummy IO module.
+"""Cadishi dummy IO module, useful to test and develop Capriqorn pipelines.
 """
 
 import numpy as np

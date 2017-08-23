@@ -13,7 +13,7 @@
 
 This (legacy) distance histogram calculation program uses the dist
 kernel. It served as the starting point for the implementation of the
-parallel version `histograms_par`.
+parallel version `histograms.py`.
 
 This file remains only for documentation purposes and shall not be used.
 """

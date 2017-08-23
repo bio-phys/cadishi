@@ -8,7 +8,10 @@
 #
 # Released under the MIT License, see the file LICENSE.txt.
 
-"""Check parameter file if it is valid for Cadishi."""
+"""Check parameter file if it is valid for Cadishi.
+
+The main() function is to be called via cli.py.
+"""
 
 
 import os

@@ -8,7 +8,10 @@
 #
 # Released under the MIT License, see the file LICENSE.txt.
 
-"""Merge several HDF5 files into a single one."""
+"""Merge several HDF5 files into a single one.
+
+The main() function is to be called via cli.py.
+"""
 
 
 import os

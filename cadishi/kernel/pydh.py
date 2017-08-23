@@ -9,6 +9,8 @@
 # Released under the MIT License, see the file LICENSE.txt.
 
 """pydh Python interface.
+
+Calls the c_pydh Python module.
 """
 
 

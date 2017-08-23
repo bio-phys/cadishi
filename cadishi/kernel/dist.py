@@ -8,7 +8,7 @@
 #
 # Released under the MIT License, see the file LICENSE.txt.
 
-"""dist Python module
+"""dist Python interface to c_dist.
 
 Initial implementation of the distance histogram computation using Cython.
 Legacy code, do not use for production. This code is only used by the test

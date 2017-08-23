@@ -1,0 +1,3 @@
+cudh and pydh high performance kernels for GPUs and CPUs.
+
+Note: The triclinic box is considered highly experimental. Check your results carefully.

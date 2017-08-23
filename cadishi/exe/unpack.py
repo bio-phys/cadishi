@@ -10,9 +10,10 @@
 
 """Extract data from HDF5 to legacy (NumPy, JSON) text data.
 
-unpack creates a directory structure from the HDF5 file's
-group structure and writes the HDF5 datasets to text files
-located in the correct directories.
+unpack creates a directory structure from the HDF5 file's group structure and
+writes the HDF5 datasets to text files located in the correct directories.
+
+The main() function is to be called via cli.py.
 """
 
 

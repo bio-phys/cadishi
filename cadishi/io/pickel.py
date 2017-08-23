@@ -8,8 +8,12 @@
 #
 # Released under the MIT License, see the file LICENSE.txt.
 
-"""Cadishi IO library using pickle. The name was chosen deliberately to read
-'pickel' to avoid name conflicts.
+"""Cadishi IO library using pickle.
+
+The name was chosen deliberately to read 'pickel' to avoid name conflicts.
+
+May be used as a fallback in case HDF5 is not available.  It is, however,
+significantly slower than HDF5.
 """
 
 
