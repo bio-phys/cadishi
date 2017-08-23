@@ -25,7 +25,7 @@ which provides all the necessary modules out of the box. Cadishi was mostly
 developed using Anaconda Python 2, versions 4.0.0 and newer. Moreover, to
 compile the high-performance kernels, recent GCC and CUDA (optional)
 installations are required. GCC 4.9 and GCC 5.4, and CUDA 7.5 and 8.0 were used
-successfully.
+successfully. Note that Python 3 is currently not supported.
 
 
 Features
@@ -42,17 +42,81 @@ resources of a shared-memory machine. E.g., on a dual-socket server with two
 GPUs, Cadishi would use two CPU worker processes (one per multi-core chip) and
 two GPU worker processes (one per GPU card).
 
-Optionally, Cadishi supports orthorhombic and triclinic periodic boxes and
-internally applies the minimum image convention to the distances. Computations
-can be performed in single (default) or double precision. Optionally, the
-distances can be checked if they fit into the desired histogram width. Given
-the combinatorial space resulting from these possibilities, template C++ code
-is used to generate machine code with a minimum amount of branches at runtime.
-Recent compilers are known to generate well-vectorized machine code from the
-distance calculation for the CPU. The GPU kernel benefits strongly from the
-fast shared-memory atomic operations introduced with the MAXWELL generation of
-NVIDIA GPUs.
+Optionally, Cadishi supports orthorhombic periodic boxes, applying the minimum
+image convention to the distances internally. Support for triclinic boxes is
+implemented following the equations given by Tuckerman (M. E. Tuckerman.
+Statistical Mechanics: Theory and Molecular Simulation. Oxford University Press,
+Oxford, UK, 2010.).  Note that we consider support for triclinic boxes as highly
+experimental. Check your results carefully since we have seen inconsistencies.
 
+Computations can be performed in single (default) or double precision.
+Optionally, the distances can be checked if they fit into the desired histogram
+width. Given the combinatorial space resulting from these possibilities,
+templated C++ code is used to generate machine code with a minimum amount of
+branches at runtime. Recent compilers are known to generate well-vectorized
+machine code from the distance calculation for the CPU. The GPU kernel benefits
+strongly from the fast shared-memory atomic operations introduced with the
+MAXWELL generation of NVIDIA GPUs.
+
+
+Input data, distance histogram computation, output data
+-------------------------------------------------------
+
+**Cadishi reads input data from an HDF5 file** that is specified in the
+``histograms.yaml`` parameter file.  A typical file location is
+``./preprocessor_output/trajectory.h5`` when Cadishi is used in concert with
+the Capriqorn package from the same authors. In any case the HDF5 file must have
+a certain internal structure as shown in the following example::
+
+    /0/coordinates/species_0
+                   species_1
+                   species_2
+                   ...
+    /1/coordinates/species_0
+                   species_1
+                   species_2
+                   ...
+    ...
+
+Frames are numbered starting with 0. The number is used as the label for the
+uppermost HDF5 group. For each frame the particle coordinates are stored in the
+sub-group 'coordinates'. Coordinate sets are double precision HDF5 datasets of
+size (n_i, 3) where n_i is the number of particles of species i. The coordinate
+datasets use the name of the species as the label which e.g. can be the name of
+the chemical element in the context of MD data.
+
+For each frame read from the HDF5 file **Cadishi computes the distance histograms**
+between the particles for all combinations of species. The top-level parallelization
+of Cadishi is able to compute multiple frames simultaneously on all GPUs and CPUs
+available on a node. Within a frame the computation is highly parallelized using
+threads.
+
+Finally, **Cadishi writes the histograms into HDF5 files** according to the
+following scheme::
+
+    /0/histograms/species_0,species_0
+                  species_0,species_1
+                  species_0,species_2
+                  species_1,species_1
+                  species_1,species_2
+                  species_2,species_2
+                  ...
+    ...
+
+The HDF5 histogram datasets are single-column vectors of 64 bit floats. The
+latter was chosen to make averaging easier and more consistent.
+
+To get an idea about all the options available please have a look at the example
+parameter file that comes with Cadishi.  It can be generated using the command
+``cadishi example --expert``.
+
+To **make life with HDF5 files easier** we recommend to use a graphical HDF5
+viewer such as HDFView.  Note, however, that HDFView does not support the LZF
+compression that comes with the Python HDF5 module "H5py" and is used by Cadishi
+by default (LZF can be disabled via the parameter file)). Moreover, Cadishi
+comes with the HDF5 unpack (``cadishi unpack``) and the HDF5 merge tool
+(``cadishi merge``). The latter tool can also be used to decompress single HDF5
+files quickly before viewing them with HDFView.
 
 
 Installation
@@ -100,6 +164,9 @@ calculation is run as follows::
 Source documentation
 --------------------
 
+The documentation linked below is generated automatically from the docstrings
+present in the Cadishi source code.
+
 .. toctree::
    :maxdepth: 2
 
@@ -118,11 +185,13 @@ Cadishi is released under the permissive MIT license.  See the file
 
 Copyright 2015-2017  Klaus Reuter (MPCDF), Juergen Koefinger (MPIBP)
 
-In case you're using Cadishi for your own academic or non-academic research, we
-kindly request that you cite Cadishi in your publications and presentations. We
+In case you're using Cadishi for your own academic or non-academic research, **we
+kindly request that you cite Cadishi in your publications and presentations**. We
 suggest the following citations as appropriate:
 
-TODO: Add paper reference once it is on the arxiv and/or published.
+TODO: Add proper paper reference once it is publicly available. Please use the
+following reference meanwhile:
+"K. Reuter, J. Koefinger: Cadishi, https://github.com/bio-phys/cadishi, 2017."
 
 
 Indices and tables
