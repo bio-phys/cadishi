@@ -10,8 +10,11 @@
 
 """Cadishi base library.
 
-Provides the basic data container and some more base classes that are used
-throughout the code.
+Provides the basic data container class and some more base classes that are used
+throughout the Cadishi (and Capriqorn) code.
+
+Moreover, the loc_* strings are defined here centrally to point to the default
+locations for various data in dictfs and, consequently, in HDF5 files.
 """
 
 
@@ -25,7 +28,6 @@ from . import dict_util
 # --- some string constants ---
 # Locations (loc_*) used to store data either in memory using container/dictfs
 # as well as on disk using HDF5 files.  (Comparable to paths of a file system.)
-loc_parallel = 'parallel.tmp'
 loc_coordinates = 'coordinates'
 loc_dimensions = 'dimensions'  # 6-tuple periodic-box specifier
 loc_volumes = 'volumes'
@@ -44,11 +46,13 @@ loc_rdf = 'rdf'
 loc_shell_Hxx = 'shell_Hxx'
 # Miscellaneous string constants.
 id_radii = 'radii'
+# temporary payload added and removed by Capriqorn's ParallelJoin() and ParallelFork() filters
+loc_parallel = 'parallel.tmp'
 
 
 class Container:
     """Central container to hold/accumulate data while it is proparaged through
-    the pipeline.  Heavily uses dictfs internally.
+    Cadishi's workers or Capriqorn's pipelines.
     """
 
     def __init__(self, number=-1, mkdir=[]):
@@ -89,8 +93,8 @@ class Container:
 
     def get_geometry(self, valid_geom=['Sphere', 'Cuboid', 'Ellipsoid',
                                        'ReferenceStructure', 'MultiReferenceStructure', 'Voxels']):
-        """Search the pipeline log backwards for the geometry filter that was
-        used, and return the result as a string."""
+        """Search the pipeline log backwards for a geometry filter that was potentially
+        used, and return the result as a string, or return None."""
         # ---
         for geom in valid_geom:
             entry = util.search_pipeline(geom, self.get_meta())
@@ -99,12 +103,15 @@ class Container:
         return None
 
     def put_data(self, location, data):
+        """Add data to the container at location."""
         dictfs.save(self.data, location, data)
 
     def get_data(self, location):
+        """Get data at location from the container."""
         return dictfs.load(self.data, location)
 
     def del_data(self, location):
+        """Delete data at location from the container."""
         dictfs.delete(self.data, location)
 
     def sum_data(self, other, location, skip_keys=['radii', 'frame']):

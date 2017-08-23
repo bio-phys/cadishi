@@ -8,10 +8,10 @@
 #
 # Released under the MIT License, see the file LICENSE.txt.
 
-"""dictfs, the dictionary-based "file system".
+"""dictfs, the dictionary-based in-memory "file system".
 
 Store and retrieve data from nested dictionaries in memory using path name
-strings similar to a UNIX file system.  Can be used in tandem with HDF5 IO.
+strings similar to a UNIX file system. Can be used in tandem with HDF5 IO.
 """
 
 

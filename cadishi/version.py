@@ -8,7 +8,7 @@
 #
 # Released under the MIT License, see the file LICENSE.txt.
 
-# We handle version information in a single file as is commonly done, see e.g.
+# We handle version information in this single file as is commonly done, see e.g.
 # https://packaging.python.org/single_source_version/#single-sourcing-the-version
 
 # The 'ver' tuple is read by the setup.py, conf.py of the Sphinx documentation

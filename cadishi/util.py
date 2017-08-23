@@ -8,7 +8,8 @@
 #
 # Released under the MIT License, see the file LICENSE.txt.
 
-"""Miscellaneous useful tools used by Cadishi and Capriqorn.
+"""Miscellaneous useful and convenient functions used by Cadishi and Capriqorn,
+of potential general use.
 """
 
 
@@ -43,6 +44,7 @@ SEP = "-------------------------------------------------------------------------
 
 # inspired by https://zapier.com/engineering/profiling-python-boss/
 def do_cprofile(func):
+    """Decorator to run a function through cProfile."""
     def profiled_func(*args, **kwargs):
         profile = cProfile.Profile()
         try:
@@ -57,6 +59,7 @@ def do_cprofile(func):
 
 # inspired by https://zapier.com/engineering/profiling-python-boss/
 def timefunc(f):
+    """Decorator to run simple timer on a function."""
     def f_timer(*args, **kwargs):
         start = time.time()
         result = f(*args, **kwargs)
@@ -73,6 +76,7 @@ try:
     from line_profiler import LineProfiler
 
     def do_lprofile(follow=[]):
+        """Decorator to run the line profiler on a function."""
         def inner(func):
             def profiled_func(*args, **kwargs):
                 try:
@@ -94,11 +98,10 @@ except ImportError:
                 return func(*args, **kwargs)
             return nothing
         return inner
-# use the following decorator to line_profile a function
-#   @cadishi.util.do_lprofile(follow=[])
 
 
 def get_numa_domains():
+    """Parse and return the output of the <numactl --hardware> command."""
     numa_topology = []
     regex = re.compile('node [0-9]+ cpus')
     cmd = ['numactl', '--hardware']
@@ -123,6 +126,7 @@ def get_numa_domains():
 
 
 def set_numa_domain(numa_id, numa_topology):
+    """Pin the current process onto a numa domain."""
     try:
         (numa_node, numa_cpus) = numa_topology[numa_id]
         pid = "%d" % os.getpid()
@@ -189,7 +193,7 @@ def get_n_cpu_cores():
 
 
 def rm(resource):
-    """Remove a file.  If the file does not exist, no error is raised."""
+    """Remove a file. If the file does not exist, no error is raised."""
     try:
         os.remove(resource)
     except OSError:
@@ -197,7 +201,7 @@ def rm(resource):
 
 
 def rmrf(resource):
-    """Remove file or directory tree."""
+    """Remove file or directory tree. No error is raised if the target does not exist."""
     try:
         shutil.rmtree(resource)
     except OSError:
@@ -225,7 +229,7 @@ def md(resource):
 
 
 def ls(resource, files=True, directories=False):
-    """List files and optionally directories located at resource"""
+    """Return a list of files and optionally directories located at resource."""
     file_list = []
     for (_dirpath, _dirnames, _filenames) in os.walk(resource):
         if files:
@@ -255,8 +259,8 @@ def scratch_dir():
 
 
 def load_class(module_name, class_name):
-    """Load a class from a module, where class and module
-    are specified as strings. (Required to dynamically build pipelines.)
+    """Load a class from a module, where class and module are specified as
+    strings. Useful to dynamically build Capriqorn pipelines.
     """
     m = importlib.import_module(module_name)
     c = getattr(m, class_name)
@@ -264,8 +268,9 @@ def load_class(module_name, class_name):
 
 
 def tokenize(path, sep='/'):
-    """Remove any separators sep from path and return a list of the remainder.
-    If path is empty or '/', the list has the empty string as a single entry.
+    """Remove any separators sep from path and return a list of the strings in
+    between. If path is empty or '/', the list has the empty string as a single
+    entry.
     """
     assert isinstance(path, basestring)
     val = path.rstrip(sep).lstrip(sep).split(sep)
@@ -273,10 +278,10 @@ def tokenize(path, sep='/'):
 
 
 def pipeline_entry(label, param):
-    """Return a dictionary with a single key-value pair, in particular
-    label (key) being a string label, and param being a dictionary with
-    string keys and arbitrary values.
-    The return value may be appended eg. to a pipeline_log list.
+    """Return a dictionary with a single key-value pair, in particular label
+    (key) being a string label, and param being a dictionary with string keys
+    and arbitrary values. The return value may be appended eg. to a pipeline_log
+    list.
     """
     assert isinstance(label, basestring)
     assert isinstance(param, dict)
@@ -286,8 +291,8 @@ def pipeline_entry(label, param):
 
 
 def search_pipeline(label, pipeline):
-    """Iterate through the pipeline list backwards in order to find
-    the entry (dict) identified by label (string)."""
+    """Iterate through the pipeline list backwards in order to find the entry
+    (dict) identified by label (string)."""
     assert isinstance(label, basestring)
     assert isinstance(pipeline, list)
     # ---
@@ -303,8 +308,8 @@ def search_pipeline(label, pipeline):
 
 def get_elements(header):
     """Return a complete list of all the chemical elements present in a header.
-    Header may be a string or a list containing single element IDs
-    or pair combinations thereof.  "#" and "radii" are skipped automatically.
+    Header may be a string or a list containing single element IDs or pair
+    combinations thereof.  "#" and "radii" are skipped automatically.
     """
     if isinstance(header, basestring):
         header = header.rstrip().split()
@@ -321,8 +326,8 @@ def get_elements(header):
 
 
 def open_r(filename):
-    """Open an uncompressed or GZIP-compressed text file for reading.
-    Return the file pointer."""
+    """Open an uncompressed or GZIP-compressed text file for reading. Return the
+    file pointer."""
     assert (os.path.exists(filename))
     if filename.endswith('.gz'):
         fp = gzip.open(filename, mode='rb')
@@ -340,7 +345,8 @@ def appendLineToFile(filename, string):
 
 
 def savetxtHeader(name, header, array):
-    """Save data including header.  Legacy routine by Juergen."""
+    """Save data including its header.
+    Legacy routine from the initial histograms implementation."""
     md(name)
     fp = open(name, 'w')
     if header[-1] is not '\n':
@@ -384,6 +390,8 @@ def save_json(data, filename):
 
 
 def load_parameter_file(filename):
+    """Load parameters from a JSON or YAML file and return it as a nested
+    structure of dictionaries."""
     if not os.path.exists(filename):
         raise IOError("File '" + filename + "' does not exist")
     if filename.endswith('.json'):
@@ -396,6 +404,7 @@ def load_parameter_file(filename):
 
 
 def compare(histo1, histo2):
+    """Compare two NumPy arrays (e.g. histograms) if they are identical."""
     if (histo1.dtype == histo2.dtype) and (histo1.dtype == np.float64):
         compare_strictly(histo1, histo2)
     else:
@@ -404,8 +413,9 @@ def compare(histo1, histo2):
 
 def compare_strictly(histo1, histo2):
     """Check if two histograms (1D numpy arrays) or two sets of histograms (2D
-    numpy arrays) are identical, only suitable to check the results of double
-    precision computations.
+    numpy arrays) are identical.
+
+    Only suitable to check the results of double precision computations.
     """
     assert (histo1 == histo2).all()
 
@@ -413,6 +423,7 @@ def compare_strictly(histo1, histo2):
 def compare_approximately(histo1, histo2, ks_stat_max=0.01, p_value_min=0.99):
     """Check if two histograms (1D numpy arrays) or two sets of histograms (2D
     numpy arrays) are reasonably similar.
+
     The routine can be used to check the results of single precision computations
     against a reference file.  Computes the Kolmogorov-Smirnov statistic on 2
     samples using
@@ -448,6 +459,7 @@ def compare_approximately(histo1, histo2, ks_stat_max=0.01, p_value_min=0.99):
 
 
 def dump_histograms(filename, histograms, r_max, n_bins):
+    """Save histograms into a NumPy text file.  Legacy routine."""
     dr = float(r_max) / float(n_bins)
     histos = histograms.astype(dtype=np.float64)
     radii = [dr * (float(i) + 0.5) for i in range(n_bins)]
@@ -456,6 +468,7 @@ def dump_histograms(filename, histograms, r_max, n_bins):
 
 
 def get_executable_name():
+    """Return the name of the present executable."""
     return os.path.basename(sys.argv[0])
 
 
@@ -560,7 +573,7 @@ def check_parameter(parameters, label, dtype, default_value,
 
 
 def redirectOutput(filename):
-    """Redirect stdout and stderr to the file specified by filename."""
+    """Redirect stdout and stderr of the present process to the file specified by filename."""
     o_flags = os.O_CREAT | os.O_TRUNC | os.O_WRONLY
     os.close(1)
     os.open(filename, o_flags, 0664)

@@ -8,7 +8,8 @@
 #
 # Released under the MIT License, see the file LICENSE.txt.
 
-"""Functions to be used as multiprocessing-workers by the <histograms.py> executable.
+"""Functions to be used as multiprocessing-workers by the <histograms.py>
+executable.
 """
 
 
@@ -36,7 +37,7 @@ from .io import hdf5
 
 
 def _cProfile_Exit(signum, stack):
-    """Signal handler to dump profile data when a child process receives SIGTERM"""
+    """Signal handler to dump profile data when a child process receives SIGTERM."""
     global cProfile_handle
     cProfile_handle.disable()
     s = StringIO.StringIO()
@@ -52,6 +53,11 @@ def _cProfile_Exit(signum, stack):
 
 
 def compute(histoparam, worker_id, worker_type, taskQueue, resultQueue, r_max, n_bins, t0):
+    """Compute-worker wrapper to handle output redirection, numa pinning, and profiling.
+
+    To be used as the entry function for a multiprocessing subprocess.
+
+    Calls the _compute() function which does the real work."""
     if (histoparam['general']['redirect_output']):
         util.redirectOutput("%shisto_%s_worker_%02d.log" % (histoparam['output']['directory'], worker_type, worker_id))
     if (histoparam['general']['numa_aware']):
@@ -69,6 +75,12 @@ def compute(histoparam, worker_id, worker_type, taskQueue, resultQueue, r_max, n
 
 
 def _compute(histoparam, worker_id, worker_type, taskQueue, resultQueue, r_max, n_bins, t0):
+    """Histogram-computation worker, running the pydh and cudh kernels.
+
+    Pulls work packages from the taskQueue, puts results into the resultQueue.
+
+    To be called via the compute() wrapper.
+    """
 
     if (worker_type == "cpu"):
         if (histoparam['cpu']['module'] == 'pydh'):
@@ -183,7 +195,11 @@ def _compute(histoparam, worker_id, worker_type, taskQueue, resultQueue, r_max, 
 
 
 def sum(histoparam, resultQueue, n_El, n_bins, dr, header_str, t0):
-    """Worker process: fetch histograms from queue, order, sum up, write out."""
+    """Worker function: Fetch histograms from resultQueue, order, sum up, and
+    write results out to HDF5.
+
+    To be used as the entry function for the multiprocessing summation subprocess.
+    """
 
     worker_str = "sum worker"
 

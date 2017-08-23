@@ -106,6 +106,7 @@ def get_standard_box(box_in, force_triclinic=False, verbose=False):
 
 
 def get_box_volume(box_in):
+    """Calculate and return the volume of a periodic box, or None."""
     box = np.asanyarray(box_in)
     # assert(box.shape == (6,))  # works with 6-tuple box representation, coming e.g. from the MDAnalysis reader
     _box_matrix, _box_id, box_type = get_standard_box(box)

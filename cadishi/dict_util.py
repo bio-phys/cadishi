@@ -8,9 +8,9 @@
 #
 # Released under the MIT License, see the file LICENSE.txt.
 
-"""Dictionary utilities.
+"""Various NumPy- and dictionary-related utilities.
 
-Implement add, append, and scale operations for numerical data (ie. NumPy
+Implements add, append, and scale operations for numerical data (ie. NumPy
 arrays) stored in dictionaries.  In addition, an ASCII output routine is
 provided.
 """
