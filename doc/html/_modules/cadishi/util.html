@@ -1,0 +1,702 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>cadishi.util &#8212; Cadishi 1.0.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '1.0.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">Cadishi 1.0.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for cadishi.util</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding: utf-8 -*-</span>
+<span class="c1"># vim: tabstop=4 expandtab shiftwidth=4 softtabstop=4 fileencoding=utf-8</span>
+<span class="c1">#</span>
+<span class="c1"># Cadishi --- CAlculation of DIStance HIstograms</span>
+<span class="c1">#</span>
+<span class="c1"># Copyright (c) Klaus Reuter, Juergen Koefinger</span>
+<span class="c1"># See the file AUTHORS.rst for the full list of contributors.</span>
+<span class="c1">#</span>
+<span class="c1"># Released under the MIT License, see the file LICENSE.txt.</span>
+
+<span class="sd">&quot;&quot;&quot;Miscellaneous useful tools used by Cadishi and Capriqorn.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+
+<span class="kn">import</span> <span class="nn">importlib</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">subprocess</span> <span class="k">as</span> <span class="nn">sub</span>
+<span class="kn">import</span> <span class="nn">gzip</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">getpass</span>
+<span class="kn">import</span> <span class="nn">shutil</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">scipy</span> <span class="k">import</span> <span class="n">stats</span>
+<span class="kn">from</span> <span class="nn">six.moves</span> <span class="k">import</span> <span class="nb">range</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">datetime</span>
+<span class="kn">import</span> <span class="nn">cProfile</span>
+<span class="kn">import</span> <span class="nn">multiprocessing</span> <span class="k">as</span> <span class="nn">mp</span>
+
+
+<span class="c1"># in case we don&#39;t find PyYAML, we fall back to JSON that comes with Python</span>
+<span class="n">have_yaml</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">yaml</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="n">have_yaml</span> <span class="o">=</span> <span class="kc">False</span>
+
+
+<span class="n">SEP</span> <span class="o">=</span> <span class="s2">&quot;-----------------------------------------------------------------------------&quot;</span>
+
+
+<span class="c1"># inspired by https://zapier.com/engineering/profiling-python-boss/</span>
+<div class="viewcode-block" id="do_cprofile"><a class="viewcode-back" href="../../modules.html#cadishi.util.do_cprofile">[docs]</a><span class="k">def</span> <span class="nf">do_cprofile</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">profiled_func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">profile</span> <span class="o">=</span> <span class="n">cProfile</span><span class="o">.</span><span class="n">Profile</span><span class="p">()</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">profile</span><span class="o">.</span><span class="n">enable</span><span class="p">()</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="n">profile</span><span class="o">.</span><span class="n">disable</span><span class="p">()</span>
+            <span class="k">return</span> <span class="n">result</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="n">profile</span><span class="o">.</span><span class="n">print_stats</span><span class="p">(</span><span class="n">sort</span><span class="o">=</span><span class="s1">&#39;time&#39;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">profiled_func</span></div>
+
+
+<span class="c1"># inspired by https://zapier.com/engineering/profiling-python-boss/</span>
+<div class="viewcode-block" id="timefunc"><a class="viewcode-back" href="../../modules.html#cadishi.util.timefunc">[docs]</a><span class="k">def</span> <span class="nf">timefunc</span><span class="p">(</span><span class="n">f</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">f_timer</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">f</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">end</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+        <span class="n">dt</span> <span class="o">=</span> <span class="n">end</span> <span class="o">-</span> <span class="n">start</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; Wall clock time: </span><span class="si">{:.3f}</span><span class="s2"> s&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">((</span><span class="n">dt</span><span class="p">)))</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">SEP</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">result</span>
+    <span class="k">return</span> <span class="n">f_timer</span></div>
+
+
+<span class="c1"># inspired by https://zapier.com/engineering/profiling-python-boss/</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">line_profiler</span> <span class="k">import</span> <span class="n">LineProfiler</span>
+
+    <span class="k">def</span> <span class="nf">do_lprofile</span><span class="p">(</span><span class="n">follow</span><span class="o">=</span><span class="p">[]):</span>
+        <span class="k">def</span> <span class="nf">inner</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
+            <span class="k">def</span> <span class="nf">profiled_func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">profiler</span> <span class="o">=</span> <span class="n">LineProfiler</span><span class="p">()</span>
+                    <span class="n">profiler</span><span class="o">.</span><span class="n">add_function</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
+                    <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">follow</span><span class="p">:</span>
+                        <span class="n">profiler</span><span class="o">.</span><span class="n">add_function</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+                    <span class="n">profiler</span><span class="o">.</span><span class="n">enable_by_count</span><span class="p">()</span>
+                    <span class="k">return</span> <span class="n">func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+                <span class="k">finally</span><span class="p">:</span>
+                    <span class="n">profiler</span><span class="o">.</span><span class="n">print_stats</span><span class="p">()</span>
+            <span class="k">return</span> <span class="n">profiled_func</span>
+        <span class="k">return</span> <span class="n">inner</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+<div class="viewcode-block" id="do_lprofile"><a class="viewcode-back" href="../../modules.html#cadishi.util.do_lprofile">[docs]</a>    <span class="k">def</span> <span class="nf">do_lprofile</span><span class="p">(</span><span class="n">follow</span><span class="o">=</span><span class="p">[]):</span>
+        <span class="s2">&quot;Helpful if you accidentally leave in production!&quot;</span>
+        <span class="k">def</span> <span class="nf">inner</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
+            <span class="k">def</span> <span class="nf">nothing</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+                <span class="k">return</span> <span class="n">func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">nothing</span>
+        <span class="k">return</span> <span class="n">inner</span></div>
+<span class="c1"># use the following decorator to line_profile a function</span>
+<span class="c1">#   @cadishi.util.do_lprofile(follow=[])</span>
+
+
+<div class="viewcode-block" id="get_numa_domains"><a class="viewcode-back" href="../../modules.html#cadishi.util.get_numa_domains">[docs]</a><span class="k">def</span> <span class="nf">get_numa_domains</span><span class="p">():</span>
+    <span class="n">numa_topology</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">regex</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s1">&#39;node [0-9]+ cpus&#39;</span><span class="p">)</span>
+    <span class="n">cmd</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;numactl&#39;</span><span class="p">,</span> <span class="s1">&#39;--hardware&#39;</span><span class="p">]</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">raw</span> <span class="o">=</span> <span class="n">sub</span><span class="o">.</span><span class="n">check_output</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">raw</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">regex</span><span class="p">,</span> <span class="n">line</span><span class="p">):</span>
+                <span class="n">line_tokens</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+                <span class="n">node_id</span> <span class="o">=</span> <span class="n">line_tokens</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+                <span class="c1"># ---</span>
+                <span class="k">del</span> <span class="n">line_tokens</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="k">del</span> <span class="n">line_tokens</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="k">del</span> <span class="n">line_tokens</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="c1"># ---</span>
+                <span class="n">node_cpus</span> <span class="o">=</span> <span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">line_tokens</span><span class="p">)</span>
+                <span class="c1"># ---</span>
+                <span class="n">numa_topology</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">node_id</span><span class="p">,</span> <span class="n">node_cpus</span><span class="p">))</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="k">del</span> <span class="n">numa_topology</span><span class="p">[:]</span>
+    <span class="c1"># ---</span>
+    <span class="k">return</span> <span class="n">numa_topology</span></div>
+
+
+<div class="viewcode-block" id="set_numa_domain"><a class="viewcode-back" href="../../modules.html#cadishi.util.set_numa_domain">[docs]</a><span class="k">def</span> <span class="nf">set_numa_domain</span><span class="p">(</span><span class="n">numa_id</span><span class="p">,</span> <span class="n">numa_topology</span><span class="p">):</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="p">(</span><span class="n">numa_node</span><span class="p">,</span> <span class="n">numa_cpus</span><span class="p">)</span> <span class="o">=</span> <span class="n">numa_topology</span><span class="p">[</span><span class="n">numa_id</span><span class="p">]</span>
+        <span class="n">pid</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%d</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">os</span><span class="o">.</span><span class="n">getpid</span><span class="p">()</span>
+        <span class="n">cmd</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;taskset&#39;</span><span class="p">,</span> <span class="s1">&#39;-pc&#39;</span><span class="p">,</span> <span class="n">numa_cpus</span><span class="p">,</span> <span class="n">pid</span><span class="p">]</span>
+        <span class="n">raw</span> <span class="o">=</span> <span class="n">sub</span><span class="o">.</span><span class="n">check_output</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="nb">print</span> <span class="n">SEP</span>
+        <span class="nb">print</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="n">raw</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="nb">print</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="n">raw</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="nb">print</span> <span class="n">SEP</span>
+        <span class="n">exit_status</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="n">exit_status</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="k">return</span> <span class="n">exit_status</span></div>
+
+
+<span class="k">def</span> <span class="nf">_cat_proc_cpuinfo_grep_query_sort_uniq</span><span class="p">(</span><span class="n">query</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Determine the number of unique lines in /proc/cpuinfo</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    string : query</span>
+<span class="sd">        string the lines to be searched for shall begin with</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    set</span>
+<span class="sd">        unique lines in /proc/cpuinfo that begin with query</span>
+
+<span class="sd">    May throw an IOError exception in case /proc/cpuinfo does not exist.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">items_seen</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;/proc/cpuinfo&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">line_raw</span> <span class="ow">in</span> <span class="n">fp</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">line_raw</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">query</span><span class="p">):</span>
+                <span class="n">line</span> <span class="o">=</span> <span class="n">line_raw</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+                <span class="n">items_seen</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">items_seen</span>
+
+
+<div class="viewcode-block" id="get_n_cpu_sockets"><a class="viewcode-back" href="../../modules.html#cadishi.util.get_n_cpu_sockets">[docs]</a><span class="k">def</span> <span class="nf">get_n_cpu_sockets</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;Determine the number of CPU sockets on a Linux host.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    int</span>
+<span class="sd">        number of CPU sockets</span>
+
+<span class="sd">    May throw an IOError exception in case /proc/cpuinfo does not exist.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="n">_cat_proc_cpuinfo_grep_query_sort_uniq</span><span class="p">(</span><span class="s2">&quot;physical id&quot;</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="get_n_cpu_cores"><a class="viewcode-back" href="../../modules.html#cadishi.util.get_n_cpu_cores">[docs]</a><span class="k">def</span> <span class="nf">get_n_cpu_cores</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;Determine the number of CPU cores on a Linux host.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    int</span>
+<span class="sd">        number of CPU cores</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># May throw an IOError exception in case /proc/cpuinfo does not exist.</span>
+    <span class="c1"># return len(_cat_proc_cpuinfo_grep_query_sort_uniq(&quot;processor&quot;))</span>
+    <span class="k">return</span> <span class="n">mp</span><span class="o">.</span><span class="n">cpu_count</span><span class="p">()</span>  <span class="c1"># more-portable solution</span></div>
+
+
+<div class="viewcode-block" id="rm"><a class="viewcode-back" href="../../modules.html#cadishi.util.rm">[docs]</a><span class="k">def</span> <span class="nf">rm</span><span class="p">(</span><span class="n">resource</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Remove a file.  If the file does not exist, no error is raised.&quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">resource</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">OSError</span><span class="p">:</span>
+        <span class="k">pass</span></div>
+
+
+<div class="viewcode-block" id="rmrf"><a class="viewcode-back" href="../../modules.html#cadishi.util.rmrf">[docs]</a><span class="k">def</span> <span class="nf">rmrf</span><span class="p">(</span><span class="n">resource</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Remove file or directory tree.&quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="n">resource</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">OSError</span><span class="p">:</span>
+        <span class="k">pass</span></div>
+
+
+<div class="viewcode-block" id="md"><a class="viewcode-back" href="../../modules.html#cadishi.util.md">[docs]</a><span class="k">def</span> <span class="nf">md</span><span class="p">(</span><span class="n">resource</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Create a directory (for a file), if necessary.  The behaviour highly</span>
+<span class="sd">    depends on the resource (string) parameter.</span>
+
+<span class="sd">    If resource is of the form &quot;string&quot;,</span>
+<span class="sd">        nothing is done.</span>
+<span class="sd">    If resource is of the form &quot;string/&quot;,</span>
+<span class="sd">        a directory labeled &quot;string&quot; is created.</span>
+<span class="sd">    If resource is of the form &quot;string/foo&quot;,</span>
+<span class="sd">        a directory labeled &quot;string&quot; is created.</span>
+<span class="sd">    If resource is of the form &quot;string/foo/&quot;,</span>
+<span class="sd">        a directory structure &quot;string/foo&quot; is created.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">folder</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">resource</span><span class="p">)</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">folder</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">):</span>
+        <span class="k">return</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">folder</span><span class="p">):</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">folder</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ls"><a class="viewcode-back" href="../../modules.html#cadishi.util.ls">[docs]</a><span class="k">def</span> <span class="nf">ls</span><span class="p">(</span><span class="n">resource</span><span class="p">,</span> <span class="n">files</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">directories</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;List files and optionally directories located at resource&quot;&quot;&quot;</span>
+    <span class="n">file_list</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="p">(</span><span class="n">_dirpath</span><span class="p">,</span> <span class="n">_dirnames</span><span class="p">,</span> <span class="n">_filenames</span><span class="p">)</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">walk</span><span class="p">(</span><span class="n">resource</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">files</span><span class="p">:</span>
+            <span class="n">file_list</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">_filenames</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">directories</span><span class="p">:</span>
+            <span class="n">file_list</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">_dirnames</span><span class="p">)</span>
+        <span class="k">break</span>
+    <span class="k">return</span> <span class="n">file_list</span></div>
+
+
+<div class="viewcode-block" id="testcase"><a class="viewcode-back" href="../../modules.html#cadishi.util.testcase">[docs]</a><span class="k">def</span> <span class="nf">testcase</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;Try to locate the test case that comes with cadishi.  Works for a</span>
+<span class="sd">    check-out (or tarball) of the source files as well as for an installation.</span>
+<span class="sd">    Returns the full path to the testcase including a trailing slash.&quot;&quot;&quot;</span>
+    <span class="n">file_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">__file__</span><span class="p">))</span>
+    <span class="n">testcase_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">file_path</span> <span class="o">+</span> <span class="s2">&quot;/tests/data&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">testcase_path</span> <span class="o">+</span> <span class="s2">&quot;/&quot;</span></div>
+
+
+<div class="viewcode-block" id="scratch_dir"><a class="viewcode-back" href="../../modules.html#cadishi.util.scratch_dir">[docs]</a><span class="k">def</span> <span class="nf">scratch_dir</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;Return and create a per-user scratch directory for unit test data.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">uid</span> <span class="o">=</span> <span class="n">getpass</span><span class="o">.</span><span class="n">getuser</span><span class="p">()</span>
+    <span class="nb">dir</span> <span class="o">=</span> <span class="s2">&quot;/tmp/&quot;</span> <span class="o">+</span> <span class="n">uid</span> <span class="o">+</span> <span class="s2">&quot;/py.test/&quot;</span>
+    <span class="n">md</span><span class="p">(</span><span class="nb">dir</span><span class="p">)</span>
+    <span class="k">return</span> <span class="nb">dir</span></div>
+
+
+<div class="viewcode-block" id="load_class"><a class="viewcode-back" href="../../modules.html#cadishi.util.load_class">[docs]</a><span class="k">def</span> <span class="nf">load_class</span><span class="p">(</span><span class="n">module_name</span><span class="p">,</span> <span class="n">class_name</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Load a class from a module, where class and module</span>
+<span class="sd">    are specified as strings. (Required to dynamically build pipelines.)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">m</span> <span class="o">=</span> <span class="n">importlib</span><span class="o">.</span><span class="n">import_module</span><span class="p">(</span><span class="n">module_name</span><span class="p">)</span>
+    <span class="n">c</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">class_name</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">c</span></div>
+
+
+<div class="viewcode-block" id="tokenize"><a class="viewcode-back" href="../../modules.html#cadishi.util.tokenize">[docs]</a><span class="k">def</span> <span class="nf">tokenize</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s1">&#39;/&#39;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Remove any separators sep from path and return a list of the remainder.</span>
+<span class="sd">    If path is empty or &#39;/&#39;, the list has the empty string as a single entry.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">basestring</span><span class="p">)</span>
+    <span class="n">val</span> <span class="o">=</span> <span class="n">path</span><span class="o">.</span><span class="n">rstrip</span><span class="p">(</span><span class="n">sep</span><span class="p">)</span><span class="o">.</span><span class="n">lstrip</span><span class="p">(</span><span class="n">sep</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">sep</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">val</span></div>
+
+
+<div class="viewcode-block" id="pipeline_entry"><a class="viewcode-back" href="../../modules.html#cadishi.util.pipeline_entry">[docs]</a><span class="k">def</span> <span class="nf">pipeline_entry</span><span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="n">param</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Return a dictionary with a single key-value pair, in particular</span>
+<span class="sd">    label (key) being a string label, and param being a dictionary with</span>
+<span class="sd">    string keys and arbitrary values.</span>
+<span class="sd">    The return value may be appended eg. to a pipeline_log list.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="n">basestring</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">param</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span>
+    <span class="n">entry</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">entry</span><span class="p">[</span><span class="n">label</span><span class="p">]</span> <span class="o">=</span> <span class="n">param</span>
+    <span class="k">return</span> <span class="n">entry</span></div>
+
+
+<div class="viewcode-block" id="search_pipeline"><a class="viewcode-back" href="../../modules.html#cadishi.util.search_pipeline">[docs]</a><span class="k">def</span> <span class="nf">search_pipeline</span><span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="n">pipeline</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Iterate through the pipeline list backwards in order to find</span>
+<span class="sd">    the entry (dict) identified by label (string).&quot;&quot;&quot;</span>
+    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="n">basestring</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">pipeline</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span>
+    <span class="c1"># ---</span>
+    <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="nb">reversed</span><span class="p">(</span><span class="n">pipeline</span><span class="p">):</span>
+        <span class="n">parameters</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">parameters</span><span class="p">)</span> <span class="ow">in</span> <span class="n">entry</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">key</span> <span class="o">==</span> <span class="n">label</span><span class="p">):</span>
+                <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">parameters</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span>
+                <span class="k">return</span> <span class="n">parameters</span>
+    <span class="c1"># ---</span>
+    <span class="k">return</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="get_elements"><a class="viewcode-back" href="../../modules.html#cadishi.util.get_elements">[docs]</a><span class="k">def</span> <span class="nf">get_elements</span><span class="p">(</span><span class="n">header</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Return a complete list of all the chemical elements present in a header.</span>
+<span class="sd">    Header may be a string or a list containing single element IDs</span>
+<span class="sd">    or pair combinations thereof.  &quot;#&quot; and &quot;radii&quot; are skipped automatically.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">header</span><span class="p">,</span> <span class="n">basestring</span><span class="p">):</span>
+        <span class="n">header</span> <span class="o">=</span> <span class="n">header</span><span class="o">.</span><span class="n">rstrip</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">header</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span>
+    <span class="n">el_set</span> <span class="o">=</span> <span class="nb">set</span><span class="p">([])</span>
+    <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">header</span><span class="p">:</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">item</span> <span class="o">==</span> <span class="s1">&#39;#&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">item</span> <span class="o">==</span> <span class="s1">&#39;radii&#39;</span><span class="p">):</span>
+            <span class="k">continue</span>
+        <span class="n">pair</span> <span class="o">=</span> <span class="n">item</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">)</span>
+        <span class="n">el_set</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">pair</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">pair</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">):</span>
+            <span class="n">el_set</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">pair</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+    <span class="k">return</span> <span class="nb">sorted</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">el_set</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="open_r"><a class="viewcode-back" href="../../modules.html#cadishi.util.open_r">[docs]</a><span class="k">def</span> <span class="nf">open_r</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Open an uncompressed or GZIP-compressed text file for reading.</span>
+<span class="sd">    Return the file pointer.&quot;&quot;&quot;</span>
+    <span class="k">assert</span> <span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">filename</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">filename</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;.gz&#39;</span><span class="p">):</span>
+        <span class="n">fp</span> <span class="o">=</span> <span class="n">gzip</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;rb&#39;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">fp</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">fp</span></div>
+
+
+<div class="viewcode-block" id="appendLineToFile"><a class="viewcode-back" href="../../modules.html#cadishi.util.appendLineToFile">[docs]</a><span class="k">def</span> <span class="nf">appendLineToFile</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">string</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Append string as a line to the end of the file identified by filename.&quot;&quot;&quot;</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s1">&#39;a&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">string</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">):</span>
+            <span class="n">string</span> <span class="o">+=</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span>
+        <span class="n">fp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">string</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="savetxtHeader"><a class="viewcode-back" href="../../modules.html#cadishi.util.savetxtHeader">[docs]</a><span class="k">def</span> <span class="nf">savetxtHeader</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">header</span><span class="p">,</span> <span class="n">array</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Save data including header.  Legacy routine by Juergen.&quot;&quot;&quot;</span>
+    <span class="n">md</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+    <span class="n">fp</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">header</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">:</span>
+        <span class="n">header</span> <span class="o">+=</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span>
+    <span class="n">fp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">header</span><span class="p">)</span>
+    <span class="n">fp</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+    <span class="n">fp</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="s1">&#39;a&#39;</span><span class="p">)</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">savetxt</span><span class="p">(</span><span class="n">fp</span><span class="p">,</span> <span class="n">array</span><span class="p">)</span>
+    <span class="n">fp</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="write_xyzFile"><a class="viewcode-back" href="../../modules.html#cadishi.util.write_xyzFile">[docs]</a><span class="k">def</span> <span class="nf">write_xyzFile</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="n">names</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Write coordinates in xyz format to the file labeled filename.&quot;&quot;&quot;</span>
+    <span class="n">fp</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span>
+    <span class="n">fp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%d</span><span class="s2"> </span><span class="se">\n</span><span class="s2"> generated with histograms.py</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="nb">len</span><span class="p">(</span><span class="n">coords</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">coords</span><span class="p">)):</span>
+        <span class="n">fp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> </span><span class="si">%8.3f</span><span class="s2"> </span><span class="si">%8.3f</span><span class="s2"> </span><span class="si">%8.3f</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span>
+                 <span class="nb">tuple</span><span class="p">([</span><span class="n">names</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="n">coords</span><span class="p">[</span><span class="n">i</span><span class="p">])))</span>
+    <span class="n">fp</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+    <span class="k">return</span></div>
+
+
+<span class="k">if</span> <span class="n">have_yaml</span><span class="p">:</span>
+<div class="viewcode-block" id="load_yaml"><a class="viewcode-back" href="../../modules.html#cadishi.util.load_yaml">[docs]</a>    <span class="k">def</span> <span class="nf">load_yaml</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">yaml</span><span class="o">.</span><span class="n">safe_load</span><span class="p">(</span><span class="n">fp</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="save_yaml"><a class="viewcode-back" href="../../modules.html#cadishi.util.save_yaml">[docs]</a>    <span class="k">def</span> <span class="nf">save_yaml</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
+            <span class="n">yaml</span><span class="o">.</span><span class="n">safe_dump</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">fp</span><span class="p">,</span> <span class="n">default_flow_style</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="load_json"><a class="viewcode-back" href="../../modules.html#cadishi.util.load_json">[docs]</a><span class="k">def</span> <span class="nf">load_json</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">fp</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="save_json"><a class="viewcode-back" href="../../modules.html#cadishi.util.save_json">[docs]</a><span class="k">def</span> <span class="nf">save_json</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
+        <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">fp</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">sort_keys</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="load_parameter_file"><a class="viewcode-back" href="../../modules.html#cadishi.util.load_parameter_file">[docs]</a><span class="k">def</span> <span class="nf">load_parameter_file</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="s2">&quot;File &#39;&quot;</span> <span class="o">+</span> <span class="n">filename</span> <span class="o">+</span> <span class="s2">&quot;&#39; does not exist&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">filename</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;.json&#39;</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">load_json</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">have_yaml</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">load_yaml</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;PyYAML is not available.&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="compare"><a class="viewcode-back" href="../../modules.html#cadishi.util.compare">[docs]</a><span class="k">def</span> <span class="nf">compare</span><span class="p">(</span><span class="n">histo1</span><span class="p">,</span> <span class="n">histo2</span><span class="p">):</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">histo1</span><span class="o">.</span><span class="n">dtype</span> <span class="o">==</span> <span class="n">histo2</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">histo1</span><span class="o">.</span><span class="n">dtype</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">):</span>
+        <span class="n">compare_strictly</span><span class="p">(</span><span class="n">histo1</span><span class="p">,</span> <span class="n">histo2</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">compare_approximately</span><span class="p">(</span><span class="n">histo1</span><span class="p">,</span> <span class="n">histo2</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="compare_strictly"><a class="viewcode-back" href="../../modules.html#cadishi.util.compare_strictly">[docs]</a><span class="k">def</span> <span class="nf">compare_strictly</span><span class="p">(</span><span class="n">histo1</span><span class="p">,</span> <span class="n">histo2</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Check if two histograms (1D numpy arrays) or two sets of histograms (2D</span>
+<span class="sd">    numpy arrays) are identical, only suitable to check the results of double</span>
+<span class="sd">    precision computations.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">assert</span> <span class="p">(</span><span class="n">histo1</span> <span class="o">==</span> <span class="n">histo2</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="compare_approximately"><a class="viewcode-back" href="../../modules.html#cadishi.util.compare_approximately">[docs]</a><span class="k">def</span> <span class="nf">compare_approximately</span><span class="p">(</span><span class="n">histo1</span><span class="p">,</span> <span class="n">histo2</span><span class="p">,</span> <span class="n">ks_stat_max</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span> <span class="n">p_value_min</span><span class="o">=</span><span class="mf">0.99</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Check if two histograms (1D numpy arrays) or two sets of histograms (2D</span>
+<span class="sd">    numpy arrays) are reasonably similar.</span>
+<span class="sd">    The routine can be used to check the results of single precision computations</span>
+<span class="sd">    against a reference file.  Computes the Kolmogorov-Smirnov statistic on 2</span>
+<span class="sd">    samples using</span>
+<span class="sd">    http://docs.scipy.org/doc/scipy-0.15.1/reference/generated/scipy.stats.ks_2samp.html</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">assert</span><span class="p">((</span><span class="n">histo1</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="n">histo2</span><span class="o">.</span><span class="n">shape</span><span class="p">))</span>
+    <span class="c1"># --- remove first column (is not a histogram)</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">histo1</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">2</span><span class="p">):</span>
+        <span class="n">hist1</span> <span class="o">=</span> <span class="n">histo1</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">:]</span>
+        <span class="n">hist2</span> <span class="o">=</span> <span class="n">histo2</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">:]</span>
+    <span class="k">elif</span> <span class="p">(</span><span class="n">histo1</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">):</span>
+        <span class="n">hist1</span> <span class="o">=</span> <span class="n">histo1</span>
+        <span class="n">hist2</span> <span class="o">=</span> <span class="n">histo2</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;histograms must be passed as 1D or 2D arrays&#39;</span><span class="p">)</span>
+    <span class="c1"># --- check if the number of binned items is identical</span>
+    <span class="n">binsum1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">hist1</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">uint64</span><span class="p">)</span>
+    <span class="n">binsum2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">hist2</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">uint64</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="p">(</span><span class="n">binsum1</span> <span class="o">==</span> <span class="n">binsum2</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+    <span class="c1"># --- contruct an error metric</span>
+    <span class="n">hdiff</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">subtract</span><span class="p">(</span><span class="n">hist1</span><span class="p">,</span> <span class="n">hist2</span><span class="p">)</span>
+    <span class="n">dnorm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">hdiff</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="c1"># --- finally, compare err and tolerance</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">histo1</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">2</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">hist1</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]):</span>
+            <span class="n">ks_stat</span><span class="p">,</span> <span class="n">p_value</span> <span class="o">=</span> <span class="n">stats</span><span class="o">.</span><span class="n">ks_2samp</span><span class="p">(</span><span class="n">hist1</span><span class="p">[:,</span> <span class="n">col</span><span class="p">],</span> <span class="n">hist2</span><span class="p">[:,</span> <span class="n">col</span><span class="p">])</span>
+            <span class="k">assert</span><span class="p">(</span><span class="n">ks_stat</span> <span class="o">&lt;</span> <span class="n">ks_stat_max</span><span class="p">)</span>
+            <span class="k">assert</span><span class="p">(</span><span class="n">p_value</span> <span class="o">&gt;</span> <span class="n">p_value_min</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">ks_stat</span><span class="p">,</span> <span class="n">p_value</span> <span class="o">=</span> <span class="n">stats</span><span class="o">.</span><span class="n">ks_2samp</span><span class="p">(</span><span class="n">hist1</span><span class="p">,</span> <span class="n">hist2</span><span class="p">)</span>
+        <span class="k">assert</span><span class="p">(</span><span class="n">ks_stat</span> <span class="o">&lt;</span> <span class="n">ks_stat_max</span><span class="p">)</span>
+        <span class="k">assert</span><span class="p">(</span><span class="n">p_value</span> <span class="o">&gt;</span> <span class="n">p_value_min</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="dump_histograms"><a class="viewcode-back" href="../../modules.html#cadishi.util.dump_histograms">[docs]</a><span class="k">def</span> <span class="nf">dump_histograms</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">histograms</span><span class="p">,</span> <span class="n">r_max</span><span class="p">,</span> <span class="n">n_bins</span><span class="p">):</span>
+    <span class="n">dr</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">r_max</span><span class="p">)</span> <span class="o">/</span> <span class="nb">float</span><span class="p">(</span><span class="n">n_bins</span><span class="p">)</span>
+    <span class="n">histos</span> <span class="o">=</span> <span class="n">histograms</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+    <span class="n">radii</span> <span class="o">=</span> <span class="p">[</span><span class="n">dr</span> <span class="o">*</span> <span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="o">+</span> <span class="mf">0.5</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_bins</span><span class="p">)]</span>
+    <span class="n">histos</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">radii</span><span class="p">)</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">savetxt</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">histos</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="get_executable_name"><a class="viewcode-back" href="../../modules.html#cadishi.util.get_executable_name">[docs]</a><span class="k">def</span> <span class="nf">get_executable_name</span><span class="p">():</span>
+    <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span></div>
+
+
+<div class="viewcode-block" id="generate_random_coordinate_set"><a class="viewcode-back" href="../../modules.html#cadishi.util.generate_random_coordinate_set">[docs]</a><span class="k">def</span> <span class="nf">generate_random_coordinate_set</span><span class="p">(</span><span class="n">n_atoms</span><span class="o">=</span><span class="p">[</span><span class="mi">512</span><span class="p">,</span> <span class="mi">1024</span><span class="p">,</span> <span class="mi">2048</span><span class="p">],</span>
+                                   <span class="n">coord_min</span><span class="o">=</span><span class="p">(</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">),</span>
+                                   <span class="n">coord_max</span><span class="o">=</span><span class="p">(</span><span class="mf">1.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">),</span>
+                                   <span class="n">blowup_factor</span><span class="o">=</span><span class="mf">1.0</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Return pseudo-random coordinate sets in a box.&quot;&quot;&quot;</span>
+    <span class="n">coords</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">coord_min</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asanyarray</span><span class="p">(</span><span class="n">coord_min</span><span class="p">)</span>
+    <span class="n">coord_max</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asanyarray</span><span class="p">(</span><span class="n">coord_max</span><span class="p">)</span>
+    <span class="n">coord_width</span> <span class="o">=</span> <span class="p">(</span><span class="n">coord_max</span> <span class="o">-</span> <span class="n">coord_min</span><span class="p">)</span> <span class="o">*</span> <span class="n">blowup_factor</span>
+    <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">n_atoms</span><span class="p">:</span>
+        <span class="n">c</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span> <span class="o">*</span> <span class="n">coord_width</span> <span class="o">+</span> <span class="n">coord_min</span>
+        <span class="n">coords</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">coords</span></div>
+
+
+<div class="viewcode-block" id="generate_random_point_in_sphere"><a class="viewcode-back" href="../../modules.html#cadishi.util.generate_random_point_in_sphere">[docs]</a><span class="k">def</span> <span class="nf">generate_random_point_in_sphere</span><span class="p">(</span><span class="n">R</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Return a coordinate triple of a randomly located point inside a sphere of radius R.&quot;&quot;&quot;</span>
+    <span class="n">costheta</span> <span class="o">=</span> <span class="mf">2.</span> <span class="o">*</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">()</span> <span class="o">-</span> <span class="mf">0.5</span><span class="p">)</span>  <span class="c1"># random(-1, 1)</span>
+    <span class="n">u</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(),</span> <span class="mf">1.</span> <span class="o">/</span> <span class="mf">3.</span><span class="p">)</span>
+    <span class="c1"># random point in spherical coordinates</span>
+    <span class="n">r</span> <span class="o">=</span> <span class="n">R</span> <span class="o">*</span> <span class="n">u</span>
+    <span class="n">t</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arccos</span><span class="p">(</span><span class="n">costheta</span><span class="p">)</span>
+    <span class="n">p</span> <span class="o">=</span> <span class="mf">2.</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">()</span>
+    <span class="c1"># transform to Cartesian</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">r</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">t</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">r</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">t</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+    <span class="n">z</span> <span class="o">=</span> <span class="n">r</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="generate_random_point_on_spherical_surface"><a class="viewcode-back" href="../../modules.html#cadishi.util.generate_random_point_on_spherical_surface">[docs]</a><span class="k">def</span> <span class="nf">generate_random_point_on_spherical_surface</span><span class="p">(</span><span class="n">R</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Return a coordinate triple of a randomly located point inside a sphere of radius R.&quot;&quot;&quot;</span>
+    <span class="n">costheta</span> <span class="o">=</span> <span class="mf">2.</span> <span class="o">*</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">()</span> <span class="o">-</span> <span class="mf">0.5</span><span class="p">)</span>  <span class="c1"># random(-1, 1)</span>
+    <span class="c1"># random point in spherical coordinates</span>
+    <span class="n">r</span> <span class="o">=</span> <span class="n">R</span>
+    <span class="n">t</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arccos</span><span class="p">(</span><span class="n">costheta</span><span class="p">)</span>
+    <span class="n">p</span> <span class="o">=</span> <span class="mf">2.</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">()</span>
+    <span class="c1"># transform to Cartesian</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">r</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">t</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">r</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">t</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+    <span class="n">z</span> <span class="o">=</span> <span class="n">r</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="check_parameter_labels"><a class="viewcode-back" href="../../modules.html#cadishi.util.check_parameter_labels">[docs]</a><span class="k">def</span> <span class="nf">check_parameter_labels</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">reference</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Check the keys of a two-level nested dictionary structure against a reference structure.</span>
+
+<span class="sd">    Raises KeyError in case of an invalid key.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">key_1</span> <span class="ow">in</span> <span class="nb">input</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">key_1</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">reference</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s2">&quot;&#39;&quot;</span> <span class="o">+</span> <span class="n">key_1</span> <span class="o">+</span> <span class="s2">&quot;&#39; is not a valid section label&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">key_2</span> <span class="ow">in</span> <span class="nb">input</span><span class="p">[</span><span class="n">key_1</span><span class="p">]:</span>
+                <span class="k">if</span> <span class="n">key_2</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">reference</span><span class="p">[</span><span class="n">key_1</span><span class="p">]:</span>
+                    <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s2">&quot;&#39;&quot;</span> <span class="o">+</span> <span class="n">key_2</span> <span class="o">+</span> <span class="s2">&quot;&#39; is not a valid label in section &#39;&quot;</span> <span class="o">+</span> <span class="n">key_1</span> <span class="o">+</span> <span class="s2">&quot;&#39;&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="make_iterable"><a class="viewcode-back" href="../../modules.html#cadishi.util.make_iterable">[docs]</a><span class="k">def</span> <span class="nf">make_iterable</span><span class="p">(</span><span class="n">obj</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Pack obj into a list if it is not iterable, yet.&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">,</span> <span class="nb">set</span><span class="p">)):</span>
+        <span class="n">obj</span> <span class="o">=</span> <span class="p">[</span><span class="n">obj</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">obj</span></div>
+
+
+<div class="viewcode-block" id="check_parameter"><a class="viewcode-back" href="../../modules.html#cadishi.util.check_parameter">[docs]</a><span class="k">def</span> <span class="nf">check_parameter</span><span class="p">(</span><span class="n">parameters</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="n">dtype</span><span class="p">,</span> <span class="n">default_value</span><span class="p">,</span>
+                    <span class="n">valid_values</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">min_value</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">max_value</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">file_existence</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Check a parameter for validity.</span>
+
+<span class="sd">    Throws ValueError or IOError with useful end-user-friendly messages.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">sec</span><span class="p">,</span> <span class="n">key</span> <span class="o">=</span> <span class="n">label</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;:&#39;</span><span class="p">)</span>
+    <span class="k">assert</span><span class="p">(</span><span class="n">sec</span> <span class="ow">in</span> <span class="n">parameters</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">parameters</span><span class="p">[</span><span class="n">sec</span><span class="p">]:</span>
+        <span class="n">parameters</span><span class="p">[</span><span class="n">sec</span><span class="p">][</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">default_value</span>
+    <span class="c1"># various tests of &#39;value&#39; throwing exceptions with readable error messages</span>
+    <span class="n">value</span> <span class="o">=</span> <span class="n">parameters</span><span class="p">[</span><span class="n">sec</span><span class="p">][</span><span class="n">key</span><span class="p">]</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">dtype</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">label</span> <span class="o">+</span> <span class="s2">&quot;: invalid datatype &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">value</span><span class="p">))</span> <span class="o">+</span>
+                         <span class="s2">&quot;, expected &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">dtype</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">valid_values</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">valid_values</span> <span class="o">=</span> <span class="n">make_iterable</span><span class="p">(</span><span class="n">valid_values</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">value</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">valid_values</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">label</span> <span class="o">+</span> <span class="s2">&quot;: invalid value &#39;&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="o">+</span>
+                             <span class="s2">&quot;&#39;, valid values are &#39;&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">valid_values</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;&#39;&quot;</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">file_existence</span><span class="p">:</span>
+        <span class="c1"># we assume that &#39;value&#39; is a file or a list of files</span>
+        <span class="n">file_list</span> <span class="o">=</span> <span class="n">make_iterable</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="n">file_list</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">file</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="n">label</span> <span class="o">+</span> <span class="s2">&quot;: &#39;&quot;</span> <span class="o">+</span> <span class="n">file</span> <span class="o">+</span> <span class="s2">&quot;&#39; does not exist&quot;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">min_value</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">value</span> <span class="o">&lt;</span> <span class="n">min_value</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">label</span> <span class="o">+</span> <span class="s2">&quot;: invalid value &#39;&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="o">+</span>
+                             <span class="s2">&quot;&#39;, minimum allowed value is &#39;&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">min_value</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;&#39;&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">max_value</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">value</span> <span class="o">&gt;</span> <span class="n">max_value</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">label</span> <span class="o">+</span> <span class="s2">&quot;: invalid value &#39;&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="o">+</span>
+                             <span class="s2">&quot;&#39;, maximum allowed value is &#39;&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">max_value</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;&#39;&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="redirectOutput"><a class="viewcode-back" href="../../modules.html#cadishi.util.redirectOutput">[docs]</a><span class="k">def</span> <span class="nf">redirectOutput</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Redirect stdout and stderr to the file specified by filename.&quot;&quot;&quot;</span>
+    <span class="n">o_flags</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">O_CREAT</span> <span class="o">|</span> <span class="n">os</span><span class="o">.</span><span class="n">O_TRUNC</span> <span class="o">|</span> <span class="n">os</span><span class="o">.</span><span class="n">O_WRONLY</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">close</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">o_flags</span><span class="p">,</span> <span class="mi">0664</span><span class="p">)</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">close</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">dup</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="timeStamp"><a class="viewcode-back" href="../../modules.html#cadishi.util.timeStamp">[docs]</a><span class="k">def</span> <span class="nf">timeStamp</span><span class="p">(</span><span class="n">dateAndTime</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">t0</span><span class="o">=</span><span class="mf">0.0</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Return a string with a time stamp suitable to prefix log lines with.&quot;&quot;&quot;</span>
+    <span class="n">tnow</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">dateAndTime</span><span class="p">:</span>
+        <span class="n">timestr</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">fromtimestamp</span><span class="p">(</span><span class="n">tnow</span><span class="p">)</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%Y-%m-</span><span class="si">%d</span><span class="s1"> %H:%M:%S&#39;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">timestr</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%19.3f</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">tnow</span> <span class="o">-</span> <span class="n">t0</span><span class="p">)</span>
+    <span class="k">return</span> <span class="s2">&quot;[&quot;</span> <span class="o">+</span> <span class="n">timestr</span> <span class="o">+</span> <span class="s2">&quot;]&quot;</span></div>
+
+
+<div class="viewcode-block" id="PrintWrapper"><a class="viewcode-back" href="../../modules.html#cadishi.util.PrintWrapper">[docs]</a><span class="k">class</span> <span class="nc">PrintWrapper</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;Wrapper to implement infrequent message printing.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">context_dict</span> <span class="o">=</span> <span class="p">{}</span>
+
+<div class="viewcode-block" id="PrintWrapper.once"><a class="viewcode-back" href="../../modules.html#cadishi.util.PrintWrapper.once">[docs]</a>    <span class="k">def</span> <span class="nf">once</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">context</span><span class="p">,</span> <span class="n">msg</span><span class="p">,</span> <span class="n">time_stamp</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Print context and message exactly once.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">context</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">context_dict</span><span class="p">)</span> <span class="ow">or</span> <span class="p">((</span><span class="n">context</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">context_dict</span><span class="p">)</span> <span class="ow">and</span>
+                                                  <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">context_dict</span><span class="p">[</span><span class="n">context</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">True</span><span class="p">)):</span>
+            <span class="k">if</span> <span class="n">time_stamp</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">stamp</span> <span class="o">=</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="n">time_stamp</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">stamp</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">stamp</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="n">context</span> <span class="o">+</span> <span class="s2">&quot;: &quot;</span> <span class="o">+</span> <span class="n">msg</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">context_dict</span><span class="p">[</span><span class="n">context</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span></div>
+
+<div class="viewcode-block" id="PrintWrapper.every"><a class="viewcode-back" href="../../modules.html#cadishi.util.PrintWrapper.every">[docs]</a>    <span class="k">def</span> <span class="nf">every</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">context</span><span class="p">,</span> <span class="n">msg</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Print at every nth invocation.&quot;&quot;&quot;</span>
+        <span class="c1"># Yet to be implemented.</span>
+        <span class="k">pass</span></div></div>
+
+
+<div class="viewcode-block" id="quote"><a class="viewcode-back" href="../../modules.html#cadishi.util.quote">[docs]</a><span class="k">def</span> <span class="nf">quote</span><span class="p">(</span><span class="n">string</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Add quotes to the beginning and the end of a string if not already present.&quot;&quot;&quot;</span>
+    <span class="n">string_elements</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">string</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\&#39;</span><span class="s1">&#39;</span><span class="p">):</span>
+        <span class="n">string_elements</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\&#39;</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="n">string_elements</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">string</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">string</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\&#39;</span><span class="s1">&#39;</span><span class="p">):</span>
+        <span class="n">string_elements</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\&#39;</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">string_elements</span><span class="p">)</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">Cadishi 1.0.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, Klaus Reuter, Juergen Koefinger.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.1.
+    </div>
+  </body>
+</html>

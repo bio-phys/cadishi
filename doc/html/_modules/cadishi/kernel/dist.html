@@ -1,0 +1,157 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>cadishi.kernel.dist &#8212; Cadishi 1.0.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '1.0.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">Cadishi 1.0.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" accesskey="U">Module code</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for cadishi.kernel.dist</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding: utf-8 -*-</span>
+<span class="c1"># vim: tabstop=4 expandtab shiftwidth=4 softtabstop=4 fileencoding=utf-8</span>
+<span class="c1">#</span>
+<span class="c1"># Cadishi --- CAlculation of DIStance HIstograms</span>
+<span class="c1">#</span>
+<span class="c1"># Copyright (c) Klaus Reuter, Juergen Koefinger</span>
+<span class="c1"># See the file AUTHORS.rst for the full list of contributors.</span>
+<span class="c1">#</span>
+<span class="c1"># Released under the MIT License, see the file LICENSE.txt.</span>
+
+<span class="sd">&quot;&quot;&quot;dist Python module</span>
+
+<span class="sd">Initial implementation of the distance histogram computation using Cython.</span>
+<span class="sd">Legacy code, do not use for production. This code is only used by the test</span>
+<span class="sd">suite to compare the results of (small) problems between the kernels.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">.</span> <span class="k">import</span> <span class="n">c_dist</span>
+<span class="k">except</span><span class="p">:</span>
+    <span class="n">have_c_dist</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="n">have_c_dist</span> <span class="o">=</span> <span class="kc">True</span>
+
+
+<div class="viewcode-block" id="histograms"><a class="viewcode-back" href="../../../kernel.html#cadishi.kernel.dist.histograms">[docs]</a><span class="k">def</span> <span class="nf">histograms</span><span class="p">(</span><span class="n">coordinate_sets</span><span class="p">,</span> <span class="n">r_max</span><span class="p">,</span> <span class="n">n_bins</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Distance histogram calculation on the CPU using Cython kernels.</span>
+
+<span class="sd">    Calculate histograms from sets of species coordinates by calling the</span>
+<span class="sd">    pwd() and pwd2() CPU functions from the Cython dist_knl.  Serves as the</span>
+<span class="sd">    reference implementation for the pydh and cudh packages.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    coordinate_sets : list of numpy.ndarray</span>
+<span class="sd">        List of numpy arrays where each numpy array contains</span>
+<span class="sd">        the atom coordinates for all the atoms of a species.</span>
+<span class="sd">    r_max : float</span>
+<span class="sd">        Cutoff radius for the distance calculation.</span>
+<span class="sd">    n_bins : int</span>
+<span class="sd">        Number of histogram bins.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    numpy.ndarray</span>
+<span class="sd">        Two-dimensional numpy array containing the distance histograms.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">have_c_dist</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;could not import compiled dist kernel (c_dist.so)&quot;</span><span class="p">)</span>
+
+    <span class="n">n_El</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">coordinate_sets</span><span class="p">)</span>
+    <span class="n">n_Hij</span> <span class="o">=</span> <span class="n">n_El</span> <span class="o">*</span> <span class="p">(</span><span class="n">n_El</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span>
+    <span class="n">histos</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n_bins</span><span class="p">,</span> <span class="n">n_Hij</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span> <span class="n">order</span><span class="o">=</span><span class="s1">&#39;F&#39;</span><span class="p">)</span>
+    <span class="n">idx</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_El</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">n_El</span><span class="p">):</span>
+            <span class="n">idx</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="n">histo</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n_bins</span><span class="p">)</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">i</span> <span class="o">==</span> <span class="n">j</span><span class="p">):</span>
+                <span class="n">c_dist</span><span class="o">.</span><span class="n">pwd</span><span class="p">(</span><span class="n">coordinate_sets</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">histo</span><span class="p">,</span> <span class="n">r_max</span><span class="p">,</span> <span class="n">n_bins</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">c_dist</span><span class="o">.</span><span class="n">pwd2</span><span class="p">(</span><span class="n">coordinate_sets</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">coordinate_sets</span><span class="p">[</span><span class="n">j</span><span class="p">],</span> <span class="n">histo</span><span class="p">,</span> <span class="n">r_max</span><span class="p">,</span> <span class="n">n_bins</span><span class="p">)</span>
+            <span class="n">histos</span><span class="p">[:,</span> <span class="n">idx</span><span class="p">]</span> <span class="o">+=</span> <span class="n">histo</span><span class="p">[:]</span>
+    <span class="k">return</span> <span class="n">histos</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">Cadishi 1.0.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, Klaus Reuter, Juergen Koefinger.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.1.
+    </div>
+  </body>
+</html>

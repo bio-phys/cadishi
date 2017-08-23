@@ -1,0 +1,1032 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Cadishi modules &#8212; Cadishi 1.0.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Cadishi compute kernels" href="kernel.html" />
+    <link rel="prev" title="Cadishi documentation" href="index.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="kernel.html" title="Cadishi compute kernels"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Cadishi documentation"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Cadishi 1.0.0 documentation</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="cadishi-modules">
+<h1>Cadishi modules<a class="headerlink" href="#cadishi-modules" title="Permalink to this headline">¶</a></h1>
+<p>The following documentation was automatically generated from the docstrings
+present in the source code files.</p>
+<div class="toctree-wrapper compound">
+</div>
+<div class="section" id="module-cadishi">
+<span id="cadishi"></span><h2>cadishi<a class="headerlink" href="#module-cadishi" title="Permalink to this headline">¶</a></h2>
+<p>Cadishi distance histogram calculation package.</p>
+</div>
+<div class="section" id="module-cadishi.base">
+<span id="cadishi-base"></span><h2>cadishi.base<a class="headerlink" href="#module-cadishi.base" title="Permalink to this headline">¶</a></h2>
+<p>Cadishi base library.</p>
+<p>Provides the basic data container and some more base classes that are used
+throughout the code.</p>
+<dl class="class">
+<dt id="cadishi.base.Container">
+<em class="property">class </em><code class="descclassname">cadishi.base.</code><code class="descname">Container</code><span class="sig-paren">(</span><em>number=-1</em>, <em>mkdir=[]</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cadishi/base.html#Container"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cadishi.base.Container" title="Permalink to this definition">¶</a></dt>
+<dd><p>Central container to hold/accumulate data while it is proparaged through
+the pipeline.  Heavily uses dictfs internally.</p>
+<dl class="method">
+<dt id="cadishi.base.Container.append_data">
+<code class="descname">append_data</code><span class="sig-paren">(</span><em>other, location, skip_keys=['radii']</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cadishi/base.html#Container.append_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cadishi.base.Container.append_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Append data at location from other to self. If location does not exist
+in the current instance, it is created.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="cadishi.base.Container.del_data">
+<code class="descname">del_data</code><span class="sig-paren">(</span><em>location</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cadishi/base.html#Container.del_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cadishi.base.Container.del_data" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="cadishi.base.Container.get_data">
+<code class="descname">get_data</code><span class="sig-paren">(</span><em>location</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cadishi/base.html#Container.get_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cadishi.base.Container.get_data" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="cadishi.base.Container.get_geometry">
+<code class="descname">get_geometry</code><span class="sig-paren">(</span><em>valid_geom=['Sphere', 'Cuboid', 'Ellipsoid', 'ReferenceStructure', 'MultiReferenceStructure', 'Voxels']</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cadishi/base.html#Container.get_geometry"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cadishi.base.Container.get_geometry" title="Permalink to this definition">¶</a></dt>
+<dd><p>Search the pipeline log backwards for the geometry filter that was
+used, and return the result as a string.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="cadishi.base.Container.get_keys">
+<code class="descname">get_keys</code><span class="sig-paren">(</span><em>location</em>, <em>skip_keys=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cadishi/base.html#Container.get_keys"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cadishi.base.Container.get_keys" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list of the keys of the data stored at location.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="cadishi.base.Container.get_meta">
+<code class="descname">get_meta</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/cadishi/base.html#Container.get_meta"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cadishi.base.Container.get_meta" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the instance&#8217;s pipeline log list.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="cadishi.base.Container.has_key">
+<code class="descname">has_key</code><span class="sig-paren">(</span><em>location</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cadishi/base.html#Container.has_key"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cadishi.base.Container.has_key" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if the current object instance has data stored at location.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="cadishi.base.Container.put_data">
+<code class="descname">put_data</code><span class="sig-paren">(</span><em>location</em>, <em>data</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cadishi/base.html#Container.put_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cadishi.base.Container.put_data" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="cadishi.base.Container.put_meta">
+<code class="descname">put_meta</code><span class="sig-paren">(</span><em>meta</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cadishi/base.html#Container.put_meta"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cadishi.base.Container.put_meta" title="Permalink to this definition">¶</a></dt>
+<dd><p>Append pipeline log information to the instance&#8217;s log list.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="cadishi.base.Container.query_meta">
+<code class="descname">query_meta</code><span class="sig-paren">(</span><em>path</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cadishi/base.html#Container.query_meta"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cadishi.base.Container.query_meta" title="Permalink to this definition">¶</a></dt>
+<dd><p>Obtain a value from the pipeline log list by using
+a Unix-path-like string identifier.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="cadishi.base.Container.scale_data">
+<code class="descname">scale_data</code><span class="sig-paren">(</span><em>C, location, skip_keys=['radii', 'frame']</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cadishi/base.html#Container.scale_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cadishi.base.Container.scale_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Scale (ie multiply) data at location by the factor C.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="cadishi.base.Container.sum_data">
+<code class="descname">sum_data</code><span class="sig-paren">(</span><em>other, location, skip_keys=['radii', 'frame']</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cadishi/base.html#Container.sum_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cadishi.base.Container.sum_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add (+) data at location from other to self. If location does not exist
+in the current instance, it is created.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="cadishi.base.Filter">
+<em class="property">class </em><code class="descclassname">cadishi.base.</code><code class="descname">Filter</code><span class="sig-paren">(</span><em>source=-1</em>, <em>verbose=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cadishi/base.html#Filter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cadishi.base.Filter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Filter base class, to be overloaded by an actual implementation.</p>
+<dl class="method">
+<dt id="cadishi.base.Filter.get_meta">
+<code class="descname">get_meta</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/cadishi/base.html#Filter.get_meta"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cadishi.base.Filter.get_meta" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return information on the present filter, ready to be added to a frame
+object&#8217;s list of pipeline meta information.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="cadishi.base.Filter.set_input">
+<code class="descname">set_input</code><span class="sig-paren">(</span><em>source</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cadishi/base.html#Filter.set_input"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cadishi.base.Filter.set_input" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="cadishi.base.PipelineElement">
+<em class="property">class </em><code class="descclassname">cadishi.base.</code><code class="descname">PipelineElement</code><a class="reference internal" href="_modules/cadishi/base.html#PipelineElement"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cadishi.base.PipelineElement" title="Permalink to this definition">¶</a></dt>
+<dd><p>Base class common to Filter, Reader, and Writer.  Provides methods needed
+to implement dependency checking between pipeline elements.
+Note: The &#8220;object&#8221; parameter makes it a new style class which is necessary to make
+the &#8220;super()&#8221; mechanism work to implement inheritance of the _depends and _conflicts
+lists.</p>
+<dl class="method">
+<dt id="cadishi.base.PipelineElement.conflicts">
+<code class="descname">conflicts</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/cadishi/base.html#PipelineElement.conflicts"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cadishi.base.PipelineElement.conflicts" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="cadishi.base.PipelineElement.depends">
+<code class="descname">depends</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/cadishi/base.html#PipelineElement.depends"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cadishi.base.PipelineElement.depends" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="cadishi.base.Reader">
+<em class="property">class </em><code class="descclassname">cadishi.base.</code><code class="descname">Reader</code><a class="reference internal" href="_modules/cadishi/base.html#Reader"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cadishi.base.Reader" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="cadishi.base.Reader.get_meta">
+<code class="descname">get_meta</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/cadishi/base.html#Reader.get_meta"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cadishi.base.Reader.get_meta" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return information on the present filter, ready to be added to a frame
+object&#8217;s list of pipeline meta information.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="cadishi.base.TrajectoryInformation">
+<em class="property">class </em><code class="descclassname">cadishi.base.</code><code class="descname">TrajectoryInformation</code><a class="reference internal" href="_modules/cadishi/base.html#TrajectoryInformation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cadishi.base.TrajectoryInformation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Handle trajectory meta data.</p>
+<dl class="method">
+<dt id="cadishi.base.TrajectoryInformation.get_pipeline_parameter">
+<code class="descname">get_pipeline_parameter</code><span class="sig-paren">(</span><em>_id</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cadishi/base.html#TrajectoryInformation.get_pipeline_parameter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cadishi.base.TrajectoryInformation.get_pipeline_parameter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the value of the _last_ occurrence of &#8220;id&#8221; in the pipeline, ie.
+the pipeline is searched in reversed order.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="cadishi.base.Writer">
+<em class="property">class </em><code class="descclassname">cadishi.base.</code><code class="descname">Writer</code><a class="reference internal" href="_modules/cadishi/base.html#Writer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cadishi.base.Writer" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="cadishi.base.Writer.set_input">
+<code class="descname">set_input</code><span class="sig-paren">(</span><em>source</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cadishi/base.html#Writer.set_input"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cadishi.base.Writer.set_input" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-cadishi.io.ascii">
+<span id="cadishi-io-ascii"></span><h2>cadishi.io.ascii<a class="headerlink" href="#module-cadishi.io.ascii" title="Permalink to this headline">¶</a></h2>
+<p>Cadishi ASCII IO library.</p>
+<p>ASCII data writer for base.Container instances, mainly designed
+for debugging purposes.  A reader is currently not implemented.</p>
+<dl class="class">
+<dt id="cadishi.io.ascii.ASCIIReader">
+<em class="property">class </em><code class="descclassname">cadishi.io.ascii.</code><code class="descname">ASCIIReader</code><a class="reference internal" href="_modules/cadishi/io/ascii.html#ASCIIReader"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cadishi.io.ascii.ASCIIReader" title="Permalink to this definition">¶</a></dt>
+<dd><p>ASCII data reader, currently not implemented.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="cadishi.io.ascii.ASCIIWriter">
+<em class="property">class </em><code class="descclassname">cadishi.io.ascii.</code><code class="descname">ASCIIWriter</code><span class="sig-paren">(</span><em>directory='.'</em>, <em>source=-1</em>, <em>verbose=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cadishi/io/ascii.html#ASCIIWriter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cadishi.io.ascii.ASCIIWriter" title="Permalink to this definition">¶</a></dt>
+<dd><p>ASCII data writer for base.Container instances.</p>
+<dl class="method">
+<dt id="cadishi.io.ascii.ASCIIWriter.dump">
+<code class="descname">dump</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/cadishi/io/ascii.html#ASCIIWriter.dump"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cadishi.io.ascii.ASCIIWriter.dump" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="cadishi.io.ascii.ASCIIWriter.write_frame">
+<code class="descname">write_frame</code><span class="sig-paren">(</span><em>frm</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cadishi/io/ascii.html#ASCIIWriter.write_frame"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cadishi.io.ascii.ASCIIWriter.write_frame" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-cadishi.io.dummy">
+<span id="cadishi-io-dummy"></span><h2>cadishi.io.dummy<a class="headerlink" href="#module-cadishi.io.dummy" title="Permalink to this headline">¶</a></h2>
+<p>Cadishi dummy IO module.</p>
+<dl class="class">
+<dt id="cadishi.io.dummy.DummyReader">
+<em class="property">class </em><code class="descclassname">cadishi.io.dummy.</code><code class="descname">DummyReader</code><span class="sig-paren">(</span><em>n_frames</em>, <em>n_objects=[]</em>, <em>verbose=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cadishi/io/dummy.html#DummyReader"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cadishi.io.dummy.DummyReader" title="Permalink to this definition">¶</a></dt>
+<dd><p>Dummy reader, generates random coordinate data on the fly.
+Intended for development/testing purposes.</p>
+<dl class="method">
+<dt id="cadishi.io.dummy.DummyReader.get_frame">
+<code class="descname">get_frame</code><span class="sig-paren">(</span><em>i</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cadishi/io/dummy.html#DummyReader.get_frame"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cadishi.io.dummy.DummyReader.get_frame" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="cadishi.io.dummy.DummyReader.next">
+<code class="descname">next</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/cadishi/io/dummy.html#DummyReader.next"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cadishi.io.dummy.DummyReader.next" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="cadishi.io.dummy.DummyWriter">
+<em class="property">class </em><code class="descclassname">cadishi.io.dummy.</code><code class="descname">DummyWriter</code><span class="sig-paren">(</span><em>source</em>, <em>verbose=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cadishi/io/dummy.html#DummyWriter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cadishi.io.dummy.DummyWriter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Dummy trajectory writer, provides a sink for a pipeline,
+discards frame by frame.  Mainly for development purposes.</p>
+<dl class="method">
+<dt id="cadishi.io.dummy.DummyWriter.dump">
+<code class="descname">dump</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/cadishi/io/dummy.html#DummyWriter.dump"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cadishi.io.dummy.DummyWriter.dump" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-cadishi.io.hdf5">
+<span id="cadishi-io-hdf5"></span><h2>cadishi.io.hdf5<a class="headerlink" href="#module-cadishi.io.hdf5" title="Permalink to this headline">¶</a></h2>
+<p>Cadishi HDF5 IO library.</p>
+<p>HDF5 data reader/writer for base.Container instances.</p>
+<dl class="class">
+<dt id="cadishi.io.hdf5.H5Reader">
+<em class="property">class </em><code class="descclassname">cadishi.io.hdf5.</code><code class="descname">H5Reader</code><span class="sig-paren">(</span><em>file=['default.h5'], first=1, last=None, step=1, shuffle=False, shuffle_reproducible=False, verbose=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cadishi/io/hdf5.html#H5Reader"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cadishi.io.hdf5.H5Reader" title="Permalink to this definition">¶</a></dt>
+<dd><p>HDF5 reader returning base.Container instances.</p>
+<dl class="method">
+<dt id="cadishi.io.hdf5.H5Reader.close_h5fp">
+<code class="descname">close_h5fp</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/cadishi/io/hdf5.html#H5Reader.close_h5fp"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cadishi.io.hdf5.H5Reader.close_h5fp" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="cadishi.io.hdf5.H5Reader.get_frame">
+<code class="descname">get_frame</code><span class="sig-paren">(</span><em>idx_tuple</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cadishi/io/hdf5.html#H5Reader.get_frame"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cadishi.io.hdf5.H5Reader.get_frame" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read a frame identified by its (file_idx, frame_idx)
+and return a Container object.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="cadishi.io.hdf5.H5Reader.get_h5fp">
+<code class="descname">get_h5fp</code><span class="sig-paren">(</span><em>file_idx</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cadishi/io/hdf5.html#H5Reader.get_h5fp"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cadishi.io.hdf5.H5Reader.get_h5fp" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="cadishi.io.hdf5.H5Reader.get_meta">
+<code class="descname">get_meta</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/cadishi/io/hdf5.html#H5Reader.get_meta"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cadishi.io.hdf5.H5Reader.get_meta" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return information on the HDF5 reader,
+ready to be added to a frame object&#8217;s list of
+pipeline meta information.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="cadishi.io.hdf5.H5Reader.get_trajectory_information">
+<code class="descname">get_trajectory_information</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/cadishi/io/hdf5.html#H5Reader.get_trajectory_information"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cadishi.io.hdf5.H5Reader.get_trajectory_information" title="Permalink to this definition">¶</a></dt>
+<dd><p>Collect information from the first frame, assume it to be
+representative for all the frames, and return it via a trajectory
+information object.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="cadishi.io.hdf5.H5Reader.next">
+<code class="descname">next</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/cadishi/io/hdf5.html#H5Reader.next"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cadishi.io.hdf5.H5Reader.next" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generator yielding frame by frame (re-numbering frames from one).</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="cadishi.io.hdf5.H5Writer">
+<em class="property">class </em><code class="descclassname">cadishi.io.hdf5.</code><code class="descname">H5Writer</code><span class="sig-paren">(</span><em>file='default.hdf5'</em>, <em>source=-1</em>, <em>compression=None</em>, <em>mode='w'</em>, <em>verbose=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cadishi/io/hdf5.html#H5Writer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cadishi.io.hdf5.H5Writer" title="Permalink to this definition">¶</a></dt>
+<dd><p>HDF5 writer for base.Container instances.</p>
+<dl class="method">
+<dt id="cadishi.io.hdf5.H5Writer.close_file_safely">
+<code class="descname">close_file_safely</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/cadishi/io/hdf5.html#H5Writer.close_file_safely"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cadishi.io.hdf5.H5Writer.close_file_safely" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="cadishi.io.hdf5.H5Writer.default_compression">
+<code class="descname">default_compression</code><em class="property"> = 'lzf'</em><a class="headerlink" href="#cadishi.io.hdf5.H5Writer.default_compression" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="cadishi.io.hdf5.H5Writer.dump">
+<code class="descname">dump</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/cadishi/io/hdf5.html#H5Writer.dump"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cadishi.io.hdf5.H5Writer.dump" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save a series of frames (== trajectory).
+The dump() method saves all the frames pending
+from the Writer&#8217;s data source (self.src).
+If the user code sets up a data processing pipeline,
+the dump() routine drives it by providing the final sink.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="cadishi.io.hdf5.H5Writer.get_meta">
+<code class="descname">get_meta</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/cadishi/io/hdf5.html#H5Writer.get_meta"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cadishi.io.hdf5.H5Writer.get_meta" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return information on the HDF5 writer,
+ready to be added to a frame object&#8217;s list of
+pipeline meta information.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="cadishi.io.hdf5.H5Writer.put_frame">
+<code class="descname">put_frame</code><span class="sig-paren">(</span><em>frm</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cadishi/io/hdf5.html#H5Writer.put_frame"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cadishi.io.hdf5.H5Writer.put_frame" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save a single frame into a HDF5 group
+labeled with the frame number.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cadishi.io.hdf5.H5Writer.valid_compression">
+<code class="descname">valid_compression</code><em class="property"> = [None, 'gzip', 'lzf']</em><a class="headerlink" href="#cadishi.io.hdf5.H5Writer.valid_compression" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-cadishi.io.pickel">
+<span id="cadishi-io-pickle"></span><h2>cadishi.io.pickle<a class="headerlink" href="#module-cadishi.io.pickel" title="Permalink to this headline">¶</a></h2>
+<p>Cadishi IO library using pickle. The name was chosen deliberately to read
+&#8216;pickel&#8217; to avoid name conflicts.</p>
+<dl class="class">
+<dt id="cadishi.io.pickel.PickleReader">
+<em class="property">class </em><code class="descclassname">cadishi.io.pickel.</code><code class="descname">PickleReader</code><span class="sig-paren">(</span><em>file='default_'</em>, <em>first=None</em>, <em>last=None</em>, <em>step=1</em>, <em>verbose=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cadishi/io/pickel.html#PickleReader"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cadishi.io.pickel.PickleReader" title="Permalink to this definition">¶</a></dt>
+<dd><p>Pickle reader for base.Container instances.</p>
+<dl class="method">
+<dt id="cadishi.io.pickel.PickleReader.get_frame">
+<code class="descname">get_frame</code><span class="sig-paren">(</span><em>number</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cadishi/io/pickel.html#PickleReader.get_frame"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cadishi.io.pickel.PickleReader.get_frame" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read a frame identified by its number and
+return a container object.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="cadishi.io.pickel.PickleReader.get_meta">
+<code class="descname">get_meta</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/cadishi/io/pickel.html#PickleReader.get_meta"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cadishi.io.pickel.PickleReader.get_meta" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return information on the pickle reader,
+ready to be added to a frame object&#8217;s list of
+pipeline meta information.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="cadishi.io.pickel.PickleReader.next">
+<code class="descname">next</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/cadishi/io/pickel.html#PickleReader.next"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cadishi.io.pickel.PickleReader.next" title="Permalink to this definition">¶</a></dt>
+<dd><p>Iterate through all the frames and yield frame by frame.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="cadishi.io.pickel.PickleWriter">
+<em class="property">class </em><code class="descclassname">cadishi.io.pickel.</code><code class="descname">PickleWriter</code><span class="sig-paren">(</span><em>file='default_'</em>, <em>source=-1</em>, <em>verbose=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cadishi/io/pickel.html#PickleWriter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cadishi.io.pickel.PickleWriter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Pickle writer for base.Container instances.</p>
+<dl class="method">
+<dt id="cadishi.io.pickel.PickleWriter.dump">
+<code class="descname">dump</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/cadishi/io/pickel.html#PickleWriter.dump"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cadishi.io.pickel.PickleWriter.dump" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save a series of base.Container instances pending
+from the writer&#8217;s data source to individual pickle
+files.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="cadishi.io.pickel.PickleWriter.get_meta">
+<code class="descname">get_meta</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/cadishi/io/pickel.html#PickleWriter.get_meta"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cadishi.io.pickel.PickleWriter.get_meta" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return information on the pickle writer,
+ready to be added to a frame object&#8217;s list of
+pipeline meta information.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="cadishi.io.pickel.PickleWriter.put_frame">
+<code class="descname">put_frame</code><span class="sig-paren">(</span><em>frm</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cadishi/io/pickel.html#PickleWriter.put_frame"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cadishi.io.pickel.PickleWriter.put_frame" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save a single frame into a pickle file
+labeled with the frame number.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-cadishi.dict_util">
+<span id="cadishi-dict-util"></span><h2>cadishi.dict_util<a class="headerlink" href="#module-cadishi.dict_util" title="Permalink to this headline">¶</a></h2>
+<p>Dictionary utilities.</p>
+<p>Implement add, append, and scale operations for numerical data (ie. NumPy
+arrays) stored in dictionaries.  In addition, an ASCII output routine is
+provided.</p>
+<dl class="function">
+<dt id="cadishi.dict_util.append_values">
+<code class="descclassname">cadishi.dict_util.</code><code class="descname">append_values</code><span class="sig-paren">(</span><em>X, Y, skip_keys=['radii']</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cadishi/dict_util.html#append_values"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cadishi.dict_util.append_values" title="Permalink to this definition">¶</a></dt>
+<dd><p>Implement X.append(Y) where X and Y are Python dictionaries that contain
+NumPy data types.  The operation is applied to X for any value in Y,
+excluding keys that are in the list skip_keys.  Typically, the values of X,
+Y are NumPy arrays (e.g. particle numbers) that are appended.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>X</strong> (<em>dict</em>) &#8211; X is a dictionary with string keys that contains NumPy arrays.</li>
+<li><strong>Y</strong> (<em>dict</em>) &#8211; Y is a dictionary with string keys that contains NumPy arrays.</li>
+<li><strong>skip_keys</strong> (<em>list of strings</em>) &#8211; skip_keys is a list of strings for which the append operation is skipped.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">The function scale_values operates on X directly
+and does not return anything.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">None</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="cadishi.dict_util.scale_values">
+<code class="descclassname">cadishi.dict_util.</code><code class="descname">scale_values</code><span class="sig-paren">(</span><em>X, C, skip_keys=['radii', 'frame']</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cadishi/dict_util.html#scale_values"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cadishi.dict_util.scale_values" title="Permalink to this definition">¶</a></dt>
+<dd><p>Implement X = X times C where X is a Python dictionary that contains supported
+data types.
+The operation is applied to any value in X, excluding keys that are in the
+list skip_keys.
+Typically, the values of X are NumPy arrays (histograms) that are rescaled
+after summation using a scalar C (e.g. to implement averaging operation).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>X</strong> (<em>dict</em>) &#8211; X is a dictionary with string keys that contains NumPy arrays.</li>
+<li><strong>C</strong> (<em>scalar</em><em>, </em><em>NumPy array</em>) &#8211; C is a multiplier, either a scalar of a NumPy array of size compatible
+with the contents of X.</li>
+<li><strong>skip_keys</strong> (<em>list of strings</em>) &#8211; skip_keys is a list of strings for which the sum operation is skipped.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">The function scale_values operates on X directly
+and does not return anything.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">None</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="cadishi.dict_util.sum_values">
+<code class="descclassname">cadishi.dict_util.</code><code class="descname">sum_values</code><span class="sig-paren">(</span><em>X, Y, skip_keys=['radii', 'frame']</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cadishi/dict_util.html#sum_values"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cadishi.dict_util.sum_values" title="Permalink to this definition">¶</a></dt>
+<dd><p>Implement X += Y where X and Y are Python dictionaries (with string keys)
+that contain summable data types.
+The operation is applied to X for any value in Y, excluding keys that are in
+the list skip_keys.
+Typically, the values of X, Y are NumPy arrays (e.g. histograms) that are summed.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>X</strong> (<em>dict</em>) &#8211; X is a dictionary with string keys that contains NumPy arrays.</li>
+<li><strong>Y</strong> (<em>dict</em>) &#8211; Y is a dictionary with string keys that contains NumPy arrays.</li>
+<li><strong>skip_keys</strong> (<em>list of strings</em>) &#8211; skip_keys is a list of strings for which the sum operation is skipped.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">The function sum_values operates on X directly
+and does not return anything.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">None</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="cadishi.dict_util.write_dict">
+<code class="descclassname">cadishi.dict_util.</code><code class="descname">write_dict</code><span class="sig-paren">(</span><em>dic</em>, <em>path</em>, <em>level=0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cadishi/dict_util.html#write_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cadishi.dict_util.write_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write a dictionary containing NumPy arrays or other Python data
+structures to text files.  In case the dictionary contains other
+dictionaries, the function is called recursively.  The keys should
+be strings to guarantee successful operation.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>dic</strong> (<em>dictionary</em>) &#8211; A dictionary containing NumPy arrays or other Python data structures.</li>
+<li><strong>path</strong> (<em>string</em>) &#8211; Path where the dictionary and its data shall be written to.</li>
+<li><strong>level</strong> (<em>int</em><em>, </em><em>optional</em>) &#8211; Level in the nested-dictionary hierarchy during recursive operation.
+This parameter was added for debugging purposes and does not have any
+practical relevance.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">The function write_dict does not return anything.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">None</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="module-cadishi.dictfs">
+<span id="cadishi-dictfs"></span><h2>cadishi.dictfs<a class="headerlink" href="#module-cadishi.dictfs" title="Permalink to this headline">¶</a></h2>
+<p>dictfs, the dictionary-based &#8220;file system&#8221;.</p>
+<p>Store and retrieve data from nested dictionaries in memory using path name
+strings similar to a UNIX file system.  Can be used in tandem with HDF5 IO.</p>
+<dl class="function">
+<dt id="cadishi.dictfs.delete">
+<code class="descclassname">cadishi.dictfs.</code><code class="descname">delete</code><span class="sig-paren">(</span><em>node</em>, <em>path</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cadishi/dictfs.html#delete"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cadishi.dictfs.delete" title="Permalink to this definition">¶</a></dt>
+<dd><p>Delete the object at path relative to node.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="cadishi.dictfs.exists">
+<code class="descclassname">cadishi.dictfs.</code><code class="descname">exists</code><span class="sig-paren">(</span><em>node</em>, <em>path</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cadishi/dictfs.html#exists"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cadishi.dictfs.exists" title="Permalink to this definition">¶</a></dt>
+<dd><p>Query the object&#8217;s existence at path relative to node.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="cadishi.dictfs.load">
+<code class="descclassname">cadishi.dictfs.</code><code class="descname">load</code><span class="sig-paren">(</span><em>node</em>, <em>path</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cadishi/dictfs.html#load"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cadishi.dictfs.load" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the object at path relative to node.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="cadishi.dictfs.save">
+<code class="descclassname">cadishi.dictfs.</code><code class="descname">save</code><span class="sig-paren">(</span><em>node</em>, <em>path</em>, <em>obj</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cadishi/dictfs.html#save"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cadishi.dictfs.save" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save a deepcopy of obj at path relative to node.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-cadishi.h5pickle">
+<span id="cadishi-h5pickle"></span><h2>cadishi.h5pickle<a class="headerlink" href="#module-cadishi.h5pickle" title="Permalink to this headline">¶</a></h2>
+<p>Python-to-HDF5 serialization.</p>
+<p>h5pickle.py provides load() and save() routines to write Python data structures
+into HDF5 files.  It works with NumPy arrays and basic Python data types.
+Nested dictionaries are used to map HDF5 group hierarchies.  The code is likely
+to fail with more complicated Python data types.</p>
+<p>Working with typical data sets used with Cadishi, the HDF5 serialization turns
+out to be a factor of 10 faster than Pickle.</p>
+<dl class="function">
+<dt id="cadishi.h5pickle.load">
+<code class="descclassname">cadishi.h5pickle.</code><code class="descname">load</code><span class="sig-paren">(</span><em>h5_grp</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cadishi/h5pickle.html#load"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cadishi.h5pickle.load" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load a HDF5 group recursively into a Python dictionary,
+and return the dictionary.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="cadishi.h5pickle.save">
+<code class="descclassname">cadishi.h5pickle.</code><code class="descname">save</code><span class="sig-paren">(</span><em>h5_grp</em>, <em>key</em>, <em>data</em>, <em>compression=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cadishi/h5pickle.html#save"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cadishi.h5pickle.save" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save commonly used Python data structures to a HDF5 file/group.
+For dictionaries, this function is called recursively, using the
+keys as labels to create sub-groups.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-cadishi.util">
+<span id="cadishi-util"></span><h2>cadishi.util<a class="headerlink" href="#module-cadishi.util" title="Permalink to this headline">¶</a></h2>
+<p>Miscellaneous useful tools used by Cadishi and Capriqorn.</p>
+<dl class="class">
+<dt id="cadishi.util.PrintWrapper">
+<em class="property">class </em><code class="descclassname">cadishi.util.</code><code class="descname">PrintWrapper</code><a class="reference internal" href="_modules/cadishi/util.html#PrintWrapper"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cadishi.util.PrintWrapper" title="Permalink to this definition">¶</a></dt>
+<dd><p>Wrapper to implement infrequent message printing.</p>
+<dl class="method">
+<dt id="cadishi.util.PrintWrapper.every">
+<code class="descname">every</code><span class="sig-paren">(</span><em>context</em>, <em>msg</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cadishi/util.html#PrintWrapper.every"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cadishi.util.PrintWrapper.every" title="Permalink to this definition">¶</a></dt>
+<dd><p>Print at every nth invocation.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="cadishi.util.PrintWrapper.once">
+<code class="descname">once</code><span class="sig-paren">(</span><em>context</em>, <em>msg</em>, <em>time_stamp=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cadishi/util.html#PrintWrapper.once"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cadishi.util.PrintWrapper.once" title="Permalink to this definition">¶</a></dt>
+<dd><p>Print context and message exactly once.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="cadishi.util.appendLineToFile">
+<code class="descclassname">cadishi.util.</code><code class="descname">appendLineToFile</code><span class="sig-paren">(</span><em>filename</em>, <em>string</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cadishi/util.html#appendLineToFile"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cadishi.util.appendLineToFile" title="Permalink to this definition">¶</a></dt>
+<dd><p>Append string as a line to the end of the file identified by filename.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="cadishi.util.check_parameter">
+<code class="descclassname">cadishi.util.</code><code class="descname">check_parameter</code><span class="sig-paren">(</span><em>parameters</em>, <em>label</em>, <em>dtype</em>, <em>default_value</em>, <em>valid_values=None</em>, <em>min_value=None</em>, <em>max_value=None</em>, <em>file_existence=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cadishi/util.html#check_parameter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cadishi.util.check_parameter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check a parameter for validity.</p>
+<p>Throws ValueError or IOError with useful end-user-friendly messages.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="cadishi.util.check_parameter_labels">
+<code class="descclassname">cadishi.util.</code><code class="descname">check_parameter_labels</code><span class="sig-paren">(</span><em>input</em>, <em>reference</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cadishi/util.html#check_parameter_labels"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cadishi.util.check_parameter_labels" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check the keys of a two-level nested dictionary structure against a reference structure.</p>
+<p>Raises KeyError in case of an invalid key.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="cadishi.util.compare">
+<code class="descclassname">cadishi.util.</code><code class="descname">compare</code><span class="sig-paren">(</span><em>histo1</em>, <em>histo2</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cadishi/util.html#compare"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cadishi.util.compare" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="cadishi.util.compare_approximately">
+<code class="descclassname">cadishi.util.</code><code class="descname">compare_approximately</code><span class="sig-paren">(</span><em>histo1</em>, <em>histo2</em>, <em>ks_stat_max=0.01</em>, <em>p_value_min=0.99</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cadishi/util.html#compare_approximately"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cadishi.util.compare_approximately" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if two histograms (1D numpy arrays) or two sets of histograms (2D
+numpy arrays) are reasonably similar.
+The routine can be used to check the results of single precision computations
+against a reference file.  Computes the Kolmogorov-Smirnov statistic on 2
+samples using
+<a class="reference external" href="http://docs.scipy.org/doc/scipy-0.15.1/reference/generated/scipy.stats.ks_2samp.html">http://docs.scipy.org/doc/scipy-0.15.1/reference/generated/scipy.stats.ks_2samp.html</a></p>
+</dd></dl>
+
+<dl class="function">
+<dt id="cadishi.util.compare_strictly">
+<code class="descclassname">cadishi.util.</code><code class="descname">compare_strictly</code><span class="sig-paren">(</span><em>histo1</em>, <em>histo2</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cadishi/util.html#compare_strictly"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cadishi.util.compare_strictly" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if two histograms (1D numpy arrays) or two sets of histograms (2D
+numpy arrays) are identical, only suitable to check the results of double
+precision computations.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="cadishi.util.do_cprofile">
+<code class="descclassname">cadishi.util.</code><code class="descname">do_cprofile</code><span class="sig-paren">(</span><em>func</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cadishi/util.html#do_cprofile"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cadishi.util.do_cprofile" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="cadishi.util.do_lprofile">
+<code class="descclassname">cadishi.util.</code><code class="descname">do_lprofile</code><span class="sig-paren">(</span><em>follow=[]</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cadishi/util.html#do_lprofile"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cadishi.util.do_lprofile" title="Permalink to this definition">¶</a></dt>
+<dd><p>Helpful if you accidentally leave in production!</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="cadishi.util.dump_histograms">
+<code class="descclassname">cadishi.util.</code><code class="descname">dump_histograms</code><span class="sig-paren">(</span><em>filename</em>, <em>histograms</em>, <em>r_max</em>, <em>n_bins</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cadishi/util.html#dump_histograms"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cadishi.util.dump_histograms" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="cadishi.util.generate_random_coordinate_set">
+<code class="descclassname">cadishi.util.</code><code class="descname">generate_random_coordinate_set</code><span class="sig-paren">(</span><em>n_atoms=[512, 1024, 2048], coord_min=(0.0, 0.0, 0.0), coord_max=(1.0, 1.0, 1.0), blowup_factor=1.0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cadishi/util.html#generate_random_coordinate_set"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cadishi.util.generate_random_coordinate_set" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return pseudo-random coordinate sets in a box.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="cadishi.util.generate_random_point_in_sphere">
+<code class="descclassname">cadishi.util.</code><code class="descname">generate_random_point_in_sphere</code><span class="sig-paren">(</span><em>R</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cadishi/util.html#generate_random_point_in_sphere"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cadishi.util.generate_random_point_in_sphere" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a coordinate triple of a randomly located point inside a sphere of radius R.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="cadishi.util.generate_random_point_on_spherical_surface">
+<code class="descclassname">cadishi.util.</code><code class="descname">generate_random_point_on_spherical_surface</code><span class="sig-paren">(</span><em>R</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cadishi/util.html#generate_random_point_on_spherical_surface"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cadishi.util.generate_random_point_on_spherical_surface" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a coordinate triple of a randomly located point inside a sphere of radius R.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="cadishi.util.get_elements">
+<code class="descclassname">cadishi.util.</code><code class="descname">get_elements</code><span class="sig-paren">(</span><em>header</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cadishi/util.html#get_elements"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cadishi.util.get_elements" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a complete list of all the chemical elements present in a header.
+Header may be a string or a list containing single element IDs
+or pair combinations thereof.  &#8220;#&#8221; and &#8220;radii&#8221; are skipped automatically.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="cadishi.util.get_executable_name">
+<code class="descclassname">cadishi.util.</code><code class="descname">get_executable_name</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/cadishi/util.html#get_executable_name"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cadishi.util.get_executable_name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="cadishi.util.get_n_cpu_cores">
+<code class="descclassname">cadishi.util.</code><code class="descname">get_n_cpu_cores</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/cadishi/util.html#get_n_cpu_cores"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cadishi.util.get_n_cpu_cores" title="Permalink to this definition">¶</a></dt>
+<dd><p>Determine the number of CPU cores on a Linux host.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">number of CPU cores</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">int</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="cadishi.util.get_n_cpu_sockets">
+<code class="descclassname">cadishi.util.</code><code class="descname">get_n_cpu_sockets</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/cadishi/util.html#get_n_cpu_sockets"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cadishi.util.get_n_cpu_sockets" title="Permalink to this definition">¶</a></dt>
+<dd><p>Determine the number of CPU sockets on a Linux host.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><ul class="simple">
+<li><em>int</em> &#8211; number of CPU sockets</li>
+<li><em>May throw an IOError exception in case /proc/cpuinfo does not exist.</em></li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="cadishi.util.get_numa_domains">
+<code class="descclassname">cadishi.util.</code><code class="descname">get_numa_domains</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/cadishi/util.html#get_numa_domains"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cadishi.util.get_numa_domains" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="cadishi.util.load_class">
+<code class="descclassname">cadishi.util.</code><code class="descname">load_class</code><span class="sig-paren">(</span><em>module_name</em>, <em>class_name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cadishi/util.html#load_class"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cadishi.util.load_class" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load a class from a module, where class and module
+are specified as strings. (Required to dynamically build pipelines.)</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="cadishi.util.load_json">
+<code class="descclassname">cadishi.util.</code><code class="descname">load_json</code><span class="sig-paren">(</span><em>filename</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cadishi/util.html#load_json"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cadishi.util.load_json" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="cadishi.util.load_parameter_file">
+<code class="descclassname">cadishi.util.</code><code class="descname">load_parameter_file</code><span class="sig-paren">(</span><em>filename</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cadishi/util.html#load_parameter_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cadishi.util.load_parameter_file" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="cadishi.util.load_yaml">
+<code class="descclassname">cadishi.util.</code><code class="descname">load_yaml</code><span class="sig-paren">(</span><em>filename</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cadishi/util.html#load_yaml"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cadishi.util.load_yaml" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="cadishi.util.ls">
+<code class="descclassname">cadishi.util.</code><code class="descname">ls</code><span class="sig-paren">(</span><em>resource</em>, <em>files=True</em>, <em>directories=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cadishi/util.html#ls"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cadishi.util.ls" title="Permalink to this definition">¶</a></dt>
+<dd><p>List files and optionally directories located at resource</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="cadishi.util.make_iterable">
+<code class="descclassname">cadishi.util.</code><code class="descname">make_iterable</code><span class="sig-paren">(</span><em>obj</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cadishi/util.html#make_iterable"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cadishi.util.make_iterable" title="Permalink to this definition">¶</a></dt>
+<dd><p>Pack obj into a list if it is not iterable, yet.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="cadishi.util.md">
+<code class="descclassname">cadishi.util.</code><code class="descname">md</code><span class="sig-paren">(</span><em>resource</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cadishi/util.html#md"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cadishi.util.md" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a directory (for a file), if necessary.  The behaviour highly
+depends on the resource (string) parameter.</p>
+<dl class="docutils">
+<dt>If resource is of the form &#8220;string&#8221;,</dt>
+<dd>nothing is done.</dd>
+<dt>If resource is of the form &#8220;string/&#8221;,</dt>
+<dd>a directory labeled &#8220;string&#8221; is created.</dd>
+<dt>If resource is of the form &#8220;string/foo&#8221;,</dt>
+<dd>a directory labeled &#8220;string&#8221; is created.</dd>
+<dt>If resource is of the form &#8220;string/foo/&#8221;,</dt>
+<dd>a directory structure &#8220;string/foo&#8221; is created.</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="cadishi.util.open_r">
+<code class="descclassname">cadishi.util.</code><code class="descname">open_r</code><span class="sig-paren">(</span><em>filename</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cadishi/util.html#open_r"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cadishi.util.open_r" title="Permalink to this definition">¶</a></dt>
+<dd><p>Open an uncompressed or GZIP-compressed text file for reading.
+Return the file pointer.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="cadishi.util.pipeline_entry">
+<code class="descclassname">cadishi.util.</code><code class="descname">pipeline_entry</code><span class="sig-paren">(</span><em>label</em>, <em>param</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cadishi/util.html#pipeline_entry"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cadishi.util.pipeline_entry" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a dictionary with a single key-value pair, in particular
+label (key) being a string label, and param being a dictionary with
+string keys and arbitrary values.
+The return value may be appended eg. to a pipeline_log list.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="cadishi.util.quote">
+<code class="descclassname">cadishi.util.</code><code class="descname">quote</code><span class="sig-paren">(</span><em>string</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cadishi/util.html#quote"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cadishi.util.quote" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add quotes to the beginning and the end of a string if not already present.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="cadishi.util.redirectOutput">
+<code class="descclassname">cadishi.util.</code><code class="descname">redirectOutput</code><span class="sig-paren">(</span><em>filename</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cadishi/util.html#redirectOutput"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cadishi.util.redirectOutput" title="Permalink to this definition">¶</a></dt>
+<dd><p>Redirect stdout and stderr to the file specified by filename.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="cadishi.util.rm">
+<code class="descclassname">cadishi.util.</code><code class="descname">rm</code><span class="sig-paren">(</span><em>resource</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cadishi/util.html#rm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cadishi.util.rm" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove a file.  If the file does not exist, no error is raised.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="cadishi.util.rmrf">
+<code class="descclassname">cadishi.util.</code><code class="descname">rmrf</code><span class="sig-paren">(</span><em>resource</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cadishi/util.html#rmrf"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cadishi.util.rmrf" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove file or directory tree.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="cadishi.util.save_json">
+<code class="descclassname">cadishi.util.</code><code class="descname">save_json</code><span class="sig-paren">(</span><em>data</em>, <em>filename</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cadishi/util.html#save_json"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cadishi.util.save_json" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="cadishi.util.save_yaml">
+<code class="descclassname">cadishi.util.</code><code class="descname">save_yaml</code><span class="sig-paren">(</span><em>data</em>, <em>filename</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cadishi/util.html#save_yaml"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cadishi.util.save_yaml" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="cadishi.util.savetxtHeader">
+<code class="descclassname">cadishi.util.</code><code class="descname">savetxtHeader</code><span class="sig-paren">(</span><em>name</em>, <em>header</em>, <em>array</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cadishi/util.html#savetxtHeader"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cadishi.util.savetxtHeader" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save data including header.  Legacy routine by Juergen.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="cadishi.util.scratch_dir">
+<code class="descclassname">cadishi.util.</code><code class="descname">scratch_dir</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/cadishi/util.html#scratch_dir"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cadishi.util.scratch_dir" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return and create a per-user scratch directory for unit test data.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="cadishi.util.search_pipeline">
+<code class="descclassname">cadishi.util.</code><code class="descname">search_pipeline</code><span class="sig-paren">(</span><em>label</em>, <em>pipeline</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cadishi/util.html#search_pipeline"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cadishi.util.search_pipeline" title="Permalink to this definition">¶</a></dt>
+<dd><p>Iterate through the pipeline list backwards in order to find
+the entry (dict) identified by label (string).</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="cadishi.util.set_numa_domain">
+<code class="descclassname">cadishi.util.</code><code class="descname">set_numa_domain</code><span class="sig-paren">(</span><em>numa_id</em>, <em>numa_topology</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cadishi/util.html#set_numa_domain"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cadishi.util.set_numa_domain" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="cadishi.util.testcase">
+<code class="descclassname">cadishi.util.</code><code class="descname">testcase</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/cadishi/util.html#testcase"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cadishi.util.testcase" title="Permalink to this definition">¶</a></dt>
+<dd><p>Try to locate the test case that comes with cadishi.  Works for a
+check-out (or tarball) of the source files as well as for an installation.
+Returns the full path to the testcase including a trailing slash.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="cadishi.util.timeStamp">
+<code class="descclassname">cadishi.util.</code><code class="descname">timeStamp</code><span class="sig-paren">(</span><em>dateAndTime=False</em>, <em>t0=0.0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cadishi/util.html#timeStamp"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cadishi.util.timeStamp" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a string with a time stamp suitable to prefix log lines with.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="cadishi.util.timefunc">
+<code class="descclassname">cadishi.util.</code><code class="descname">timefunc</code><span class="sig-paren">(</span><em>f</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cadishi/util.html#timefunc"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cadishi.util.timefunc" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="cadishi.util.tokenize">
+<code class="descclassname">cadishi.util.</code><code class="descname">tokenize</code><span class="sig-paren">(</span><em>path</em>, <em>sep='/'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cadishi/util.html#tokenize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cadishi.util.tokenize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove any separators sep from path and return a list of the remainder.
+If path is empty or &#8216;/&#8217;, the list has the empty string as a single entry.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="cadishi.util.write_xyzFile">
+<code class="descclassname">cadishi.util.</code><code class="descname">write_xyzFile</code><span class="sig-paren">(</span><em>coords</em>, <em>names</em>, <em>filename</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cadishi/util.html#write_xyzFile"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cadishi.util.write_xyzFile" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write coordinates in xyz format to the file labeled filename.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-cadishi.version">
+<span id="cadishi-version"></span><h2>cadishi.version<a class="headerlink" href="#module-cadishi.version" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="cadishi.version.get_printable_version_string">
+<code class="descclassname">cadishi.version.</code><code class="descname">get_printable_version_string</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/cadishi/version.html#get_printable_version_string"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cadishi.version.get_printable_version_string" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="cadishi.version.get_short_version_string">
+<code class="descclassname">cadishi.version.</code><code class="descname">get_short_version_string</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/cadishi/version.html#get_short_version_string"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cadishi.version.get_short_version_string" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the version number without the patchlevel.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="cadishi.version.get_version_string">
+<code class="descclassname">cadishi.version.</code><code class="descname">get_version_string</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/cadishi/version.html#get_version_string"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cadishi.version.get_version_string" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the full version number.</p>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Cadishi modules</a><ul>
+<li><a class="reference internal" href="#module-cadishi">cadishi</a></li>
+<li><a class="reference internal" href="#module-cadishi.base">cadishi.base</a></li>
+<li><a class="reference internal" href="#module-cadishi.io.ascii">cadishi.io.ascii</a></li>
+<li><a class="reference internal" href="#module-cadishi.io.dummy">cadishi.io.dummy</a></li>
+<li><a class="reference internal" href="#module-cadishi.io.hdf5">cadishi.io.hdf5</a></li>
+<li><a class="reference internal" href="#module-cadishi.io.pickel">cadishi.io.pickle</a></li>
+<li><a class="reference internal" href="#module-cadishi.dict_util">cadishi.dict_util</a></li>
+<li><a class="reference internal" href="#module-cadishi.dictfs">cadishi.dictfs</a></li>
+<li><a class="reference internal" href="#module-cadishi.h5pickle">cadishi.h5pickle</a></li>
+<li><a class="reference internal" href="#module-cadishi.util">cadishi.util</a></li>
+<li><a class="reference internal" href="#module-cadishi.version">cadishi.version</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">Cadishi documentation</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="kernel.html"
+                        title="next chapter">Cadishi compute kernels</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/modules.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="kernel.html" title="Cadishi compute kernels"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Cadishi documentation"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Cadishi 1.0.0 documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, Klaus Reuter, Juergen Koefinger.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.1.
+    </div>
+  </body>
+</html>

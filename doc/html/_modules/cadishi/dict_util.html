@@ -1,0 +1,291 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>cadishi.dict_util &#8212; Cadishi 1.0.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '1.0.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">Cadishi 1.0.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for cadishi.dict_util</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding: utf-8 -*-</span>
+<span class="c1"># vim: tabstop=4 expandtab shiftwidth=4 softtabstop=4 fileencoding=utf-8</span>
+<span class="c1">#</span>
+<span class="c1"># Cadishi --- CAlculation of DIStance HIstograms</span>
+<span class="c1">#</span>
+<span class="c1"># Copyright (c) Klaus Reuter, Juergen Koefinger</span>
+<span class="c1"># See the file AUTHORS.rst for the full list of contributors.</span>
+<span class="c1">#</span>
+<span class="c1"># Released under the MIT License, see the file LICENSE.txt.</span>
+
+<span class="sd">&quot;&quot;&quot;Dictionary utilities.</span>
+
+<span class="sd">Implement add, append, and scale operations for numerical data (ie. NumPy</span>
+<span class="sd">arrays) stored in dictionaries.  In addition, an ASCII output routine is</span>
+<span class="sd">provided.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+
+<span class="kn">import</span> <span class="nn">copy</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">json</span>
+
+<span class="kn">from</span> <span class="nn">.</span> <span class="k">import</span> <span class="n">util</span>
+
+
+<div class="viewcode-block" id="sum_values"><a class="viewcode-back" href="../../modules.html#cadishi.dict_util.sum_values">[docs]</a><span class="k">def</span> <span class="nf">sum_values</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">skip_keys</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;radii&#39;</span><span class="p">,</span> <span class="s1">&#39;frame&#39;</span><span class="p">]):</span>
+    <span class="sd">&quot;&quot;&quot;Implement X += Y where X and Y are Python dictionaries (with string keys)</span>
+<span class="sd">    that contain summable data types.</span>
+<span class="sd">    The operation is applied to X for any value in Y, excluding keys that are in</span>
+<span class="sd">    the list skip_keys.</span>
+<span class="sd">    Typically, the values of X, Y are NumPy arrays (e.g. histograms) that are summed.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    X : dict</span>
+<span class="sd">        X is a dictionary with string keys that contains NumPy arrays.</span>
+<span class="sd">    Y : dict</span>
+<span class="sd">        Y is a dictionary with string keys that contains NumPy arrays.</span>
+<span class="sd">    skip_keys : list of strings</span>
+<span class="sd">        skip_keys is a list of strings for which the sum operation is skipped.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    None</span>
+<span class="sd">        The function sum_values operates on X directly</span>
+<span class="sd">        and does not return anything.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">Y</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">Y</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">skip_keys</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">X</span><span class="p">:</span>
+            <span class="n">X</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">Y</span><span class="p">[</span><span class="n">key</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">X</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">+=</span> <span class="n">Y</span><span class="p">[</span><span class="n">key</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="scale_values"><a class="viewcode-back" href="../../modules.html#cadishi.dict_util.scale_values">[docs]</a><span class="k">def</span> <span class="nf">scale_values</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">C</span><span class="p">,</span> <span class="n">skip_keys</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;radii&#39;</span><span class="p">,</span> <span class="s1">&#39;frame&#39;</span><span class="p">]):</span>
+    <span class="sd">&quot;&quot;&quot;Implement X = X times C where X is a Python dictionary that contains supported</span>
+<span class="sd">    data types.</span>
+<span class="sd">    The operation is applied to any value in X, excluding keys that are in the</span>
+<span class="sd">    list skip_keys.</span>
+<span class="sd">    Typically, the values of X are NumPy arrays (histograms) that are rescaled</span>
+<span class="sd">    after summation using a scalar C (e.g. to implement averaging operation).</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    X : dict</span>
+<span class="sd">        X is a dictionary with string keys that contains NumPy arrays.</span>
+<span class="sd">    C : scalar, NumPy array</span>
+<span class="sd">        C is a multiplier, either a scalar of a NumPy array of size compatible</span>
+<span class="sd">        with the contents of X.</span>
+<span class="sd">    skip_keys : list of strings</span>
+<span class="sd">        skip_keys is a list of strings for which the sum operation is skipped.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    None</span>
+<span class="sd">        The function scale_values operates on X directly</span>
+<span class="sd">        and does not return anything.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">X</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">skip_keys</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="n">X</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">*=</span> <span class="n">C</span></div>
+
+
+<div class="viewcode-block" id="append_values"><a class="viewcode-back" href="../../modules.html#cadishi.dict_util.append_values">[docs]</a><span class="k">def</span> <span class="nf">append_values</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">skip_keys</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;radii&#39;</span><span class="p">]):</span>
+    <span class="sd">&quot;&quot;&quot;Implement X.append(Y) where X and Y are Python dictionaries that contain</span>
+<span class="sd">    NumPy data types.  The operation is applied to X for any value in Y,</span>
+<span class="sd">    excluding keys that are in the list skip_keys.  Typically, the values of X,</span>
+<span class="sd">    Y are NumPy arrays (e.g. particle numbers) that are appended.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    X : dict</span>
+<span class="sd">        X is a dictionary with string keys that contains NumPy arrays.</span>
+<span class="sd">    Y : dict</span>
+<span class="sd">        Y is a dictionary with string keys that contains NumPy arrays.</span>
+<span class="sd">    skip_keys : list of strings</span>
+<span class="sd">        skip_keys is a list of strings for which the append operation is skipped.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    None</span>
+<span class="sd">        The function scale_values operates on X directly</span>
+<span class="sd">        and does not return anything.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">Y</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">Y</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">skip_keys</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">X</span><span class="p">:</span>
+            <span class="n">X</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">Y</span><span class="p">[</span><span class="n">key</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">X</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">X</span><span class="p">[</span><span class="n">key</span><span class="p">],</span> <span class="n">Y</span><span class="p">[</span><span class="n">key</span><span class="p">])</span></div>
+
+
+<div class="viewcode-block" id="write_dict"><a class="viewcode-back" href="../../modules.html#cadishi.dict_util.write_dict">[docs]</a><span class="k">def</span> <span class="nf">write_dict</span><span class="p">(</span><span class="n">dic</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Write a dictionary containing NumPy arrays or other Python data</span>
+<span class="sd">    structures to text files.  In case the dictionary contains other</span>
+<span class="sd">    dictionaries, the function is called recursively.  The keys should</span>
+<span class="sd">    be strings to guarantee successful operation.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    dic : dictionary</span>
+<span class="sd">        A dictionary containing NumPy arrays or other Python data structures.</span>
+<span class="sd">    path : string</span>
+<span class="sd">        Path where the dictionary and its data shall be written to.</span>
+<span class="sd">    level : int, optional</span>
+<span class="sd">        Level in the nested-dictionary hierarchy during recursive operation.</span>
+<span class="sd">        This parameter was added for debugging purposes and does not have any</span>
+<span class="sd">        practical relevance.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    None</span>
+<span class="sd">        The function write_dict does not return anything.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">np_keys</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">py_keys</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">dic</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+        <span class="n">val</span> <span class="o">=</span> <span class="n">dic</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="n">_path</span> <span class="o">=</span> <span class="n">path</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span> <span class="n">key</span>
+            <span class="n">_level</span> <span class="o">=</span> <span class="n">level</span> <span class="o">+</span> <span class="mi">1</span>
+            <span class="n">write_dict</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">_path</span><span class="p">,</span> <span class="n">_level</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+                <span class="n">np_keys</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">py_keys</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+    <span class="c1"># ---</span>
+    <span class="n">np_keys</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
+    <span class="n">py_keys</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
+    <span class="c1"># --- (1) save NumPy arrays to text files</span>
+    <span class="n">rad</span> <span class="o">=</span> <span class="s1">&#39;radii&#39;</span>
+    <span class="k">if</span> <span class="n">rad</span> <span class="ow">in</span> <span class="n">np_keys</span><span class="p">:</span>
+        <span class="n">np_keys</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">rad</span><span class="p">)</span>
+        <span class="n">np_keys</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">rad</span><span class="p">)</span>
+    <span class="c1"># ---</span>
+    <span class="n">np_all_1d</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">np_keys</span><span class="p">:</span>
+        <span class="n">val</span> <span class="o">=</span> <span class="n">dic</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">val</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="n">np_all_1d</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="k">break</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">np_keys</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">np_all_1d</span><span class="p">:</span>
+            <span class="c1"># --- concatenate arrays into a 2d array</span>
+            <span class="n">val</span> <span class="o">=</span> <span class="n">dic</span><span class="p">[</span><span class="n">np_keys</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
+            <span class="n">n_row</span> <span class="o">=</span> <span class="n">val</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">n_col</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">np_keys</span><span class="p">)</span>
+            <span class="n">arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">([</span><span class="n">n_row</span><span class="p">,</span> <span class="n">n_col</span><span class="p">])</span>
+            <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">key</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">np_keys</span><span class="p">):</span>
+                <span class="n">arr</span><span class="p">[:,</span> <span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">dic</span><span class="p">[</span><span class="n">key</span><span class="p">])[:]</span>
+            <span class="c1"># --- build header</span>
+            <span class="k">if</span> <span class="n">rad</span> <span class="ow">in</span> <span class="n">np_keys</span><span class="p">:</span>
+                <span class="n">np_keys</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">rad</span><span class="p">)</span>
+            <span class="n">header</span> <span class="o">=</span> <span class="s1">&#39;#&#39;</span>
+            <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">np_keys</span><span class="p">:</span>
+                <span class="n">header</span> <span class="o">=</span> <span class="n">header</span> <span class="o">+</span> <span class="s1">&#39; &#39;</span> <span class="o">+</span> <span class="n">key</span>
+            <span class="c1"># --- dump data</span>
+            <span class="n">util</span><span class="o">.</span><span class="n">savetxtHeader</span><span class="p">(</span><span class="n">path</span> <span class="o">+</span> <span class="s1">&#39;.dat&#39;</span><span class="p">,</span> <span class="n">header</span><span class="p">,</span> <span class="n">arr</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># --- we save arrays with more than one dimension separately</span>
+            <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">np_keys</span><span class="p">:</span>
+                <span class="n">arr</span> <span class="o">=</span> <span class="n">dic</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+                <span class="c1"># --- dump data</span>
+                <span class="n">util</span><span class="o">.</span><span class="n">savetxtHeader</span><span class="p">(</span><span class="n">path</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span> <span class="n">key</span> <span class="o">+</span> <span class="s1">&#39;.dat&#39;</span><span class="p">,</span> <span class="s1">&#39;# &#39;</span> <span class="o">+</span> <span class="n">key</span><span class="p">,</span> <span class="n">arr</span><span class="p">)</span>
+    <span class="c1"># --- (2) for robustness, save any other Python data to JSON text files</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">py_keys</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">py_keys</span><span class="p">:</span>
+            <span class="n">filename</span> <span class="o">=</span> <span class="n">path</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span> <span class="n">key</span> <span class="o">+</span> <span class="s1">&#39;.json&#39;</span>
+            <span class="n">util</span><span class="o">.</span><span class="n">md</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
+                <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">dic</span><span class="p">[</span><span class="n">key</span><span class="p">],</span> <span class="n">fp</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">sort_keys</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">Cadishi 1.0.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, Klaus Reuter, Juergen Koefinger.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.1.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,332 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>cadishi.base &#8212; Cadishi 1.0.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '1.0.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">Cadishi 1.0.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for cadishi.base</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding: utf-8 -*-</span>
+<span class="c1"># vim: tabstop=4 expandtab shiftwidth=4 softtabstop=4 fileencoding=utf-8</span>
+<span class="c1">#</span>
+<span class="c1"># Cadishi --- CAlculation of DIStance HIstograms</span>
+<span class="c1">#</span>
+<span class="c1"># Copyright (c) Klaus Reuter, Juergen Koefinger</span>
+<span class="c1"># See the file AUTHORS.rst for the full list of contributors.</span>
+<span class="c1">#</span>
+<span class="c1"># Released under the MIT License, see the file LICENSE.txt.</span>
+
+<span class="sd">&quot;&quot;&quot;Cadishi base library.</span>
+
+<span class="sd">Provides the basic data container and some more base classes that are used</span>
+<span class="sd">throughout the code.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+
+<span class="kn">import</span> <span class="nn">copy</span>
+
+<span class="kn">from</span> <span class="nn">.</span> <span class="k">import</span> <span class="n">util</span>
+<span class="kn">from</span> <span class="nn">.</span> <span class="k">import</span> <span class="n">dictfs</span>
+<span class="kn">from</span> <span class="nn">.</span> <span class="k">import</span> <span class="n">dict_util</span>
+
+
+<span class="c1"># --- some string constants ---</span>
+<span class="c1"># Locations (loc_*) used to store data either in memory using container/dictfs</span>
+<span class="c1"># as well as on disk using HDF5 files.  (Comparable to paths of a file system.)</span>
+<span class="n">loc_parallel</span> <span class="o">=</span> <span class="s1">&#39;parallel.tmp&#39;</span>
+<span class="n">loc_coordinates</span> <span class="o">=</span> <span class="s1">&#39;coordinates&#39;</span>
+<span class="n">loc_dimensions</span> <span class="o">=</span> <span class="s1">&#39;dimensions&#39;</span>  <span class="c1"># 6-tuple periodic-box specifier</span>
+<span class="n">loc_volumes</span> <span class="o">=</span> <span class="s1">&#39;volumes&#39;</span>
+<span class="n">loc_len_histograms</span> <span class="o">=</span> <span class="s1">&#39;len_histograms&#39;</span>
+<span class="n">loc_nr_particles</span> <span class="o">=</span> <span class="s1">&#39;particle_numbers&#39;</span>
+<span class="n">loc_histograms</span> <span class="o">=</span> <span class="s1">&#39;histograms&#39;</span>
+<span class="n">loc_histogram_scale_factors</span> <span class="o">=</span> <span class="n">loc_histograms</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span> <span class="s1">&#39;scale_factors&#39;</span>
+<span class="n">loc_histogram_mask</span> <span class="o">=</span> <span class="n">loc_histograms</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span> <span class="s1">&#39;mask&#39;</span>
+<span class="n">loc_intensity</span> <span class="o">=</span> <span class="s1">&#39;intensity&#39;</span>
+<span class="n">loc_solv_match</span> <span class="o">=</span> <span class="s1">&#39;solvent_matching&#39;</span>
+<span class="n">loc_delta_h</span> <span class="o">=</span> <span class="s1">&#39;delta_h&#39;</span>
+<span class="n">loc_pddf</span> <span class="o">=</span> <span class="s1">&#39;pddf&#39;</span>
+<span class="n">loc_rdf</span> <span class="o">=</span> <span class="s1">&#39;rdf&#39;</span>
+<span class="c1"># adding shell_Hxx for MultiReferenceStructure to hold average of properly scaled (volume-weighted)</span>
+<span class="c1"># histograms</span>
+<span class="n">loc_shell_Hxx</span> <span class="o">=</span> <span class="s1">&#39;shell_Hxx&#39;</span>
+<span class="c1"># Miscellaneous string constants.</span>
+<span class="n">id_radii</span> <span class="o">=</span> <span class="s1">&#39;radii&#39;</span>
+
+
+<div class="viewcode-block" id="Container"><a class="viewcode-back" href="../../modules.html#cadishi.base.Container">[docs]</a><span class="k">class</span> <span class="nc">Container</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Central container to hold/accumulate data while it is proparaged through</span>
+<span class="sd">    the pipeline.  Heavily uses dictfs internally.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">number</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">mkdir</span><span class="o">=</span><span class="p">[]):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">i</span> <span class="o">=</span> <span class="n">number</span>  <span class="c1"># frame number</span>
+        <span class="c1"># any other data is to be stored in the data dictionary</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;log&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>  <span class="c1"># pipeline log uses a list to preserve the order</span>
+        <span class="k">for</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">mkdir</span><span class="p">:</span>
+            <span class="n">dictfs</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="p">{})</span>
+
+<div class="viewcode-block" id="Container.put_meta"><a class="viewcode-back" href="../../modules.html#cadishi.base.Container.put_meta">[docs]</a>    <span class="k">def</span> <span class="nf">put_meta</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">meta</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Append pipeline log information to the instance&#39;s log list.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;log&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">meta</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="Container.get_meta"><a class="viewcode-back" href="../../modules.html#cadishi.base.Container.get_meta">[docs]</a>    <span class="k">def</span> <span class="nf">get_meta</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return the instance&#39;s pipeline log list.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;log&#39;</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="Container.query_meta"><a class="viewcode-back" href="../../modules.html#cadishi.base.Container.query_meta">[docs]</a>    <span class="k">def</span> <span class="nf">query_meta</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Obtain a value from the pipeline log list by using</span>
+<span class="sd">        a Unix-path-like string identifier.&quot;&quot;&quot;</span>
+        <span class="n">log</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;log&#39;</span><span class="p">]</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="n">util</span><span class="o">.</span><span class="n">tokenize</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">path</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="c1"># inversely search the pipeline log list</span>
+        <span class="n">entry</span> <span class="o">=</span> <span class="n">util</span><span class="o">.</span><span class="n">search_pipeline</span><span class="p">(</span><span class="n">path</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">log</span><span class="p">)</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">entry</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="n">path</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">if</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">path</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">):</span>
+                    <span class="k">return</span> <span class="n">dictfs</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">entry</span><span class="p">,</span> <span class="n">path</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="n">entry</span>
+            <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+                <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span></div>
+
+<div class="viewcode-block" id="Container.get_geometry"><a class="viewcode-back" href="../../modules.html#cadishi.base.Container.get_geometry">[docs]</a>    <span class="k">def</span> <span class="nf">get_geometry</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">valid_geom</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;Sphere&#39;</span><span class="p">,</span> <span class="s1">&#39;Cuboid&#39;</span><span class="p">,</span> <span class="s1">&#39;Ellipsoid&#39;</span><span class="p">,</span>
+                                       <span class="s1">&#39;ReferenceStructure&#39;</span><span class="p">,</span> <span class="s1">&#39;MultiReferenceStructure&#39;</span><span class="p">,</span> <span class="s1">&#39;Voxels&#39;</span><span class="p">]):</span>
+        <span class="sd">&quot;&quot;&quot;Search the pipeline log backwards for the geometry filter that was</span>
+<span class="sd">        used, and return the result as a string.&quot;&quot;&quot;</span>
+        <span class="c1"># ---</span>
+        <span class="k">for</span> <span class="n">geom</span> <span class="ow">in</span> <span class="n">valid_geom</span><span class="p">:</span>
+            <span class="n">entry</span> <span class="o">=</span> <span class="n">util</span><span class="o">.</span><span class="n">search_pipeline</span><span class="p">(</span><span class="n">geom</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_meta</span><span class="p">())</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">entry</span> <span class="o">!=</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">entry</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">):</span>
+                <span class="k">return</span> <span class="n">geom</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+<div class="viewcode-block" id="Container.put_data"><a class="viewcode-back" href="../../modules.html#cadishi.base.Container.put_data">[docs]</a>    <span class="k">def</span> <span class="nf">put_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">location</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="n">dictfs</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">location</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Container.get_data"><a class="viewcode-back" href="../../modules.html#cadishi.base.Container.get_data">[docs]</a>    <span class="k">def</span> <span class="nf">get_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">location</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">dictfs</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">location</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Container.del_data"><a class="viewcode-back" href="../../modules.html#cadishi.base.Container.del_data">[docs]</a>    <span class="k">def</span> <span class="nf">del_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">location</span><span class="p">):</span>
+        <span class="n">dictfs</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">location</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Container.sum_data"><a class="viewcode-back" href="../../modules.html#cadishi.base.Container.sum_data">[docs]</a>    <span class="k">def</span> <span class="nf">sum_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">,</span> <span class="n">location</span><span class="p">,</span> <span class="n">skip_keys</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;radii&#39;</span><span class="p">,</span> <span class="s1">&#39;frame&#39;</span><span class="p">]):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Add (+) data at location from other to self. If location does not exist</span>
+<span class="sd">        in the current instance, it is created.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">Container</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">dictfs</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">location</span><span class="p">):</span>
+            <span class="n">dictfs</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">location</span><span class="p">,</span> <span class="p">{})</span>
+        <span class="n">X</span> <span class="o">=</span> <span class="n">dictfs</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">location</span><span class="p">)</span>
+        <span class="n">Y</span> <span class="o">=</span> <span class="n">dictfs</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">other</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">location</span><span class="p">)</span>
+        <span class="n">dict_util</span><span class="o">.</span><span class="n">sum_values</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">skip_keys</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Container.scale_data"><a class="viewcode-back" href="../../modules.html#cadishi.base.Container.scale_data">[docs]</a>    <span class="k">def</span> <span class="nf">scale_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">C</span><span class="p">,</span> <span class="n">location</span><span class="p">,</span> <span class="n">skip_keys</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;radii&#39;</span><span class="p">,</span> <span class="s1">&#39;frame&#39;</span><span class="p">]):</span>
+        <span class="sd">&quot;&quot;&quot;Scale (ie multiply) data at location by the factor C.&quot;&quot;&quot;</span>
+        <span class="n">X</span> <span class="o">=</span> <span class="n">dictfs</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">location</span><span class="p">)</span>
+        <span class="n">dict_util</span><span class="o">.</span><span class="n">scale_values</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">C</span><span class="p">,</span> <span class="n">skip_keys</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Container.append_data"><a class="viewcode-back" href="../../modules.html#cadishi.base.Container.append_data">[docs]</a>    <span class="k">def</span> <span class="nf">append_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">,</span> <span class="n">location</span><span class="p">,</span> <span class="n">skip_keys</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;radii&#39;</span><span class="p">]):</span>
+        <span class="sd">&quot;&quot;&quot;Append data at location from other to self. If location does not exist</span>
+<span class="sd">        in the current instance, it is created.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">Container</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">dictfs</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">location</span><span class="p">):</span>
+            <span class="n">dictfs</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">location</span><span class="p">,</span> <span class="p">{})</span>
+        <span class="n">X</span> <span class="o">=</span> <span class="n">dictfs</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">location</span><span class="p">)</span>
+        <span class="n">Y</span> <span class="o">=</span> <span class="n">dictfs</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">other</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">location</span><span class="p">)</span>
+        <span class="n">dict_util</span><span class="o">.</span><span class="n">append_values</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">skip_keys</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Container.get_keys"><a class="viewcode-back" href="../../modules.html#cadishi.base.Container.get_keys">[docs]</a>    <span class="k">def</span> <span class="nf">get_keys</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">location</span><span class="p">,</span> <span class="n">skip_keys</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get a list of the keys of the data stored at location.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">keys</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">((</span><span class="n">dictfs</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">location</span><span class="p">))</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+        <span class="k">if</span> <span class="n">skip_keys</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">skip_keys</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+                <span class="n">_skip</span> <span class="o">=</span> <span class="n">skip_keys</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">_skip</span> <span class="o">=</span> <span class="p">[</span><span class="n">skip_keys</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">_key</span> <span class="ow">in</span> <span class="n">_skip</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">_key</span> <span class="ow">in</span> <span class="n">keys</span><span class="p">:</span>
+                    <span class="n">keys</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">_key</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">keys</span></div>
+
+<div class="viewcode-block" id="Container.has_key"><a class="viewcode-back" href="../../modules.html#cadishi.base.Container.has_key">[docs]</a>    <span class="k">def</span> <span class="nf">has_key</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">location</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Check if the current object instance has data stored at location.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">dictfs</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">location</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="TrajectoryInformation"><a class="viewcode-back" href="../../modules.html#cadishi.base.TrajectoryInformation">[docs]</a><span class="k">class</span> <span class="nc">TrajectoryInformation</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Handle trajectory meta data.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">species</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">frame_numbers</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pipeline_log</span> <span class="o">=</span> <span class="p">[]</span>
+
+<div class="viewcode-block" id="TrajectoryInformation.get_pipeline_parameter"><a class="viewcode-back" href="../../modules.html#cadishi.base.TrajectoryInformation.get_pipeline_parameter">[docs]</a>    <span class="k">def</span> <span class="nf">get_pipeline_parameter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">_id</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return the value of the _last_ occurrence of &quot;id&quot; in the pipeline, ie.</span>
+<span class="sd">        the pipeline is searched in reversed order.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="nb">reversed</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pipeline_log</span><span class="p">):</span>
+            <span class="n">_label</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+            <span class="n">parameters</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="k">for</span> <span class="p">(</span><span class="n">_label</span><span class="p">,</span> <span class="n">parameters</span><span class="p">)</span> <span class="ow">in</span> <span class="n">entry</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
+                <span class="k">break</span>
+            <span class="k">if</span> <span class="n">_id</span> <span class="ow">in</span> <span class="n">parameters</span><span class="p">:</span>
+                <span class="n">value</span> <span class="o">=</span> <span class="n">parameters</span><span class="p">[</span><span class="n">_id</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">value</span></div></div>
+
+
+<div class="viewcode-block" id="PipelineElement"><a class="viewcode-back" href="../../modules.html#cadishi.base.PipelineElement">[docs]</a><span class="k">class</span> <span class="nc">PipelineElement</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Base class common to Filter, Reader, and Writer.  Provides methods needed</span>
+<span class="sd">    to implement dependency checking between pipeline elements.</span>
+<span class="sd">    Note: The &quot;object&quot; parameter makes it a new style class which is necessary to make</span>
+<span class="sd">    the &quot;super()&quot; mechanism work to implement inheritance of the _depends and _conflicts</span>
+<span class="sd">    lists.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">_depends</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">_conflicts</span> <span class="o">=</span> <span class="p">[]</span>
+
+<div class="viewcode-block" id="PipelineElement.depends"><a class="viewcode-back" href="../../modules.html#cadishi.base.PipelineElement.depends">[docs]</a>    <span class="k">def</span> <span class="nf">depends</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_depends</span></div>
+
+<div class="viewcode-block" id="PipelineElement.conflicts"><a class="viewcode-back" href="../../modules.html#cadishi.base.PipelineElement.conflicts">[docs]</a>    <span class="k">def</span> <span class="nf">conflicts</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_conflicts</span></div></div>
+
+
+<div class="viewcode-block" id="Filter"><a class="viewcode-back" href="../../modules.html#cadishi.base.Filter">[docs]</a><span class="k">class</span> <span class="nc">Filter</span><span class="p">(</span><span class="n">PipelineElement</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Filter base class, to be overloaded by an actual implementation.&quot;&quot;&quot;</span>
+    <span class="n">_depends</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;Reader&quot;</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">source</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_depends</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="nb">super</span><span class="p">(</span><span class="n">Filter</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">_depends</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">src</span> <span class="o">=</span> <span class="n">source</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">verb</span> <span class="o">=</span> <span class="n">verbose</span>
+
+<div class="viewcode-block" id="Filter.set_input"><a class="viewcode-back" href="../../modules.html#cadishi.base.Filter.set_input">[docs]</a>    <span class="k">def</span> <span class="nf">set_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">source</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">src</span> <span class="o">=</span> <span class="n">source</span></div>
+
+<div class="viewcode-block" id="Filter.get_meta"><a class="viewcode-back" href="../../modules.html#cadishi.base.Filter.get_meta">[docs]</a>    <span class="k">def</span> <span class="nf">get_meta</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return information on the present filter, ready to be added to a frame</span>
+<span class="sd">        object&#39;s list of pipeline meta information.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">meta</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">label</span> <span class="o">=</span> <span class="s1">&#39;Filter base class (this message should never appear)&#39;</span>
+        <span class="n">param</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">meta</span><span class="p">[</span><span class="n">label</span><span class="p">]</span> <span class="o">=</span> <span class="n">param</span>
+        <span class="k">return</span> <span class="n">meta</span></div></div>
+
+
+<div class="viewcode-block" id="Reader"><a class="viewcode-back" href="../../modules.html#cadishi.base.Reader">[docs]</a><span class="k">class</span> <span class="nc">Reader</span><span class="p">(</span><span class="n">PipelineElement</span><span class="p">):</span>
+    <span class="n">_conflicts</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Reader&#39;</span><span class="p">]</span>
+    <span class="sd">&quot;&quot;&quot;Reader base class, to be overloaded by an actual implementation.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="Reader.get_meta"><a class="viewcode-back" href="../../modules.html#cadishi.base.Reader.get_meta">[docs]</a>    <span class="k">def</span> <span class="nf">get_meta</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return information on the present filter, ready to be added to a frame</span>
+<span class="sd">        object&#39;s list of pipeline meta information.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">meta</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">label</span> <span class="o">=</span> <span class="s1">&#39;Reader base class (this message should never appear)&#39;</span>
+        <span class="n">param</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">meta</span><span class="p">[</span><span class="n">label</span><span class="p">]</span> <span class="o">=</span> <span class="n">param</span>
+        <span class="k">return</span> <span class="n">meta</span></div></div>
+
+
+<div class="viewcode-block" id="Writer"><a class="viewcode-back" href="../../modules.html#cadishi.base.Writer">[docs]</a><span class="k">class</span> <span class="nc">Writer</span><span class="p">(</span><span class="n">PipelineElement</span><span class="p">):</span>
+    <span class="n">_depends</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Reader&#39;</span><span class="p">]</span>
+    <span class="n">_conflicts</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Writer&#39;</span><span class="p">]</span>
+    <span class="sd">&quot;&quot;&quot;Writer base class, to be overloaded by an actual implementation.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="Writer.set_input"><a class="viewcode-back" href="../../modules.html#cadishi.base.Writer.set_input">[docs]</a>    <span class="k">def</span> <span class="nf">set_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">source</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">src</span> <span class="o">=</span> <span class="n">source</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">Cadishi 1.0.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, Klaus Reuter, Juergen Koefinger.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.1.
+    </div>
+  </body>
+</html>

@@ -7,6 +7,6 @@
 .pydevproject
 .settings
 build
-doc/html
 *.egg-info
 cadishi/githash.py
+doc/doctrees

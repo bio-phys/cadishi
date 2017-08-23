@@ -1,0 +1,533 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>cadishi.exe.histograms &#8212; Cadishi 1.0.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '1.0.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">Cadishi 1.0.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" accesskey="U">Module code</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for cadishi.exe.histograms</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding: utf-8 -*-</span>
+<span class="c1"># vim: tabstop=4 expandtab shiftwidth=4 softtabstop=4 fileencoding=utf-8</span>
+<span class="c1">#</span>
+<span class="c1"># Cadishi --- CAlculation of DIStance HIstograms</span>
+<span class="c1">#</span>
+<span class="c1"># Copyright (c) Klaus Reuter, Juergen Koefinger</span>
+<span class="c1"># See the file AUTHORS.rst for the full list of contributors.</span>
+<span class="c1">#</span>
+<span class="c1"># Released under the MIT License, see the file LICENSE.txt.</span>
+
+<span class="sd">&quot;&quot;&quot;Distance histogram calculation driver, task parallel version.</span>
+
+<span class="sd">Performs distance histogram calculations using cudh and pydh (or dist).</span>
+<span class="sd">The configuration is read from the parameter file histograms.{json,yaml}.</span>
+
+<span class="sd">This program is not intended to be invoked directly. It is launched via cli.py</span>
+<span class="sd">which in turn is called as the `cadishi` command via an entry_point in setup.py.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">import</span> <span class="nn">glob</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">datetime</span>
+<span class="kn">import</span> <span class="nn">multiprocessing</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">ctypes</span>
+<span class="kn">from</span> <span class="nn">six.moves</span> <span class="k">import</span> <span class="nb">range</span>
+<span class="kn">import</span> <span class="nn">signal</span>
+<span class="kn">import</span> <span class="nn">cProfile</span>
+<span class="kn">import</span> <span class="nn">StringIO</span>
+<span class="kn">import</span> <span class="nn">pstats</span>
+<span class="kn">import</span> <span class="nn">argparse</span>
+<span class="kn">from</span> <span class="nn">..</span> <span class="k">import</span> <span class="n">base</span>
+<span class="kn">from</span> <span class="nn">..</span> <span class="k">import</span> <span class="n">util</span>
+<span class="kn">from</span> <span class="nn">..</span> <span class="k">import</span> <span class="n">pbc</span>
+<span class="kn">from</span> <span class="nn">..</span> <span class="k">import</span> <span class="n">version</span>
+<span class="kn">from</span> <span class="nn">..io</span> <span class="k">import</span> <span class="n">hdf5</span>
+<span class="kn">from</span> <span class="nn">..</span> <span class="k">import</span> <span class="n">worker</span>
+
+
+<div class="viewcode-block" id="configure_cli"><a class="viewcode-back" href="../../../executables.html#cadishi.exe.histograms.configure_cli">[docs]</a><span class="k">def</span> <span class="nf">configure_cli</span><span class="p">(</span><span class="n">subparsers</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Attach a parser (specifying command name and flags) to the argparse subparsers object.&quot;&quot;&quot;</span>
+    <span class="n">parser</span> <span class="o">=</span> <span class="n">subparsers</span><span class="o">.</span><span class="n">add_parser</span><span class="p">(</span><span class="s1">&#39;histo&#39;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">&#39;run distance histogram calculation&#39;</span><span class="p">)</span>
+<span class="c1">#     parser.add_argument(&#39;--input&#39;, &#39;-i&#39;, type=str, help=&#39;input parameter file&#39;, metavar=&#39;par.yml&#39;)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;input&#39;</span><span class="p">,</span> <span class="n">nargs</span><span class="o">=</span><span class="n">argparse</span><span class="o">.</span><span class="n">REMAINDER</span><span class="p">,</span>
+                        <span class="n">help</span><span class="o">=</span><span class="s1">&#39;histograms parameter file (optional)&#39;</span><span class="p">,</span> <span class="n">metavar</span><span class="o">=</span><span class="s1">&#39;histograms.yaml&#39;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">set_defaults</span><span class="p">(</span><span class="n">func</span><span class="o">=</span><span class="n">main</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="check_parameters"><a class="viewcode-back" href="../../../executables.html#cadishi.exe.histograms.check_parameters">[docs]</a><span class="k">def</span> <span class="nf">check_parameters</span><span class="p">(</span><span class="n">histoparam</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Check and sanitize input parameters for the histogram computation.</span>
+
+<span class="sd">    Together with the &lt;histograms_template.yaml&gt; file, this function needs</span>
+<span class="sd">    to be extended with each new parameter that is introduced.&quot;&quot;&quot;</span>
+    <span class="kn">import</span> <span class="nn">os</span>
+    <span class="kn">from</span> <span class="nn">..</span> <span class="k">import</span> <span class="n">util</span>
+
+    <span class="n">myNoneType</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">category</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;general&#39;</span><span class="p">,</span> <span class="s1">&#39;histogram&#39;</span><span class="p">,</span> <span class="s1">&#39;cpu&#39;</span><span class="p">,</span> <span class="s1">&#39;gpu&#39;</span><span class="p">,</span> <span class="s1">&#39;input&#39;</span><span class="p">,</span> <span class="s1">&#39;output&#39;</span><span class="p">]:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">category</span> <span class="ow">in</span> <span class="n">histoparam</span><span class="p">:</span>
+            <span class="n">histoparam</span><span class="p">[</span><span class="n">category</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="n">util</span><span class="o">.</span><span class="n">check_parameter</span><span class="p">(</span><span class="n">histoparam</span><span class="p">,</span> <span class="s1">&#39;cpu:module&#39;</span><span class="p">,</span> <span class="n">basestring</span><span class="p">,</span> <span class="s1">&#39;pydh&#39;</span><span class="p">,</span> <span class="n">valid_values</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;pydh&#39;</span><span class="p">,</span> <span class="s1">&#39;dist&#39;</span><span class="p">])</span>
+    <span class="n">util</span><span class="o">.</span><span class="n">check_parameter</span><span class="p">(</span><span class="n">histoparam</span><span class="p">,</span> <span class="s1">&#39;gpu:module&#39;</span><span class="p">,</span> <span class="n">basestring</span><span class="p">,</span> <span class="s1">&#39;cudh&#39;</span><span class="p">,</span> <span class="n">valid_values</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;cudh&#39;</span><span class="p">])</span>
+
+    <span class="c1"># auto-detect the number of CPU workers</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="s1">&#39;workers&#39;</span> <span class="ow">in</span> <span class="n">histoparam</span><span class="p">[</span><span class="s1">&#39;cpu&#39;</span><span class="p">]</span> <span class="ow">or</span> <span class="p">(</span><span class="n">histoparam</span><span class="p">[</span><span class="s1">&#39;cpu&#39;</span><span class="p">][</span><span class="s1">&#39;workers&#39;</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">):</span>
+        <span class="k">if</span> <span class="s1">&#39;threads&#39;</span> <span class="ow">in</span> <span class="n">histoparam</span><span class="p">[</span><span class="s1">&#39;cpu&#39;</span><span class="p">]:</span>
+            <span class="k">del</span> <span class="n">histoparam</span><span class="p">[</span><span class="s1">&#39;cpu&#39;</span><span class="p">][</span><span class="s1">&#39;threads&#39;</span><span class="p">]</span>  <span class="c1"># autodetect below</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">n_workers</span> <span class="o">=</span> <span class="n">util</span><span class="o">.</span><span class="n">get_n_cpu_sockets</span><span class="p">()</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="n">n_workers</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">histoparam</span><span class="p">[</span><span class="s1">&#39;cpu&#39;</span><span class="p">][</span><span class="s1">&#39;workers&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">n_workers</span>
+
+    <span class="n">util</span><span class="o">.</span><span class="n">check_parameter</span><span class="p">(</span><span class="n">histoparam</span><span class="p">,</span> <span class="s1">&#39;gpu:workers&#39;</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="n">histoparam</span><span class="p">[</span><span class="s1">&#39;cpu&#39;</span><span class="p">][</span><span class="s1">&#39;workers&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">histoparam</span><span class="p">[</span><span class="s1">&#39;gpu&#39;</span><span class="p">][</span><span class="s1">&#39;workers&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;At least one worker (CPU and/or GPU) must be used&quot;</span><span class="p">)</span>
+
+    <span class="c1"># now that we know the number of workers we can assign threads to the CPU workers</span>
+    <span class="k">if</span> <span class="p">(</span><span class="ow">not</span> <span class="s1">&#39;threads&#39;</span> <span class="ow">in</span> <span class="n">histoparam</span><span class="p">[</span><span class="s1">&#39;cpu&#39;</span><span class="p">])</span> <span class="ow">or</span> <span class="p">(</span><span class="n">histoparam</span><span class="p">[</span><span class="s1">&#39;cpu&#39;</span><span class="p">][</span><span class="s1">&#39;threads&#39;</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">n_cores</span> <span class="o">=</span> <span class="n">util</span><span class="o">.</span><span class="n">get_n_cpu_cores</span><span class="p">()</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">n_cores</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">n_cores</span> <span class="o">=</span> <span class="n">n_cores</span> <span class="o">-</span> <span class="n">histoparam</span><span class="p">[</span><span class="s1">&#39;gpu&#39;</span><span class="p">][</span><span class="s1">&#39;workers&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="mi">2</span>  <span class="c1"># 2: main task, sum task</span>
+        <span class="n">n_cores</span> <span class="o">=</span> <span class="n">n_cores</span> <span class="o">/</span> <span class="n">histoparam</span><span class="p">[</span><span class="s1">&#39;cpu&#39;</span><span class="p">][</span><span class="s1">&#39;workers&#39;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">n_cores</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">):</span>
+            <span class="n">n_cores</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">histoparam</span><span class="p">[</span><span class="s1">&#39;cpu&#39;</span><span class="p">][</span><span class="s1">&#39;threads&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">n_cores</span>
+
+    <span class="n">util</span><span class="o">.</span><span class="n">check_parameter</span><span class="p">(</span><span class="n">histoparam</span><span class="p">,</span> <span class="s1">&#39;general:profile&#39;</span><span class="p">,</span> <span class="nb">bool</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+    <span class="n">util</span><span class="o">.</span><span class="n">check_parameter</span><span class="p">(</span><span class="n">histoparam</span><span class="p">,</span> <span class="s1">&#39;general:numa_aware&#39;</span><span class="p">,</span> <span class="nb">bool</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+    <span class="n">util</span><span class="o">.</span><span class="n">check_parameter</span><span class="p">(</span><span class="n">histoparam</span><span class="p">,</span> <span class="s1">&#39;general:redirect_output&#39;</span><span class="p">,</span> <span class="nb">bool</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+    <span class="n">util</span><span class="o">.</span><span class="n">check_parameter</span><span class="p">(</span><span class="n">histoparam</span><span class="p">,</span> <span class="s1">&#39;general:verbose&#39;</span><span class="p">,</span> <span class="nb">bool</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+
+    <span class="c1"># define the maximum distance for the histograms</span>
+    <span class="c1"># default &#39;-1&#39;: set r_max to be set by the capriqorn preprocessor pipeline log</span>
+    <span class="n">util</span><span class="o">.</span><span class="n">check_parameter</span><span class="p">(</span><span class="n">histoparam</span><span class="p">,</span> <span class="s1">&#39;histogram:r_max&#39;</span><span class="p">,</span> <span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">),</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">util</span><span class="o">.</span><span class="n">check_parameter</span><span class="p">(</span><span class="n">histoparam</span><span class="p">,</span> <span class="s1">&#39;histogram:sum&#39;</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">min_value</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">util</span><span class="o">.</span><span class="n">check_parameter</span><span class="p">(</span><span class="n">histoparam</span><span class="p">,</span> <span class="s1">&#39;histogram:dr&#39;</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="mf">0.01</span><span class="p">,</span> <span class="n">min_value</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
+
+    <span class="n">util</span><span class="o">.</span><span class="n">check_parameter</span><span class="p">(</span><span class="n">histoparam</span><span class="p">,</span> <span class="s1">&#39;cpu:check_input&#39;</span><span class="p">,</span> <span class="nb">bool</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+    <span class="n">util</span><span class="o">.</span><span class="n">check_parameter</span><span class="p">(</span><span class="n">histoparam</span><span class="p">,</span> <span class="s1">&#39;cpu:precision&#39;</span><span class="p">,</span> <span class="n">basestring</span><span class="p">,</span> <span class="s1">&#39;single&#39;</span><span class="p">,</span> <span class="n">valid_values</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;single&#39;</span><span class="p">,</span> <span class="s1">&#39;double&#39;</span><span class="p">])</span>
+
+    <span class="n">util</span><span class="o">.</span><span class="n">check_parameter</span><span class="p">(</span><span class="n">histoparam</span><span class="p">,</span> <span class="s1">&#39;gpu:check_input&#39;</span><span class="p">,</span> <span class="nb">bool</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+    <span class="n">util</span><span class="o">.</span><span class="n">check_parameter</span><span class="p">(</span><span class="n">histoparam</span><span class="p">,</span> <span class="s1">&#39;gpu:precision&#39;</span><span class="p">,</span> <span class="n">basestring</span><span class="p">,</span> <span class="s1">&#39;single&#39;</span><span class="p">,</span> <span class="n">valid_values</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;single&#39;</span><span class="p">,</span> <span class="s1">&#39;double&#39;</span><span class="p">])</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="s1">&#39;file&#39;</span> <span class="ow">in</span> <span class="n">histoparam</span><span class="p">[</span><span class="s1">&#39;input&#39;</span><span class="p">]:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;input:file is not set&quot;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">util</span><span class="o">.</span><span class="n">check_parameter</span><span class="p">(</span><span class="n">histoparam</span><span class="p">,</span> <span class="s1">&#39;input:file&#39;</span><span class="p">,</span> <span class="n">basestring</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">file_existence</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">util</span><span class="o">.</span><span class="n">check_parameter</span><span class="p">(</span><span class="n">histoparam</span><span class="p">,</span> <span class="s1">&#39;input:first&#39;</span><span class="p">,</span> <span class="p">(</span><span class="n">myNoneType</span><span class="p">,</span> <span class="nb">int</span><span class="p">),</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="n">util</span><span class="o">.</span><span class="n">check_parameter</span><span class="p">(</span><span class="n">histoparam</span><span class="p">,</span> <span class="s1">&#39;input:last&#39;</span><span class="p">,</span> <span class="p">(</span><span class="n">myNoneType</span><span class="p">,</span> <span class="nb">int</span><span class="p">),</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="n">util</span><span class="o">.</span><span class="n">check_parameter</span><span class="p">(</span><span class="n">histoparam</span><span class="p">,</span> <span class="s1">&#39;input:step&#39;</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">min_value</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">util</span><span class="o">.</span><span class="n">check_parameter</span><span class="p">(</span><span class="n">histoparam</span><span class="p">,</span> <span class="s1">&#39;input:periodic_box&#39;</span><span class="p">,</span> <span class="p">(</span><span class="n">myNoneType</span><span class="p">,</span> <span class="nb">list</span><span class="p">),</span> <span class="kc">None</span><span class="p">)</span>
+
+    <span class="n">util</span><span class="o">.</span><span class="n">check_parameter</span><span class="p">(</span><span class="n">histoparam</span><span class="p">,</span> <span class="s1">&#39;output:directory&#39;</span><span class="p">,</span> <span class="n">basestring</span><span class="p">,</span> <span class="s1">&#39;./histograms_output/&#39;</span><span class="p">)</span>
+    <span class="n">util</span><span class="o">.</span><span class="n">check_parameter</span><span class="p">(</span><span class="n">histoparam</span><span class="p">,</span> <span class="s1">&#39;output:file&#39;</span><span class="p">,</span> <span class="n">basestring</span><span class="p">,</span> <span class="s1">&#39;histograms.h5&#39;</span><span class="p">)</span>
+    <span class="n">util</span><span class="o">.</span><span class="n">check_parameter</span><span class="p">(</span><span class="n">histoparam</span><span class="p">,</span> <span class="s1">&#39;output:compression&#39;</span><span class="p">,</span> <span class="p">(</span><span class="n">myNoneType</span><span class="p">,</span> <span class="n">basestring</span><span class="p">),</span>
+                         <span class="kc">None</span><span class="p">,</span> <span class="n">valid_values</span><span class="o">=</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="s1">&#39;gzip&#39;</span><span class="p">,</span> <span class="s1">&#39;lzf&#39;</span><span class="p">])</span>
+
+    <span class="n">util</span><span class="o">.</span><span class="n">check_parameter</span><span class="p">(</span><span class="n">histoparam</span><span class="p">,</span> <span class="s1">&#39;output:write_h5&#39;</span><span class="p">,</span> <span class="nb">bool</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+    <span class="n">util</span><span class="o">.</span><span class="n">check_parameter</span><span class="p">(</span><span class="n">histoparam</span><span class="p">,</span> <span class="s1">&#39;output:write_npx&#39;</span><span class="p">,</span> <span class="nb">bool</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+    <span class="n">util</span><span class="o">.</span><span class="n">check_parameter</span><span class="p">(</span><span class="n">histoparam</span><span class="p">,</span> <span class="s1">&#39;output:write_npy&#39;</span><span class="p">,</span> <span class="nb">bool</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+    <span class="n">util</span><span class="o">.</span><span class="n">check_parameter</span><span class="p">(</span><span class="n">histoparam</span><span class="p">,</span> <span class="s1">&#39;output:write_xyz&#39;</span><span class="p">,</span> <span class="nb">bool</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+
+    <span class="n">_odir</span> <span class="o">=</span> <span class="n">histoparam</span><span class="p">[</span><span class="s1">&#39;output&#39;</span><span class="p">][</span><span class="s1">&#39;directory&#39;</span><span class="p">]</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">_odir</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="s1">&#39;/&#39;</span><span class="p">):</span>
+        <span class="n">histoparam</span><span class="p">[</span><span class="s1">&#39;output&#39;</span><span class="p">][</span><span class="s1">&#39;directory&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">_odir</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span>
+    <span class="c1"># stdout flush frequency, trigger flush after n frames.</span>
+    <span class="c1"># Be careful on parallel file systems with many parallel jobs!</span>
+    <span class="n">util</span><span class="o">.</span><span class="n">check_parameter</span><span class="p">(</span><span class="n">histoparam</span><span class="p">,</span> <span class="s1">&#39;output:flush_interval&#39;</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="n">min_value</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span></div>
+
+
+<span class="c1"># global list of all the worker processes, needed by the shutdown signal handler</span>
+<span class="n">mp_all_workers_list</span> <span class="o">=</span> <span class="p">[]</span>
+
+
+<div class="viewcode-block" id="unexpectedShutdownHandler"><a class="viewcode-back" href="../../../executables.html#cadishi.exe.histograms.unexpectedShutdownHandler">[docs]</a><span class="k">def</span> <span class="nf">unexpectedShutdownHandler</span><span class="p">(</span><span class="n">signum</span><span class="p">,</span> <span class="n">frame</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Singnal handler, to catch SIGUSR1 sent by child processes, and SIGTERM.&quot;&quot;&quot;</span>
+    <span class="nb">print</span> <span class="n">util</span><span class="o">.</span><span class="n">SEP</span>
+    <span class="nb">print</span> <span class="s2">&quot; </span><span class="si">%s</span><span class="s2"> Shutdown signal received!&quot;</span> <span class="o">%</span> <span class="n">util</span><span class="o">.</span><span class="n">timeStamp</span><span class="p">(</span><span class="n">dateAndTime</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="nb">print</span> <span class="s2">&quot; Killing all child processes ...&quot;</span>
+    <span class="k">for</span> <span class="n">mp_worker</span> <span class="ow">in</span> <span class="n">mp_all_workers_list</span><span class="p">:</span>
+        <span class="n">mp_worker</span><span class="o">.</span><span class="n">terminate</span><span class="p">()</span>
+    <span class="nb">print</span> <span class="s2">&quot; Killing master process.  Goodbye.&quot;</span>
+    <span class="nb">print</span> <span class="n">util</span><span class="o">.</span><span class="n">SEP</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">kill</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">getpid</span><span class="p">(),</span> <span class="n">signal</span><span class="o">.</span><span class="n">SIGTERM</span><span class="p">)</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">kill</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">getpid</span><span class="p">(),</span> <span class="n">signal</span><span class="o">.</span><span class="n">SIGKILL</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="main"><a class="viewcode-back" href="../../../executables.html#cadishi.exe.histograms.main">[docs]</a><span class="k">def</span> <span class="nf">main</span><span class="p">(</span><span class="n">argparse_args</span><span class="p">):</span>
+
+    <span class="n">print_it</span> <span class="o">=</span> <span class="n">util</span><span class="o">.</span><span class="n">PrintWrapper</span><span class="p">()</span>
+
+    <span class="nb">print</span> <span class="n">util</span><span class="o">.</span><span class="n">SEP</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="n">argparse_args</span><span class="o">.</span><span class="n">input</span><span class="p">):</span>
+        <span class="n">parameter_file</span> <span class="o">=</span> <span class="n">argparse_args</span><span class="o">.</span><span class="n">input</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">util</span><span class="o">.</span><span class="n">have_yaml</span><span class="p">:</span>
+            <span class="n">parameter_file</span> <span class="o">=</span> <span class="s1">&#39;histograms.yaml&#39;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">parameter_file</span> <span class="o">=</span> <span class="s1">&#39;histograms.json&#39;</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">parameter_file</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; Could not find histogram input file &#39;&quot;</span> <span class="o">+</span> <span class="n">parameter_file</span> <span class="o">+</span> <span class="s2">&quot;&#39;.&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; Run `&quot;</span> <span class="o">+</span> <span class="n">util</span><span class="o">.</span><span class="n">get_executable_name</span><span class="p">()</span> <span class="o">+</span> <span class="s2">&quot; example` to generate an example input file.&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">util</span><span class="o">.</span><span class="n">SEP</span><span class="p">)</span>
+        <span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="n">histoparam</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">histoparam</span> <span class="o">=</span> <span class="n">util</span><span class="o">.</span><span class="n">load_parameter_file</span><span class="p">(</span><span class="n">parameter_file</span><span class="p">)</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="nb">print</span> <span class="s2">&quot; Error: Could not read input file &#39;&quot;</span> <span class="o">+</span> <span class="n">parameter_file</span> <span class="o">+</span> <span class="s2">&quot;&#39;.&quot;</span>
+        <span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">template_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">__file__</span><span class="p">))</span>
+                                        <span class="o">+</span> <span class="s2">&quot;/../data/histograms_template.yaml&quot;</span><span class="p">)</span>
+        <span class="n">valid_parameters</span> <span class="o">=</span> <span class="n">util</span><span class="o">.</span><span class="n">load_parameter_file</span><span class="p">(</span><span class="n">template_file</span><span class="p">)</span>
+        <span class="n">util</span><span class="o">.</span><span class="n">check_parameter_labels</span><span class="p">(</span><span class="n">histoparam</span><span class="p">,</span> <span class="n">valid_parameters</span><span class="p">)</span>
+        <span class="n">check_parameters</span><span class="p">(</span><span class="n">histoparam</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; Error: &quot;</span> <span class="o">+</span> <span class="n">e</span><span class="o">.</span><span class="n">message</span> <span class="o">+</span> <span class="s2">&quot;.&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">util</span><span class="o">.</span><span class="n">SEP</span><span class="p">)</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="c1"># --- END OF CONFIGURATION SECTION ---</span>
+
+    <span class="c1"># get information about the available CPUs</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">histoparam</span><span class="p">[</span><span class="s1">&#39;general&#39;</span><span class="p">][</span><span class="s1">&#39;numa_aware&#39;</span><span class="p">]):</span>
+        <span class="n">numa_topology</span> <span class="o">=</span> <span class="n">util</span><span class="o">.</span><span class="n">get_numa_domains</span><span class="p">()</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">numa_topology</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="n">task_queue_timeout</span> <span class="o">=</span> <span class="mi">360</span>
+    <span class="n">task_queue_maxsize</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="n">histoparam</span><span class="p">[</span><span class="s1">&#39;cpu&#39;</span><span class="p">][</span><span class="s1">&#39;workers&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">histoparam</span><span class="p">[</span><span class="s1">&#39;gpu&#39;</span><span class="p">][</span><span class="s1">&#39;workers&#39;</span><span class="p">])</span>
+
+    <span class="n">util</span><span class="o">.</span><span class="n">md</span><span class="p">(</span><span class="n">histoparam</span><span class="p">[</span><span class="s1">&#39;output&#39;</span><span class="p">][</span><span class="s1">&#39;directory&#39;</span><span class="p">])</span>
+
+    <span class="n">reader</span> <span class="o">=</span> <span class="n">hdf5</span><span class="o">.</span><span class="n">H5Reader</span><span class="p">(</span><span class="n">file</span><span class="o">=</span><span class="n">histoparam</span><span class="p">[</span><span class="s1">&#39;input&#39;</span><span class="p">][</span><span class="s1">&#39;file&#39;</span><span class="p">])</span>
+    <span class="n">ti</span> <span class="o">=</span> <span class="n">reader</span><span class="o">.</span><span class="n">get_trajectory_information</span><span class="p">()</span>
+    <span class="k">del</span> <span class="n">reader</span>
+
+    <span class="c1"># --- correct input parameters based on trajectory ---</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">histoparam</span><span class="p">[</span><span class="s1">&#39;input&#39;</span><span class="p">][</span><span class="s1">&#39;first&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="n">histoparam</span><span class="p">[</span><span class="s1">&#39;input&#39;</span><span class="p">][</span><span class="s1">&#39;first&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ti</span><span class="o">.</span><span class="n">frame_numbers</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">histoparam</span><span class="p">[</span><span class="s1">&#39;input&#39;</span><span class="p">][</span><span class="s1">&#39;last&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="n">histoparam</span><span class="p">[</span><span class="s1">&#39;input&#39;</span><span class="p">][</span><span class="s1">&#39;last&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ti</span><span class="o">.</span><span class="n">frame_numbers</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">histoparam</span><span class="p">[</span><span class="s1">&#39;input&#39;</span><span class="p">][</span><span class="s1">&#39;step&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="n">histoparam</span><span class="p">[</span><span class="s1">&#39;input&#39;</span><span class="p">][</span><span class="s1">&#39;step&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="k">assert</span> <span class="p">(</span><span class="n">histoparam</span><span class="p">[</span><span class="s1">&#39;input&#39;</span><span class="p">][</span><span class="s1">&#39;first&#39;</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">ti</span><span class="o">.</span><span class="n">frame_numbers</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="k">assert</span> <span class="p">(</span><span class="n">histoparam</span><span class="p">[</span><span class="s1">&#39;input&#39;</span><span class="p">][</span><span class="s1">&#39;last&#39;</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">ti</span><span class="o">.</span><span class="n">frame_numbers</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+    <span class="k">assert</span> <span class="p">(</span><span class="n">histoparam</span><span class="p">[</span><span class="s1">&#39;input&#39;</span><span class="p">][</span><span class="s1">&#39;first&#39;</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">histoparam</span><span class="p">[</span><span class="s1">&#39;input&#39;</span><span class="p">][</span><span class="s1">&#39;last&#39;</span><span class="p">])</span>
+
+    <span class="k">if</span> <span class="n">histoparam</span><span class="p">[</span><span class="s1">&#39;histogram&#39;</span><span class="p">][</span><span class="s1">&#39;r_max&#39;</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">r_max</span> <span class="o">=</span> <span class="n">ti</span><span class="o">.</span><span class="n">get_pipeline_parameter</span><span class="p">(</span><span class="s1">&#39;r_max&#39;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">r_max</span> <span class="o">=</span> <span class="n">histoparam</span><span class="p">[</span><span class="s1">&#39;histogram&#39;</span><span class="p">][</span><span class="s1">&#39;r_max&#39;</span><span class="p">]</span>
+
+    <span class="n">dr</span> <span class="o">=</span> <span class="n">histoparam</span><span class="p">[</span><span class="s1">&#39;histogram&#39;</span><span class="p">][</span><span class="s1">&#39;dr&#39;</span><span class="p">]</span>
+    <span class="n">nbins</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">r_max</span> <span class="o">/</span> <span class="n">dr</span><span class="p">))</span>
+
+    <span class="nb">print</span> <span class="n">version</span><span class="o">.</span><span class="n">get_printable_version_string</span><span class="p">()</span>
+    <span class="nb">print</span> <span class="n">util</span><span class="o">.</span><span class="n">SEP</span>
+    <span class="nb">print</span> <span class="s2">&quot; parameter file:       &quot;</span> <span class="o">+</span> <span class="n">parameter_file</span>
+    <span class="nb">print</span> <span class="s2">&quot; trajectory file:      &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">histoparam</span><span class="p">[</span><span class="s1">&#39;input&#39;</span><span class="p">][</span><span class="s1">&#39;file&#39;</span><span class="p">])</span>
+    <span class="nb">print</span> <span class="s2">&quot; output directory:     &quot;</span> <span class="o">+</span> <span class="n">histoparam</span><span class="p">[</span><span class="s1">&#39;output&#39;</span><span class="p">][</span><span class="s1">&#39;directory&#39;</span><span class="p">]</span>
+    <span class="nb">print</span> <span class="s2">&quot; r_max:                &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">r_max</span><span class="p">)</span>
+    <span class="nb">print</span> <span class="s2">&quot; nbins:                &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">nbins</span><span class="p">)</span>
+    <span class="nb">print</span> <span class="s2">&quot; cpu workers:          &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">histoparam</span><span class="p">[</span><span class="s1">&#39;cpu&#39;</span><span class="p">][</span><span class="s1">&#39;workers&#39;</span><span class="p">])</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">histoparam</span><span class="p">[</span><span class="s1">&#39;cpu&#39;</span><span class="p">][</span><span class="s1">&#39;workers&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">):</span>
+        <span class="nb">print</span> <span class="s2">&quot; cpu threads:          &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">histoparam</span><span class="p">[</span><span class="s1">&#39;cpu&#39;</span><span class="p">][</span><span class="s1">&#39;threads&#39;</span><span class="p">])</span>
+    <span class="nb">print</span> <span class="s2">&quot; gpu workers:          &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">histoparam</span><span class="p">[</span><span class="s1">&#39;gpu&#39;</span><span class="p">][</span><span class="s1">&#39;workers&#39;</span><span class="p">])</span>
+    <span class="nb">print</span> <span class="n">util</span><span class="o">.</span><span class="n">SEP</span>
+
+    <span class="n">elements</span> <span class="o">=</span> <span class="n">ti</span><span class="o">.</span><span class="n">species</span>
+
+    <span class="n">nEl</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">elements</span><span class="p">)</span>
+    <span class="n">header_str</span> <span class="o">=</span> <span class="s2">&quot;# &quot;</span>
+    <span class="n">counter</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nEl</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">nEl</span><span class="p">):</span>
+            <span class="n">header_str</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">,</span><span class="si">%s</span><span class="s2"> &quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">elements</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">elements</span><span class="p">[</span><span class="n">j</span><span class="p">])</span>
+            <span class="n">counter</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="n">header_str</span> <span class="o">=</span> <span class="n">header_str</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>
+
+    <span class="n">hfp</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">histoparam</span><span class="p">[</span><span class="s1">&#39;output&#39;</span><span class="p">][</span><span class="s1">&#39;directory&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;header.dat&quot;</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span>
+    <span class="n">hfp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">header_str</span><span class="p">)</span>
+    <span class="n">hfp</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+    <span class="c1"># initialize a time mark for relative timing information</span>
+    <span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+    <span class="nb">print</span> <span class="s2">&quot; </span><span class="si">%s</span><span class="s2"> proceeding to distance histogram computation&quot;</span> <span class="o">%</span> <span class="n">util</span><span class="o">.</span><span class="n">timeStamp</span><span class="p">(</span><span class="n">dateAndTime</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="n">histoparam</span><span class="p">[</span><span class="s1">&#39;general&#39;</span><span class="p">][</span><span class="s1">&#39;verbose&#39;</span><span class="p">]):</span>
+        <span class="nb">print</span> <span class="n">util</span><span class="o">.</span><span class="n">SEP</span>
+        <span class="nb">print</span> <span class="s2">&quot; </span><span class="si">%s</span><span class="s2"> spawning worker processes ...&quot;</span> <span class="o">%</span> <span class="n">util</span><span class="o">.</span><span class="n">timeStamp</span><span class="p">(</span><span class="n">t0</span><span class="o">=</span><span class="n">t0</span><span class="p">)</span>
+
+    <span class="c1"># ------ set up the multiprocessing environment ------</span>
+    <span class="c1"># use blocking queues for job handling and synchronization</span>
+    <span class="n">task_queue</span> <span class="o">=</span> <span class="n">multiprocessing</span><span class="o">.</span><span class="n">JoinableQueue</span><span class="p">(</span><span class="n">task_queue_maxsize</span><span class="p">)</span>
+    <span class="n">result_queue</span> <span class="o">=</span> <span class="n">multiprocessing</span><span class="o">.</span><span class="n">JoinableQueue</span><span class="p">(</span><span class="n">task_queue_maxsize</span><span class="p">)</span>
+    <span class="c1"># set up and launch worker processes</span>
+    <span class="n">pool</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="c1"># set up processes for the calculation of the individual histograms</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">histoparam</span><span class="p">[</span><span class="s1">&#39;cpu&#39;</span><span class="p">][</span><span class="s1">&#39;workers&#39;</span><span class="p">]):</span>
+        <span class="n">mp_worker</span> <span class="o">=</span> <span class="n">multiprocessing</span><span class="o">.</span><span class="n">Process</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="n">worker</span><span class="o">.</span><span class="n">compute</span><span class="p">,</span>
+                                            <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">histoparam</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="s1">&#39;cpu&#39;</span><span class="p">,</span> <span class="n">task_queue</span><span class="p">,</span> <span class="n">result_queue</span><span class="p">,</span> <span class="n">r_max</span><span class="p">,</span> <span class="n">nbins</span><span class="p">,</span> <span class="n">t0</span><span class="p">))</span>
+        <span class="n">pool</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">mp_worker</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">histoparam</span><span class="p">[</span><span class="s1">&#39;gpu&#39;</span><span class="p">][</span><span class="s1">&#39;workers&#39;</span><span class="p">]):</span>
+        <span class="n">mp_worker</span> <span class="o">=</span> <span class="n">multiprocessing</span><span class="o">.</span><span class="n">Process</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="n">worker</span><span class="o">.</span><span class="n">compute</span><span class="p">,</span>
+                                            <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">histoparam</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="s1">&#39;gpu&#39;</span><span class="p">,</span> <span class="n">task_queue</span><span class="p">,</span> <span class="n">result_queue</span><span class="p">,</span> <span class="n">r_max</span><span class="p">,</span> <span class="n">nbins</span><span class="p">,</span> <span class="n">t0</span><span class="p">))</span>
+        <span class="n">pool</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">mp_worker</span><span class="p">)</span>
+    <span class="c1"># set up process for summing-up and writing the histograms</span>
+    <span class="n">sum_worker</span> <span class="o">=</span> <span class="n">multiprocessing</span><span class="o">.</span><span class="n">Process</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="n">worker</span><span class="o">.</span><span class="n">sum</span><span class="p">,</span>
+                                         <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">histoparam</span><span class="p">,</span> <span class="n">result_queue</span><span class="p">,</span> <span class="n">nEl</span><span class="p">,</span> <span class="n">nbins</span><span class="p">,</span> <span class="n">dr</span><span class="p">,</span> <span class="n">header_str</span><span class="p">,</span> <span class="n">t0</span><span class="p">))</span>
+
+    <span class="c1"># build list of all child processes to be used by the signal handler</span>
+    <span class="n">mp_all_workers_list</span> <span class="o">=</span> <span class="n">pool</span> <span class="o">+</span> <span class="p">[</span><span class="n">sum_worker</span><span class="p">]</span>
+
+    <span class="k">for</span> <span class="n">mp_worker</span> <span class="ow">in</span> <span class="n">mp_all_workers_list</span><span class="p">:</span>
+        <span class="n">mp_worker</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+
+    <span class="k">for</span> <span class="n">mp_worker</span> <span class="ow">in</span> <span class="n">mp_all_workers_list</span><span class="p">:</span>
+        <span class="k">assert</span><span class="p">(</span><span class="n">mp_worker</span><span class="o">.</span><span class="n">is_alive</span><span class="p">())</span>
+
+    <span class="c1"># install the shutdown handler for SIGUSR1 events received from child processes</span>
+    <span class="n">signal</span><span class="o">.</span><span class="n">signal</span><span class="p">(</span><span class="n">signal</span><span class="o">.</span><span class="n">SIGUSR1</span><span class="p">,</span> <span class="n">unexpectedShutdownHandler</span><span class="p">)</span>
+    <span class="c1"># install the shutdown handler for Ctrl-c</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">histoparam</span><span class="p">[</span><span class="s1">&#39;general&#39;</span><span class="p">][</span><span class="s1">&#39;profile&#39;</span><span class="p">]:</span>
+        <span class="n">signal</span><span class="o">.</span><span class="n">signal</span><span class="p">(</span><span class="n">signal</span><span class="o">.</span><span class="n">SIGINT</span><span class="p">,</span> <span class="n">unexpectedShutdownHandler</span><span class="p">)</span>
+    <span class="c1"># ------</span>
+
+    <span class="c1"># --- save histogram parameters (that may have been altered/corrected within the program)</span>
+    <span class="n">util</span><span class="o">.</span><span class="n">save_yaml</span><span class="p">(</span><span class="n">histoparam</span><span class="p">,</span> <span class="n">histoparam</span><span class="p">[</span><span class="s1">&#39;output&#39;</span><span class="p">][</span><span class="s1">&#39;directory&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;histograms.yaml&quot;</span><span class="p">)</span>
+
+    <span class="c1"># --- save particle numbers of each frame to calculate densities and fluctuations</span>
+    <span class="n">nr_part_fp</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">histoparam</span><span class="p">[</span><span class="s1">&#39;output&#39;</span><span class="p">][</span><span class="s1">&#39;directory&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;nrPart.</span><span class="si">%d</span><span class="s2">.</span><span class="si">%d</span><span class="s2">.dat&quot;</span> <span class="o">%</span>
+                      <span class="p">(</span><span class="n">histoparam</span><span class="p">[</span><span class="s1">&#39;input&#39;</span><span class="p">][</span><span class="s1">&#39;first&#39;</span><span class="p">],</span> <span class="n">histoparam</span><span class="p">[</span><span class="s1">&#39;input&#39;</span><span class="p">][</span><span class="s1">&#39;last&#39;</span><span class="p">]),</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span>
+    <span class="n">nr_header</span> <span class="o">=</span> <span class="s2">&quot;# &quot;</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> &quot;</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">elements</span><span class="p">)</span> <span class="o">%</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">elements</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>
+    <span class="n">nr_part_fp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">nr_header</span><span class="p">)</span>
+
+    <span class="n">reader</span> <span class="o">=</span> <span class="n">hdf5</span><span class="o">.</span><span class="n">H5Reader</span><span class="p">(</span><span class="n">file</span><span class="o">=</span><span class="n">histoparam</span><span class="p">[</span><span class="s1">&#39;input&#39;</span><span class="p">][</span><span class="s1">&#39;file&#39;</span><span class="p">],</span>
+                           <span class="n">first</span><span class="o">=</span><span class="n">histoparam</span><span class="p">[</span><span class="s1">&#39;input&#39;</span><span class="p">][</span><span class="s1">&#39;first&#39;</span><span class="p">],</span>
+                           <span class="n">last</span><span class="o">=</span><span class="n">histoparam</span><span class="p">[</span><span class="s1">&#39;input&#39;</span><span class="p">][</span><span class="s1">&#39;last&#39;</span><span class="p">],</span>
+                           <span class="n">step</span><span class="o">=</span><span class="n">histoparam</span><span class="p">[</span><span class="s1">&#39;input&#39;</span><span class="p">][</span><span class="s1">&#39;step&#39;</span><span class="p">],</span>
+                           <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="c1"># --- fetch data from reader and put it into the task queue</span>
+    <span class="k">for</span> <span class="n">frm</span> <span class="ow">in</span> <span class="n">reader</span><span class="o">.</span><span class="n">next</span><span class="p">():</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">frm</span><span class="p">,</span> <span class="n">base</span><span class="o">.</span><span class="n">Container</span><span class="p">)</span>
+
+        <span class="c1"># (1) --- create a list containing per-species numpy arrays with coordinate triples</span>
+        <span class="n">particleNrs</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">el</span> <span class="ow">in</span> <span class="n">elements</span><span class="p">:</span>
+            <span class="n">coord_set</span> <span class="o">=</span> <span class="n">frm</span><span class="o">.</span><span class="n">get_data</span><span class="p">(</span><span class="n">base</span><span class="o">.</span><span class="n">loc_coordinates</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span> <span class="n">el</span><span class="p">)</span>
+            <span class="n">n_part</span> <span class="o">=</span> <span class="n">coord_set</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">particleNrs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">n_part</span><span class="p">)</span>
+            <span class="c1"># ---</span>
+            <span class="n">frm</span><span class="o">.</span><span class="n">put_data</span><span class="p">(</span><span class="n">base</span><span class="o">.</span><span class="n">loc_nr_particles</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span> <span class="n">el</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">n_part</span><span class="p">]))</span>
+
+        <span class="c1"># (2) --- create a list containing all the coordinate triples</span>
+        <span class="c1"># in a linearly concatenated manner for xyz output</span>
+        <span class="c1"># TODO: check if the sorting by species is OK</span>
+        <span class="c1"># WARNING: severely degrades performance, needs C implementation</span>
+        <span class="k">if</span> <span class="n">histoparam</span><span class="p">[</span><span class="s1">&#39;output&#39;</span><span class="p">][</span><span class="s1">&#39;write_xyz&#39;</span><span class="p">]:</span>
+            <span class="n">volCrds</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">volSpecies</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">el</span> <span class="ow">in</span> <span class="n">elements</span><span class="p">:</span>
+                <span class="n">coord_set</span> <span class="o">=</span> <span class="n">frm</span><span class="o">.</span><span class="n">get_data</span><span class="p">(</span><span class="n">base</span><span class="o">.</span><span class="n">loc_coordinates</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span> <span class="n">el</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">ij</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">coord_set</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+                    <span class="n">triple</span> <span class="o">=</span> <span class="n">coord_set</span><span class="p">[</span><span class="n">ij</span><span class="p">,</span> <span class="p">:]</span>
+                    <span class="n">volCrds</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">triple</span><span class="p">)</span>
+                    <span class="n">volSpecies</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">el</span><span class="p">)</span>
+            <span class="n">util</span><span class="o">.</span><span class="n">write_xyzFile</span><span class="p">(</span><span class="n">volCrds</span><span class="p">,</span> <span class="n">volSpecies</span><span class="p">,</span> <span class="n">histoparam</span><span class="p">[</span><span class="s1">&#39;output&#39;</span><span class="p">][</span><span class="s1">&#39;directory&#39;</span><span class="p">]</span> <span class="o">+</span>
+                               <span class="s2">&quot;volume.fr</span><span class="si">%d</span><span class="s2">.xyz&quot;</span> <span class="o">%</span> <span class="n">frm</span><span class="o">.</span><span class="n">i</span><span class="p">)</span>
+            <span class="n">volCrds</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">volSpecies</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="c1"># --- handle miscellaneous information attached to the frame ---</span>
+
+        <span class="c1"># assure correct handling of the periodic boxes</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">frm</span><span class="o">.</span><span class="n">get_geometry</span><span class="p">()</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="n">frm</span><span class="o">.</span><span class="n">put_data</span><span class="p">(</span><span class="n">base</span><span class="o">.</span><span class="n">loc_dimensions</span><span class="p">,</span> <span class="p">[])</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;geometry filter detected, disabling box.&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">histoparam</span><span class="p">[</span><span class="s1">&#39;input&#39;</span><span class="p">][</span><span class="s1">&#39;periodic_box&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">frm</span><span class="o">.</span><span class="n">has_key</span><span class="p">(</span><span class="n">base</span><span class="o">.</span><span class="n">loc_dimensions</span><span class="p">):</span>
+                    <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;using box information provided by frame.&quot;</span>
+                    <span class="k">pass</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;frame does not provide any box information, disabling box.&quot;</span>
+                    <span class="n">frm</span><span class="o">.</span><span class="n">put_data</span><span class="p">(</span><span class="n">base</span><span class="o">.</span><span class="n">loc_dimensions</span><span class="p">,</span> <span class="p">[])</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">periodic_box</span> <span class="o">=</span> <span class="n">histoparam</span><span class="p">[</span><span class="s1">&#39;input&#39;</span><span class="p">][</span><span class="s1">&#39;periodic_box&#39;</span><span class="p">]</span>
+                <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;using periodic box information provided by parameter file.&quot;</span>
+                <span class="n">frm</span><span class="o">.</span><span class="n">put_data</span><span class="p">(</span><span class="n">base</span><span class="o">.</span><span class="n">loc_dimensions</span><span class="p">,</span> <span class="n">periodic_box</span><span class="p">)</span>
+        <span class="n">print_it</span><span class="o">.</span><span class="n">once</span><span class="p">(</span><span class="s2">&quot;periodic box&quot;</span><span class="p">,</span> <span class="n">msg</span><span class="p">,</span> <span class="n">time_stamp</span><span class="o">=</span><span class="n">util</span><span class="o">.</span><span class="n">timeStamp</span><span class="p">(</span><span class="n">t0</span><span class="o">=</span><span class="n">t0</span><span class="p">))</span>
+
+        <span class="n">dimensions</span> <span class="o">=</span> <span class="n">frm</span><span class="o">.</span><span class="n">get_data</span><span class="p">(</span><span class="n">base</span><span class="o">.</span><span class="n">loc_dimensions</span><span class="p">)</span>
+        <span class="n">box_volume</span> <span class="o">=</span> <span class="n">pbc</span><span class="o">.</span><span class="n">get_box_volume</span><span class="p">(</span><span class="n">dimensions</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">box_volume</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">frm</span><span class="o">.</span><span class="n">put_data</span><span class="p">(</span><span class="n">base</span><span class="o">.</span><span class="n">loc_volumes</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;box&#39;</span><span class="p">:</span> <span class="n">box_volume</span><span class="p">})</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">frm</span><span class="o">.</span><span class="n">has_key</span><span class="p">(</span><span class="n">base</span><span class="o">.</span><span class="n">loc_histogram_scale_factors</span><span class="p">):</span>
+            <span class="n">frm</span><span class="o">.</span><span class="n">put_data</span><span class="p">(</span><span class="n">base</span><span class="o">.</span><span class="n">loc_histogram_scale_factors</span><span class="p">,</span> <span class="p">[])</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">frm</span><span class="o">.</span><span class="n">has_key</span><span class="p">(</span><span class="n">base</span><span class="o">.</span><span class="n">loc_histogram_mask</span><span class="p">):</span>
+            <span class="n">frm</span><span class="o">.</span><span class="n">put_data</span><span class="p">(</span><span class="n">base</span><span class="o">.</span><span class="n">loc_histogram_mask</span><span class="p">,</span> <span class="p">[])</span>
+
+        <span class="n">bap</span> <span class="o">=</span> <span class="mf">0.0</span>  <span class="c1"># billion atom pairs</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nEl</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">nEl</span><span class="p">):</span>
+                <span class="n">n_at1</span> <span class="o">=</span> <span class="n">particleNrs</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+                <span class="n">n_at2</span> <span class="o">=</span> <span class="n">particleNrs</span><span class="p">[</span><span class="n">j</span><span class="p">]</span>
+                <span class="k">if</span> <span class="p">(</span><span class="n">i</span> <span class="o">==</span> <span class="n">j</span><span class="p">):</span>
+                    <span class="n">bap</span> <span class="o">+=</span> <span class="nb">float</span><span class="p">((</span><span class="n">n_at1</span> <span class="o">*</span> <span class="p">(</span><span class="n">n_at1</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="mf">1.e9</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">bap</span> <span class="o">+=</span> <span class="nb">float</span><span class="p">(</span><span class="n">n_at1</span> <span class="o">*</span> <span class="n">n_at2</span><span class="p">)</span> <span class="o">/</span> <span class="mf">1.e9</span>
+
+        <span class="c1"># --- write out particle numbers</span>
+        <span class="n">nr_part_fp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%d</span><span class="s2"> &quot;</span> <span class="o">*</span> <span class="p">(</span><span class="n">nEl</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="nb">tuple</span><span class="p">([</span><span class="n">frm</span><span class="o">.</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="n">particleNrs</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="n">histoparam</span><span class="p">[</span><span class="s1">&#39;general&#39;</span><span class="p">][</span><span class="s1">&#39;verbose&#39;</span><span class="p">]):</span>
+            <span class="nb">print</span> <span class="s2">&quot; </span><span class="si">%s</span><span class="s2"> enqueueing frame </span><span class="si">%d</span><span class="s2"> ...&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">util</span><span class="o">.</span><span class="n">timeStamp</span><span class="p">(</span><span class="n">t0</span><span class="o">=</span><span class="n">t0</span><span class="p">),</span> <span class="n">frm</span><span class="o">.</span><span class="n">i</span><span class="p">)</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">frm</span><span class="o">.</span><span class="n">i</span> <span class="o">==</span> <span class="mi">0</span><span class="p">):</span>
+                <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
+
+        <span class="n">work_package</span> <span class="o">=</span> <span class="p">(</span><span class="n">frm</span><span class="p">,</span> <span class="n">bap</span><span class="p">)</span>
+        <span class="n">task_queue</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">work_package</span><span class="p">,</span> <span class="n">task_queue_timeout</span><span class="p">)</span>
+
+        <span class="c1"># cadishi cat be stopped by creating a file &quot;stop&quot; in the same directory</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="s2">&quot;stop&quot;</span><span class="p">):</span>
+            <span class="k">break</span>
+
+    <span class="n">nr_part_fp</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+    <span class="c1"># Trigger the workers to shut down in a controlled way by sending &quot;None&quot;.</span>
+    <span class="k">for</span> <span class="n">mp_worker</span> <span class="ow">in</span> <span class="n">pool</span><span class="p">:</span>
+        <span class="n">task_queue</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">task_queue_timeout</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="n">histoparam</span><span class="p">[</span><span class="s1">&#39;general&#39;</span><span class="p">][</span><span class="s1">&#39;verbose&#39;</span><span class="p">]):</span>
+        <span class="nb">print</span> <span class="s2">&quot; </span><span class="si">%s</span><span class="s2"> waiting for worker processes ...&quot;</span> <span class="o">%</span> <span class="n">util</span><span class="o">.</span><span class="n">timeStamp</span><span class="p">(</span><span class="n">t0</span><span class="o">=</span><span class="n">t0</span><span class="p">)</span>
+    <span class="n">task_queue</span><span class="o">.</span><span class="n">join</span><span class="p">()</span>
+    <span class="n">result_queue</span><span class="o">.</span><span class="n">join</span><span class="p">()</span>
+
+    <span class="n">t1</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+    <span class="n">wallclock</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">t1</span> <span class="o">-</span> <span class="n">t0</span><span class="p">)</span>
+    <span class="n">ntotal</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">histoparam</span><span class="p">[</span><span class="s1">&#39;input&#39;</span><span class="p">][</span><span class="s1">&#39;last&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">histoparam</span><span class="p">[</span><span class="s1">&#39;input&#39;</span><span class="p">][</span><span class="s1">&#39;first&#39;</span><span class="p">])</span>
+    <span class="n">fps</span> <span class="o">=</span> <span class="n">ntotal</span> <span class="o">/</span> <span class="n">wallclock</span>
+
+    <span class="c1"># Save preprocessor meta information (that was fetched from the HDF5 input file)</span>
+    <span class="c1"># to a JSON text file for potential evaluation by the postprocessor.</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">histoparam</span><span class="p">[</span><span class="s1">&#39;output&#39;</span><span class="p">][</span><span class="s1">&#39;directory&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;preprocessor_log.json&quot;</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
+        <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">ti</span><span class="o">.</span><span class="n">pipeline_log</span><span class="p">,</span> <span class="n">fp</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">sort_keys</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="nb">print</span> <span class="n">util</span><span class="o">.</span><span class="n">SEP</span>
+    <span class="nb">print</span> <span class="s2">&quot; </span><span class="si">%s</span><span class="s2"> distance histogram computation finished&quot;</span> <span class="o">%</span> <span class="n">util</span><span class="o">.</span><span class="n">timeStamp</span><span class="p">(</span><span class="n">dateAndTime</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="nb">print</span> <span class="s2">&quot;   frames:             </span><span class="si">%d</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">ntotal</span>
+    <span class="nb">print</span> <span class="s2">&quot;   wallclock time:     </span><span class="si">%.3f</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">wallclock</span>
+    <span class="nb">print</span> <span class="s2">&quot;   frames per second:  </span><span class="si">%.3f</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">fps</span>
+
+    <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
+
+    <span class="c1"># Join all worker processes which should have already terminated themselves.</span>
+    <span class="c1"># Update: terminate() should work as well fine here, but join() is cleaner.</span>
+    <span class="k">for</span> <span class="n">mp_worker</span> <span class="ow">in</span> <span class="n">pool</span><span class="p">:</span>
+        <span class="n">mp_worker</span><span class="o">.</span><span class="n">join</span><span class="p">()</span>
+    <span class="c1"># Important: To guarantee proper writeout of the HDF5 file we must</span>
+    <span class="c1"># join the process (i.e. wait until it terminates itself)!</span>
+    <span class="c1"># Using terminate() here does cause HDF5 errors!</span>
+    <span class="n">sum_worker</span><span class="o">.</span><span class="n">join</span><span class="p">()</span>
+    <span class="nb">print</span> <span class="n">util</span><span class="o">.</span><span class="n">SEP</span>
+    <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">Cadishi 1.0.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, Klaus Reuter, Juergen Koefinger.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.1.
+    </div>
+  </body>
+</html>
