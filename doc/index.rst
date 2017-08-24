@@ -112,7 +112,7 @@ numerical datatype was chosen to make averaging easier and more consistent.
 
 To get an idea about all the options available please have a look at the example
 parameter file that comes with Cadishi.  It can be generated using the command
-``cadishi example --expert``.
+``cadishi example [--expert]``.
 
 To **make life with HDF5 files easier** we recommend to use a graphical HDF5
 viewer such as HDFView.  Note, however, that HDFView does not support the LZF
@@ -121,6 +121,31 @@ by default (LZF can be disabled via the parameter file)). Moreover, Cadishi
 comes with the HDF5 unpack (``cadishi unpack``) and the HDF5 merge tool
 (``cadishi merge``). The latter tool can also be used to decompress single HDF5
 files quickly before viewing them with HDFView.
+
+
+Parameters
+----------
+
+Cadishi is highly configurable via its YAML parameter file (create a sample file
+using ``cadishi example [--expert]``). Below we pick the most important
+parameters and provide some background explanation.
+
+- ``histogram:dr``: Defines the histogram bin width. The total number of bins is determined in conjunction with the following parameter.
+- ``histogram:r_max``: Defines the histogram cutoff radius. Make sure that your input data is compatible with the cutoff radius, i.e. the maximum distance between all points must be smaller. In this context, the following settings are important.
+- ``cpu:check_input`` and ``gpu:check_input``: Checks at runtime if any distance computed is equal or smaller than the cutoff radius. If this is the case, an exception is raised that causes Cadishi to exit. If these parameters are set to false, no checks are performed and outliers may write into non-allocated memory. In order to achieve the highest possible performance, make absolutely sure that your data fits into r_max and disable the checks.
+- ``input:periodic_box``: The default value is null, causing Cadishi to automatically look for the presence of box information in the input data. A box can as well be specified explicitly, or disabled by setting the value to an empty list []. Note that we consider the triclinic box implementation currently as experimental.
+
+To achieve optimum **performance**, the number of workers and threads must be
+tuned to your system. For large frames (>O(100000) particles) it is reasonable
+to use few workers and a large number of threads per worker, e.g. if you have a
+16 core CPU you could run a single cpu worker process with 14 threads, while
+keeping the 2 more cores busy with Cadishi's reader and writer processes (you
+always have these two processes). For small frames, use more workers and fewer
+(down to one) threads. Running some experiments is useful to gain experience
+with specific datasets. Note that Cadishi supports NUMA awareness, i.e.
+processes can be pinned to CPUs. Calculations on large frames *greatly* benefit
+from the GPU kernels. Enable one worker per GPU. We have seen a binning rate of
+up to 160 billion particle-pairs per second on a single Pascal GPU.
 
 
 Installation
@@ -159,8 +184,9 @@ By default, the parameter file's name is ``histograms.yaml``. Edit the parameter
 file to your needs.  In particular, the compute kernels *pydh* (CPU) and *cudh*
 (GPU) can be configured.  In the example parameter file, the input configuration
 points to the default test case included with the Cadishi package. Adapt the
-input configuration to your actual data. As a second step the distance histogram
-calculation is run as follows::
+input configuration to your actual data. An example code on how to import data
+into Cadishi is given in ``doc/input_example.py``. As a second step the distance
+histogram calculation is run as follows::
 
    cadishi histo
 
