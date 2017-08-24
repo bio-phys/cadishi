@@ -26,7 +26,6 @@ class DummyReader(base.Reader):
         self.n_frames = n_frames
         self.n_objects = n_objects
         self.verbose = verbose
-        pass
 
     def get_frame(self, i):
         # internally, Cadishi and Capriqorn use base.Container() instances to handle data

@@ -85,6 +85,10 @@ size (n_i, 3) where n_i is the number of particles of species i. The coordinate
 datasets use the name of the species as the label which e.g. can be the name of
 the chemical element in the context of MD data.
 
+To demonstrate how to feed data into Cadishi there is an **example code**
+available at ``doc/input_example.py``. Adapt that code to easily implement a
+reader for arbitrary custom data.
+
 For each frame read from the HDF5 file **Cadishi computes the distance histograms**
 between the particles for all combinations of species. The top-level parallelization
 of Cadishi is able to compute multiple frames simultaneously on all GPUs and CPUs
@@ -104,7 +108,7 @@ following scheme::
     ...
 
 The HDF5 histogram datasets are single-column vectors of 64 bit floats. The
-latter was chosen to make averaging easier and more consistent.
+numerical datatype was chosen to make averaging easier and more consistent.
 
 To get an idea about all the options available please have a look at the example
 parameter file that comes with Cadishi.  It can be generated using the command
