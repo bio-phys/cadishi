@@ -47,7 +47,7 @@ image convention to the distances internally. Support for triclinic boxes is
 implemented following the equations given by Tuckerman (M. E. Tuckerman.
 Statistical Mechanics: Theory and Molecular Simulation. Oxford University Press,
 Oxford, UK, 2010.).  Note that we consider support for triclinic boxes as highly
-experimental. Check your results carefully since we have seen inconsistencies.
+experimental. Check your results carefully for possible inconsistencies.
 
 Computations can be performed in single (default) or double precision.
 Optionally, the distances can be checked if they fit into the desired histogram
