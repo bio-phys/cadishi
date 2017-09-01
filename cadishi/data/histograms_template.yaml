@@ -49,13 +49,13 @@ output:
   file: histograms.h5
   # HDF5 file compression, options are null, gzip, lzf
   compression: lzf
-  # write distance histograms to HDF5 (expert)
-  write_h5: true  # (expert)
-  # write distance histograms to NumPy plain text files (expert)
-  write_npx: false  # (expert)
-  # write distance histograms to NumPy binary files (expert)
-  write_npy: false  # (expert)
-  # write coordinate triples to text files (harms performance!) (expert)
-  write_xyz: false  # (expert)
-  # flush file handles every flush_interval histograms (expert)
-  flush_interval: 100  # (expert)
+  # write distance histograms to HDF5 [expert]
+  write_h5: true  # [expert]
+  # write distance histograms to NumPy plain text files [expert]
+  write_npx: false  # [expert]
+  # write distance histograms to NumPy binary files [expert]
+  write_npy: false  # [expert]
+  # write coordinate triples to text files (harms performance!) [expert]
+  write_xyz: false  # [expert]
+  # flush file handles every flush_interval histograms [expert]
+  flush_interval: 100  # [expert]
