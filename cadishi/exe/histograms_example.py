@@ -48,9 +48,10 @@ def main(argparse_args):
 
     yaml_file = "histograms.yaml"
 
-    trajectory_file = "./preprocessor_output/trajectory.h5"
-    if not os.path.exists("preprocessor.yaml"):
+    if os.path.basename(sys.argv[0]) == "cadishi":
         trajectory_file = util.testcase() + "trajectory.h5"
+    else:
+        trajectory_file = "./preprocessor_output/trajectory.h5"
 
     with open(template_file, 'r') as fp_in, open(yaml_file, 'w') as fp_out:
         template_lines = fp_in.readlines()
