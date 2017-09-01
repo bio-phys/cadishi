@@ -7,6 +7,9 @@
 .pydevproject
 .settings
 build
+.cache
 *.egg-info
 cadishi/githash.py
 doc/doctrees
+doc/html/.buildinfo
+doc/latex
