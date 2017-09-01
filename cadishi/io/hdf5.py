@@ -158,7 +158,10 @@ class H5Reader(base.Reader):
         ti = base.TrajectoryInformation()
         idx_tuple = self.frame_pool[0]
         frm = self.get_frame(idx_tuple)
-        ti.species = sorted(frm.get_keys(base.loc_coordinates))
+        if frm.has_key(base.loc_coordinates):
+            ti.species = sorted(frm.get_keys(base.loc_coordinates))
+        else:
+            ti.species = []
         ti.pipeline_log = frm.get_meta()
         ti.frame_numbers = list(range(1, len(self.frame_pool) + 1))
         return ti
