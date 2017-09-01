@@ -321,6 +321,7 @@ class CleanCommand(Command):
     def run(self):
         os.system('rm -vrf ./*.so')
         os.system('rm -vrf build')
+        os.system('rm -vrf ./doc/_build')
         os.system('rm -vrf dist')
         os.system('rm -vrf cadishi.egg-info')
         os.system("find cadishi -name '*.pyc' -delete -print")

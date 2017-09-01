@@ -47,7 +47,7 @@ image convention to the distances internally. Support for triclinic boxes is
 implemented following the equations given by Tuckerman (M. E. Tuckerman.
 Statistical Mechanics: Theory and Molecular Simulation. Oxford University Press,
 Oxford, UK, 2010.).  Note that we consider support for triclinic boxes as highly
-experimental. Check your results carefully since we have seen inconsistencies.
+experimental. Check your results carefully for possible inconsistencies.
 
 Computations can be performed in single (default) or double precision.
 Optionally, the distances can be checked if they fit into the desired histogram
@@ -86,8 +86,9 @@ datasets use the name of the species as the label which e.g. can be the name of
 the chemical element in the context of MD data.
 
 To demonstrate how to feed data into Cadishi there is an **example code**
-available at ``doc/input_example.py``. Adapt that code to easily implement a
-reader for arbitrary custom data.
+available at
+:download:`doc/scripts/input_example.py <./scripts/input_example.py>`.
+Adapt that code to easily implement a reader for arbitrary custom data.
 
 For each frame read from the HDF5 file **Cadishi computes the distance histograms**
 between the particles for all combinations of species. The top-level parallelization
@@ -117,10 +118,17 @@ parameter file that comes with Cadishi.  It can be generated using the command
 To **make life with HDF5 files easier** we recommend to use a graphical HDF5
 viewer such as HDFView.  Note, however, that HDFView does not support the LZF
 compression that comes with the Python HDF5 module "H5py" and is used by Cadishi
-by default (LZF can be disabled via the parameter file)). Moreover, Cadishi
-comes with the HDF5 unpack (``cadishi unpack``) and the HDF5 merge tool
-(``cadishi merge``). The latter tool can also be used to decompress single HDF5
-files quickly before viewing them with HDFView.
+by default (LZF can be disabled via the parameter file)).
+
+Moreover, to demonstrate how to access the HDF5 data written by Cadishi from
+Python we provide the example program
+:download:`doc/scripts/plot_hdf5_data.py <./scripts/plot_hdf5_data.py>`.
+It opens the HDF5 container, reads the last frame and plots a histogram using
+matplotlib. As an input file, the Cadishi output from the test case can be taken.
+
+Finally, Cadishi comes with a HDF5 unpack tool (``cadishi unpack``) and a HDF5
+merge tool (``cadishi merge``). The latter tool can also be used to decompress
+single HDF5 files quickly before viewing them with HDFView.
 
 
 Parameters
@@ -185,8 +193,9 @@ file to your needs.  In particular, the compute kernels *pydh* (CPU) and *cudh*
 (GPU) can be configured.  In the example parameter file, the input configuration
 points to the default test case included with the Cadishi package. Adapt the
 input configuration to your actual data. An example code on how to import data
-into Cadishi is given in ``doc/input_example.py``. As a second step the distance
-histogram calculation is run as follows::
+into Cadishi is available at
+:download:`doc/scripts/input_example.py <./scripts/input_example.py>`.
+As a second step the distance histogram calculation is run as follows::
 
    cadishi histo
 
