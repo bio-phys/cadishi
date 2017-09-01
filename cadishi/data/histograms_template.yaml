@@ -33,7 +33,7 @@ gpu:
   check_input: true
 input:
   # trajectory HDF5 file, Capriqorn preprocessor output
-  file: ./preprocessor_output/trajectory.h5
+  file: __TRAJECTORY_FILE__
   # first frame to be processed
   first: null
   # last frame to be processed
