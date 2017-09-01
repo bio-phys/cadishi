@@ -1,61 +1,61 @@
 # Cadishi example parameter file
 general:
   # redirect output to log files
-  redirect_output: true  
+  redirect_output: true
   # print detailed output during computation
-  verbose: true  
+  verbose: true
 histogram:
   # maximum distance value of the histogram, >0 sets it explicitly, <0 fetches from capriqorn pipeline
-  r_max: 70  
+  r_max: 70
   # histogram bin width [Angstrom]
-  dr: 0.01  
+  dr: 0.01
   # sum over 'sum' histograms before writing the result (i.e., number of histograms in a single block)
-  sum: 10  
+  sum: 10
 cpu:
   # select CPU compute kernel
-  module: pydh  
+  module: pydh
   # floating point precision
   precision: single
   # number of CPU worker processes, <0 autodetect, >0 set explicitly, 0 disable CPU workers
-  workers: -1    
+  workers: -1
   # number of threads per worker process, autodetected if workers is set to autodetection
-  threads: 1  
+  threads: 1
   # check during computation if distances lie within r_max, exit on error
-  check_input: true  
+  check_input: true
 gpu:
   # select GPU compute kernel
-  module: cudh  
+  module: cudh
   # floating point precision
   precision: single
   # number of GPU worker processes, up to the number of physical GPUs
-  workers: 0    
+  workers: 0
   # check during computation if distances lie within r_max, exit on error
-  check_input: true 
+  check_input: true
 input:
   # trajectory HDF5 file, Capriqorn preprocessor output
-  file: ./preprocessor_output/trajectory.h5  
+  file: ./preprocessor_output/trajectory.h5
   # first frame to be processed
-  first: null  
+  first: null
   # last frame to be processed
-  last: null  
+  last: null
   # only read every `step`th frame
-  step: 1  
+  step: 1
   # null = rely on information present in the input frames (default), [] = force not to use any box, [a, b, c, alpha, beta, gamma] = force use of box as specified
-  periodic_box: null   
+  periodic_box: null
 output:
   # output directory for histogram and log files
-  directory: ./histograms_output/  
+  directory: ./histograms_output/
   # name of outputfile in hdf5 format
   file: histograms.h5
   # HDF5 file compression, options are null, gzip, lzf
-  compression: lzf  
+  compression: lzf
   # write distance histograms to HDF5 (expert)
   write_h5: true  # (expert)
   # write distance histograms to NumPy plain text files (expert)
-  write_npx: false  # (expert) 
+  write_npx: false  # (expert)
   # write distance histograms to NumPy binary files (expert)
-  write_npy: false  # (expert)  
+  write_npy: false  # (expert)
   # write coordinate triples to text files (harms performance!) (expert)
   write_xyz: false  # (expert)
   # flush file handles every flush_interval histograms (expert)
-  flush_interval: 100 # (expert) 
+  flush_interval: 100  # (expert)
