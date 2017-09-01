@@ -29,5 +29,5 @@ test_job:
 
 # Clean up remnants.
 after_script:
-  - python setup.py develop --user --uninstall
+  # - python setup.py develop --user --uninstall  # fails sometimes
   - rm -f ~/.local/lib/python2.7/site-packages/cadishi.egg-link
