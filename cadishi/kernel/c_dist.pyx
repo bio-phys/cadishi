@@ -1,4 +1,13 @@
-# Copyright 2015 Juergen Koefinger
+# -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding: utf-8 -*-
+# vim: tabstop=4 expandtab shiftwidth=4 softtabstop=4 fileencoding=utf-8
+#
+# Cadishi --- CAlculation of DIStance HIstograms
+#
+# Copyright (c) Klaus Reuter, Juergen Koefinger
+# See the file AUTHORS.rst for the full list of contributors.
+#
+# Released under the MIT License, see the file LICENSE.txt.
+
 
 import numpy as np
 cimport numpy as np
@@ -26,7 +35,7 @@ def pwd(np.ndarray[np.double_t, ndim=2] r, np.ndarray[np.double_t, ndim=1] histo
             if rIndex>=nbins:
                 print "\n rIndex>=nbins\n"
             histo[rIndex]+=1
-    return 
+    return
 
 def pwd2(np.ndarray[np.double_t, ndim=2] r1, np.ndarray[np.double_t, ndim=2] r2, np.ndarray[np.double_t, ndim=1] histo, double rmax, int nbins):
 #Calculate histogram of distances between particles belonging to different structures(=sets of coordinates).
@@ -43,7 +52,7 @@ def pwd2(np.ndarray[np.double_t, ndim=2] r1, np.ndarray[np.double_t, ndim=2] r2,
             if rIndex>=nbins:
                 print "\n rIndex>=nbins\n"
             histo[rIndex]+=1
-    return 
+    return
 
 def pwdNoRoot(np.ndarray[np.double_t, ndim=2] r, np.ndarray[np.double_t, ndim=1] histo, double rmax, int nbins):
 #Calculate histogram of distances between particles belonging to the same structure (=set of coordinates).
@@ -57,4 +66,4 @@ def pwdNoRoot(np.ndarray[np.double_t, ndim=2] r, np.ndarray[np.double_t, ndim=1]
                 d+=tmp*tmp
             rIndex=int(d/rmax*nbins)
             histo[rIndex]+=1
-    return 
+    return

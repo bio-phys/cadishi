@@ -1,11 +1,15 @@
 /**
-*  Common code used by the pydh and cudh kernels, either as Python module or as C library.
+* Cadishi --- CAlculation of DIStance HIstograms
 *
-*  (C) Klaus Reuter, khr@rzg.mpg.de, 2015 - 2017
+* Copyright (c) Klaus Reuter, Juergen Koefinger
+* See the file AUTHORS.rst for the full list of contributors.
 *
-*  This file is part of the Cadishi package.  See README.rst,
-*  LICENSE.txt, and the documentation for details.
+* Released under the MIT License, see the file LICENSE.txt.
+*
+*
+* Common code used by the pydh and cudh kernels, either as Python module or as C library.
 */
+
 
 #ifndef _COMMON_H_
 #define _COMMON_H_

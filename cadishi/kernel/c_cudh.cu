@@ -1,4 +1,12 @@
 /**
+*  Cadishi --- CAlculation of DIStance HIstograms
+*
+*  Copyright (c) Klaus Reuter, Juergen Koefinger
+*  See the file AUTHORS.rst for the full list of contributors.
+*
+*  Released under the MIT License, see the file LICENSE.txt.
+*
+*
 *  c_cudh --- high performance GPU distance histogram code
 *
 *  Three types of kernel implementations are available:
@@ -10,11 +18,6 @@
 *  - Python interface via the histograms() function, compilation needs to
 *    be done using the setup.py file of the cadishi package (default)
 *  - C interface, compilation needs to take place using the Makefile
-*
-*  (C) Klaus Reuter, khr@rzg.mpg.de, 2015 - 2017
-*
-*  This file is part of the Cadishi package.  See README.rst,
-*  LICENSE.txt, and the documentation for details.
 */
 
 

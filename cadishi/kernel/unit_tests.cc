@@ -1,3 +1,16 @@
+/**
+* Cadishi --- CAlculation of DIStance HIstograms
+*
+* Copyright (c) Klaus Reuter, Juergen Koefinger
+* See the file AUTHORS.rst for the full list of contributors.
+*
+* Released under the MIT License, see the file LICENSE.txt.
+*
+*
+* Some unit tests, not complete, used for the development of the triclinic BC.
+*/
+
+
 #include <cstring>
 #include <cstdio>
 #include <cmath>

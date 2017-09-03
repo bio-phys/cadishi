@@ -1,10 +1,13 @@
 /**
-*  Code used by the c_cudh kernels for exception handling.
+* Cadishi --- CAlculation of DIStance HIstograms
 *
-*  (C) Klaus Reuter, khr@rzg.mpg.de, 2015 - 2017
+* Copyright (c) Klaus Reuter, Juergen Koefinger
+* See the file AUTHORS.rst for the full list of contributors.
 *
-*  This file is part of the Cadishi package.  See README.rst,
-*  LICENSE.txt, and the documentation for details.
+* Released under the MIT License, see the file LICENSE.txt.
+*
+*
+* Code used by the c_cudh kernels for exception handling.
 */
 
 #ifndef _CUDA_EXCEPTIONS_HPP_

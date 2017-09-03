@@ -51,7 +51,11 @@ reasons. See the included example dataset for details. The histograms are writte
 to an HDF5 file as well.  Cadishi uses multiple processes to be able to utilize
 all the compute resources (CPU cores, GPUs) available on a node simultaneously.
 
-More details are given in the documentation.
+
+Documentation
+-------------
+
+Please visit `doc/html/index.html`.
 
 
 License and Citation
