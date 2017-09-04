@@ -225,7 +225,13 @@ def md(resource):
     if (len(folder) == 0):
         return
     if not os.path.exists(folder):
-        os.makedirs(folder)
+        # Despite the 'if' there may be a race condition when a parallel
+        # pipeline with many workers is used, so we catch the exception thrown
+        # if the directory does exist.
+        try:
+            os.makedirs(folder)
+        except OSError:
+            pass
 
 
 def ls(resource, files=True, directories=False):
