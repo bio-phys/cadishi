@@ -228,7 +228,7 @@ In case you're using Cadishi for your own academic or non-academic research, **w
 kindly request that you cite Cadishi in your publications and presentations**. We
 suggest the following citations as appropriate:
 
-TODO: Add proper paper reference once it is publicly available. Please use the
+A proper reference will be added once it is publicly available. Please use the
 following reference meanwhile:
 "K. Reuter, J. Koefinger: Cadishi, https://github.com/bio-phys/cadishi, 2017."
 
