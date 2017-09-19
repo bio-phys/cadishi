@@ -354,12 +354,15 @@ def extensions():
     if CUDA is None:
         print("Skipping cudh build")
     else:
+        link_libraries=['cudart', 'stdc++']
+        if CAD_OPENMP:
+            link_libraries.append('gomp')
         exts.append(
             Extension(
                 'cadishi.kernel.c_cudh',
                 sources=['cadishi/kernel/c_cudh.cu'],
                 include_dirs=[numpy_include, 'cadishi/kernel/include'],
-                libraries=['cudart', 'stdc++'],
+                libraries=link_libraries,
                 library_dirs=[CUDA['lib']],
                 runtime_library_dirs=[CUDA['lib']],
                 extra_compile_args=cuda_compiler_flags()))
