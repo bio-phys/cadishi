@@ -817,13 +817,13 @@ void histograms_template_dispatcher(NP_TUPLE3_T *r_ptr,   // coordinate tuples
             box[i].y = FLOAT_T(box_ptr[3*i+1]);
             box[i].z = FLOAT_T(box_ptr[3*i+2]);
          }
-         calclulate_inverse_triclinic_box<TUPLE3_T, FLOAT_T>
-            (box, &box[idx_box_tri_inv]);
-#pragma omp parallel for default(shared) schedule(guided)
-         for (int i=0; i<n_tot; ++i) {
-            transform_to_triclinic_coordinates<TUPLE3_T, FLOAT_T>
-               (r_copy[i], &box[idx_box_tri_inv]);
-         }
+//          calclulate_inverse_triclinic_box<TUPLE3_T, FLOAT_T>
+//             (box, &box[idx_box_tri_inv]);
+// #pragma omp parallel for default(shared) schedule(guided)
+//          for (int i=0; i<n_tot; ++i) {
+//             transform_to_triclinic_coordinates<TUPLE3_T, FLOAT_T>
+//                (r_copy[i], &box[idx_box_tri_inv]);
+//          }
          break;
    }
    // --- NOTE: n_tot is redefined below for all nested code ---

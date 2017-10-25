@@ -123,12 +123,12 @@ void hist_1(TUPLE3_T * __restrict__ p,
    memset(histo, 0, nbins*sizeof(uint64_t));
 #pragma omp parallel default(shared) reduction(|| : idx_error)
    {
-      if ((box_type_id == triclinic) && !(*moved_into_box)) {
-#pragma omp for OMP_SCHEDULE
-         for (int j=0; j<nelem; ++j) {
-            transform_to_triclinic_coordinates<TUPLE3_T, FLOAT_T>(p[j], box_tri_inv);
-         }
-      }
+//       if ((box_type_id == triclinic) && !(*moved_into_box)) {
+// #pragma omp for OMP_SCHEDULE
+//          for (int j=0; j<nelem; ++j) {
+//             transform_to_triclinic_coordinates<TUPLE3_T, FLOAT_T>(p[j], box_tri_inv);
+//          }
+//       }
       uint32_t * histo_thread = (uint32_t*) malloc(nbins*sizeof(uint32_t));
       memset(histo_thread, 0, nbins*sizeof(uint32_t));
 
@@ -240,9 +240,9 @@ void hist_1(TUPLE3_T * __restrict__ p,
       free(d);
       free(histo_thread);
    }
-   if ((box_type_id == triclinic) && !(*moved_into_box)) {
-      *moved_into_box = true;
-   }
+   // if ((box_type_id == triclinic) && !(*moved_into_box)) {
+   //    *moved_into_box = true;
+   // }
    if (check_input) {
       if (idx_error)
          OVERFLOW_ERROR(overflow_error_msg);
@@ -274,20 +274,20 @@ void hist_2(TUPLE3_T * __restrict__ p1,
    memset(histo, 0, nbins*sizeof(uint64_t));
 #pragma omp parallel default(shared) reduction(|| : idx_error)
    {
-      if (box_type_id == triclinic) {
-         if (!(*moved_into_box_1)) {
-#pragma omp for OMP_SCHEDULE
-            for (int j=0; j<nelem1; ++j) {
-               transform_to_triclinic_coordinates<TUPLE3_T, FLOAT_T>(p1[j], box_tri_inv);
-            }
-         }
-         if (!(*moved_into_box_2)) {
-#pragma omp for OMP_SCHEDULE
-            for (int j=0; j<nelem2; ++j) {
-               transform_to_triclinic_coordinates<TUPLE3_T, FLOAT_T>(p2[j], box_tri_inv);
-            }
-         }
-      }
+//       if (box_type_id == triclinic) {
+//          if (!(*moved_into_box_1)) {
+// #pragma omp for OMP_SCHEDULE
+//             for (int j=0; j<nelem1; ++j) {
+//                transform_to_triclinic_coordinates<TUPLE3_T, FLOAT_T>(p1[j], box_tri_inv);
+//             }
+//          }
+//          if (!(*moved_into_box_2)) {
+// #pragma omp for OMP_SCHEDULE
+//             for (int j=0; j<nelem2; ++j) {
+//                transform_to_triclinic_coordinates<TUPLE3_T, FLOAT_T>(p2[j], box_tri_inv);
+//             }
+//          }
+//       }
       uint32_t * histo_thread = (uint32_t*) malloc(nbins*sizeof(uint32_t));
       memset(histo_thread, 0, nbins*sizeof(uint32_t));
 
@@ -397,12 +397,12 @@ void hist_2(TUPLE3_T * __restrict__ p1,
       free(d);
       free(histo_thread);
    }
-   if (box_type_id == triclinic) {
-      if (!(*moved_into_box_1))
-         *moved_into_box_1 = true;
-      if (!(*moved_into_box_2))
-         *moved_into_box_2 = true;
-   }
+   // if (box_type_id == triclinic) {
+   //    if (!(*moved_into_box_1))
+   //       *moved_into_box_1 = true;
+   //    if (!(*moved_into_box_2))
+   //       *moved_into_box_2 = true;
+   // }
    if (check_input) {
       if (idx_error)
          OVERFLOW_ERROR(overflow_error_msg);
@@ -813,11 +813,11 @@ void dist_driver_template_dispatcher(np_tuple3d_t *r_ptr,
    }
 */
 
-   if (box_type_id == triclinic) {
-      for (int j=0; j<n_tot; ++j) {
-         transform_to_triclinic_coordinates<TUPLE3_T, FLOAT_T>(r_copy[j], box_tri_inv);
-      }
-   }
+   // if (box_type_id == triclinic) {
+   //    for (int j=0; j<n_tot; ++j) {
+   //       transform_to_triclinic_coordinates<TUPLE3_T, FLOAT_T>(r_copy[j], box_tri_inv);
+   //    }
+   // }
 
    int idx = 0;
    for (int j=0; j<n_tot; ++j) {
