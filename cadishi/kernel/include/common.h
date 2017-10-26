@@ -16,23 +16,23 @@
 
 // enum/integer values used to select the box type (also see common.py)
 enum box_type {
-   none,
-   orthorhombic,
-   triclinic
+    none,
+    orthorhombic,
+    triclinic
 };
 
 // double precision coordinate triple (used to access the NumPy data pointer passed by Python)
 typedef struct np_tuple3d_t {
-   double x;
-   double y;
-   double z;
+    double x;
+    double y;
+    double z;
 } np_tuple3d_t;
 
 // single precision coordinate triple
 typedef struct np_tuple3s_t {
-   float x;
-   float y;
-   float z;
+    float x;
+    float y;
+    float z;
 } np_tuple3s_t;
 
 #endif

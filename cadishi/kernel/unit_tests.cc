@@ -20,8 +20,7 @@
 #include <common.hpp>
 
 template <typename TUPLE3_T, typename FLOAT_T>
-int test_triclinic_box()
-{
+int test_triclinic_box() {
     TUPLE3_T box[3];
     TUPLE3_T box_inv[3];
     memset(box, 0, 3*sizeof(box[0]));
@@ -61,8 +60,8 @@ int test_triclinic_box()
     // printf("cartesian: %f %f %f\n", tup.x, tup.y, tup.z);
 
     FLOAT_T delta = std::sqrt(  std::pow(tup.x - tup_orig.x, 2)
-                              + std::pow(tup.y - tup_orig.y, 2)
-                              + std::pow(tup.z - tup_orig.z, 2));
+                                + std::pow(tup.y - tup_orig.y, 2)
+                                + std::pow(tup.z - tup_orig.z, 2));
 
     FLOAT_T eps = 5.e-7;
     // printf("%f\n", delta);
