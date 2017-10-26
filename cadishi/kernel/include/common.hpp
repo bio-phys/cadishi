@@ -1,7 +1,7 @@
 /**
 * Cadishi --- CAlculation of DIStance HIstograms
 *
-* Copyright (c) Klaus Reuter, Juergen Koefinger
+* Copyright (c) Klaus Reuter, Juergen Koefinger, Max Linke
 * See the file AUTHORS.rst for the full list of contributors.
 *
 * Released under the MIT License, see the file LICENSE.txt.
@@ -60,24 +60,32 @@ const char SEP[] = "------------------------------------------------------------
 
 
 // Cadishi round wrapper functions for both the precisions
+#pragma omp declare simd
 DEVICE inline float cad_round(const float &val) {
     return roundf(val);
 }
+#pragma omp declare simd
 DEVICE inline double cad_round(const double &val) {
     return round(val);
 }
 
 // Cadishi min wrapper functions for both the precisions
+#pragma omp declare simd
 DEVICE inline float cad_min(const float &v, const float &w) {
     return fminf(v, w);
 }
+#pragma omp declare simd
 DEVICE inline double cad_min(const double &v, const double &w) {
     return fmin(v, w);
 }
 
+// The C++ default function std::numeric_limits<FLOAT_T>::max();
+// cannot be run on the GPU so we use the custom functions below.
+#pragma omp declare simd
 DEVICE inline float float_t_maxval(float dummy) {
     return FLT_MAX;
 }
+#pragma omp declare simd
 DEVICE inline double float_t_maxval(double dummy) {
     return DBL_MAX;
 }
@@ -85,6 +93,7 @@ DEVICE inline double float_t_maxval(double dummy) {
 
 
 // minimum image convention for orthorhombic systems
+#pragma omp declare simd
 template <typename TUPLE3_T, typename FLOAT_T>
 DEVICE inline void
 mic_orthorhombic(TUPLE3_T &dp, const TUPLE3_T &box, const TUPLE3_T &box_inv) {
@@ -102,11 +111,10 @@ mic_orthorhombic(TUPLE3_T &dp, const TUPLE3_T &box, const TUPLE3_T &box_inv) {
 
 // new attempt to implement a correct triclinic minimum image convention
 // credit: Max Linke, pbc_distances
-// reference:
+// #pragma omp declare simd
 template <typename TUPLE3_T, typename FLOAT_T>
 DEVICE inline FLOAT_T
 mic_triclinic(TUPLE3_T &dp, const TUPLE3_T * const box) {
-    //FLOAT_T dsq_min = std::numeric_limits<FLOAT_T>::max();
     FLOAT_T dsq_min = float_t_maxval(FLOAT_T());
 
     dp.x = dp.x - box[2].x * cad_round(dp.z / box[2].z);
@@ -132,9 +140,7 @@ mic_triclinic(TUPLE3_T &dp, const TUPLE3_T * const box) {
                 dpz.y += box[2].y * static_cast<FLOAT_T>(z);
                 dpz.z += box[2].z * static_cast<FLOAT_T>(z);
 
-                FLOAT_T dsq = dpz.x * dpz.x
-                              + dpz.y * dpz.y
-                              + dpz.z * dpz.z;
+                FLOAT_T dsq = dpz.x * dpz.x + dpz.y * dpz.y + dpz.z * dpz.z;
 
                 dsq_min = cad_min(dsq, dsq_min);
             }
@@ -146,6 +152,7 @@ mic_triclinic(TUPLE3_T &dp, const TUPLE3_T * const box) {
 
 
 // distance calculation
+// #pragma omp declare simd
 template <typename TUPLE3_T, typename FLOAT_T, int box_type_id>
 DEVICE inline FLOAT_T
 dist(const TUPLE3_T &p1, const TUPLE3_T &p2,
@@ -175,9 +182,11 @@ dist(const TUPLE3_T &p1, const TUPLE3_T &p2,
 }
 
 
+// UNUSED CODE BELOW, KEPT FOR DOCUMENTATION PURPOSES
 
-// --- reimplementation of basic functions for triclinic periodic box handling,
-// closely following Tuckerman ---
+
+// Functions for triclinic periodic box handling below, closely following Tuckerman.
+// Warning: results are correct up to the half of the box length, then bogus!
 
 // calculate the inverse (h^{-1}) of the triclinic box matrix
 template <typename TUPLE3_T, typename FLOAT_T>
