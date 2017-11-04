@@ -196,6 +196,7 @@ void hist_1(TUPLE3_T * __restrict__ p,
             }
 #else
             // loop vectorizes well (GCC >=4.9, checked using Intel VTUNE & Advisor)
+            #pragma omp simd
             for (int i=0; i<j; ++i) {
                 d[i] = (int) (scal * dist<TUPLE3_T, FLOAT_T, box_type_id>
                               (p[i], p[j], box, box_ortho, box_ortho_inv));
@@ -352,6 +353,7 @@ void hist_2(TUPLE3_T * __restrict__ p1,
             }
 #else
             // loop vectorizes well (gcc >=4.9, checked using Intel VTUNE & Advisor)
+            #pragma omp simd
             for (int i=0; i<nelem2; ++i) {
                 d[i] = (int)(scal * dist<TUPLE3_T, FLOAT_T, box_type_id>
                              (p2[i], p1[j], box, box_ortho, box_ortho_inv));

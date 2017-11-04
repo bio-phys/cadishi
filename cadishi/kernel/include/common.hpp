@@ -60,6 +60,7 @@ const char SEP[] = "------------------------------------------------------------
 
 
 // Cadishi round wrapper functions for both the precisions
+// Note: C++11 would provide std::round()
 #pragma omp declare simd
 DEVICE inline float cad_round(const float &val) {
     return roundf(val);
@@ -102,7 +103,6 @@ mic_orthorhombic(TUPLE3_T &dp, const TUPLE3_T &box, const TUPLE3_T &box_inv) {
     t.y = box_inv.y * dp.y;
     t.z = box_inv.z * dp.z;
 
-    // Note: C++11 would provide std::round()
     dp.x = box.x * (t.x - cad_round(t.x));
     dp.y = box.y * (t.y - cad_round(t.y));
     dp.z = box.z * (t.z - cad_round(t.z));
@@ -111,7 +111,7 @@ mic_orthorhombic(TUPLE3_T &dp, const TUPLE3_T &box, const TUPLE3_T &box_inv) {
 
 // new attempt to implement a correct triclinic minimum image convention
 // credit: Max Linke, pbc_distances
-// #pragma omp declare simd
+#pragma omp declare simd
 template <typename TUPLE3_T, typename FLOAT_T>
 DEVICE inline FLOAT_T
 mic_triclinic(TUPLE3_T &dp, const TUPLE3_T * const box) {
@@ -152,7 +152,7 @@ mic_triclinic(TUPLE3_T &dp, const TUPLE3_T * const box) {
 
 
 // distance calculation
-// #pragma omp declare simd
+#pragma omp declare simd
 template <typename TUPLE3_T, typename FLOAT_T, int box_type_id>
 DEVICE inline FLOAT_T
 dist(const TUPLE3_T &p1, const TUPLE3_T &p2,
@@ -173,8 +173,6 @@ dist(const TUPLE3_T &p1, const TUPLE3_T &p2,
         dsq = dp.x * dp.x + dp.y * dp.y + dp.z * dp.z;
         break;
     case triclinic:
-        //  triclinic_minimum_image_convention<TUPLE3_T, FLOAT_T>(dp);
-        //  transform_to_cartesian_coordinates<TUPLE3_T, FLOAT_T>(dp, box);
         dsq = mic_triclinic<TUPLE3_T, FLOAT_T>(dp, box);
         break;
     }

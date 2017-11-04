@@ -121,6 +121,7 @@ def get_gcc_flags():
         cc_flags += ['-O3']
         if (find_in_path(['g++']) is not None):
             cc_flags += ['-ffast-math']  # essential to get vectorization and performance
+            cc_flags += ['-funroll-loops']
             cc_flags += ['-mtune=native']  # optimize for the current CPU but preserve portability
             if platform.processor() == 'x86_64':
                 if CAD_GCC_NATIVE:
@@ -131,7 +132,7 @@ def get_gcc_flags():
             if not on_mac():
                 if CAD_OPENMP:
                     cc_flags += ['-fopenmp']
-                # cc_flags += ['-fopt-info-vec']
+                cc_flags += ['-fopt-info']
     return cc_flags
 
 
