@@ -49,14 +49,12 @@ enum _implementations {
     SIMPLE=3    // naive comparably slow kernel, not for production use
 };
 
-// number of TUPLE3_T elements for box vector
-const int n_box = 6;
+// --- number of TUPLE3_T elements for box vector: 3 box vectors + 1 box inverse
+const int n_box = 4;
 // first three elements are the box vectors
-// the inverse box vectors start at 3
-const int idx_box_tri_inv = 3;
-// alternatively, orthorhombic boxes start at 3, the 5th element is unused
-const int idx_box_ortho = 3;
-const int idx_box_ortho_inv = 4;
+const int idx_box_ortho = 0;
+// inverse box (i.e. reciprocal values)
+const int idx_box_inv = 3;
 
 // --- parameters for the global and advanced kernels
 // maximum number of bins fitting into the 48kB of shared memory available on relevant GPUs
@@ -132,7 +130,7 @@ histo1_simple_knl(const TUPLE3_T* const r1, const int n1,
     for (int ii=i; ii<n1; ii+=di) {
         for (int jj=j; jj<ii; jj+=dj) {
             int idx = (int)(scal * dist<TUPLE3_T, FLOAT_T, box_type_id>
-                            (r1[jj], r1[ii], box, box[idx_box_ortho], box[idx_box_ortho_inv]));
+                            (r1[jj], r1[ii], box, box[idx_box_ortho], box[idx_box_inv]));
             // Error handling:
             // * If no box is used and check_input is requested, outliers do trigger the error condition.
             // * If a box is used and check_input is requested, outliers are simply ignored.
@@ -166,7 +164,7 @@ histo2_simple_knl(const TUPLE3_T* const r1, const int n1,
     for (int ii=i; ii<n1; ii+=ni) {
         for (int jj=j; jj<n2; jj+=nj) {
             int idx = (int)(scal * dist<TUPLE3_T, FLOAT_T, box_type_id>
-                            (r2[jj], r1[ii], box, box[idx_box_ortho], box[idx_box_ortho_inv]));
+                            (r2[jj], r1[ii], box, box[idx_box_ortho], box[idx_box_inv]));
             // Error handling:
             // * If no box is used and check_input is requested, outliers do trigger the error condition.
             // * If a box is used and check_input is requested, outliers are simply ignored.
@@ -248,7 +246,7 @@ histo1_advanced_knl(
         for (int i1=0; i1<n1_tile_size; ++i1) {
             if (i1 < q1) {
                 int idx = (int)(scal * dist<TUPLE3_T, FLOAT_T, box_type_id>
-                                (r1p[i1], r2r, box, box[idx_box_ortho], box[idx_box_ortho_inv]));
+                                (r1p[i1], r2r, box, box[idx_box_ortho], box[idx_box_inv]));
                 // Error handling:
                 // * If no box is used and check_input is requested, outliers do trigger the error condition.
                 // * If a box is used and check_input is requested, outliers are simply ignored.
@@ -308,7 +306,7 @@ histo2_advanced_knl(
         TUPLE3_T r2r = r2[i2];
         for (int i1=0; i1<n1_tile_size; ++i1) {
             int idx = (int)(scal * dist<TUPLE3_T, FLOAT_T, box_type_id>
-                            (r1p[i1], r2r, box, box[idx_box_ortho], box[idx_box_ortho_inv]));
+                            (r1p[i1], r2r, box, box[idx_box_ortho], box[idx_box_inv]));
             // Error handling:
             // * If no box is used and check_input is requested, outliers do trigger the error condition.
             // * If a box is used and check_input is requested, outliers are simply ignored.
@@ -357,7 +355,7 @@ histo1_global_knl(
         for (int i1=0; i1<n1_tile_size; ++i1) {
             if (i1 < q1) {
                 int idx = (int)(scal * dist<TUPLE3_T, FLOAT_T, box_type_id>
-                                (r1p[i1], r2r, box, box[idx_box_ortho], box[idx_box_ortho_inv]));
+                                (r1p[i1], r2r, box, box[idx_box_ortho], box[idx_box_inv]));
                 // Error handling:
                 // * If no box is used and check_input is requested, outliers do trigger the error condition.
                 // * If a box is used and check_input is requested, outliers are simply ignored.
@@ -393,7 +391,7 @@ histo2_global_knl(
         TUPLE3_T r2r = r2[i2];
         for (int i1=0; i1<n1_tile_size; ++i1) {
             int idx = (int)(scal * dist<TUPLE3_T, FLOAT_T, box_type_id>
-                            (r1p[i1], r2r, box, box[idx_box_ortho], box[idx_box_ortho_inv]));
+                            (r1p[i1], r2r, box, box[idx_box_ortho], box[idx_box_inv]));
             // Error handling:
             // * If no box is used and check_input is requested, outliers do trigger the error condition.
             // * If a box is used and check_input is requested, outliers are simply ignored.
@@ -796,9 +794,9 @@ void histograms_template_dispatcher(NP_TUPLE3_T *r_ptr,   // coordinate tuples
         box[idx_box_ortho].y = FLOAT_T(box_ptr[4]);  // into a
         box[idx_box_ortho].z = FLOAT_T(box_ptr[8]);  // single tuple
         // "box_ortho_inv"
-        box[idx_box_ortho_inv].x = FLOAT_T(1.) / box[idx_box_ortho].x;
-        box[idx_box_ortho_inv].y = FLOAT_T(1.) / box[idx_box_ortho].y;
-        box[idx_box_ortho_inv].z = FLOAT_T(1.) / box[idx_box_ortho].z;
+        box[idx_box_inv].x = FLOAT_T(1.) / box[idx_box_ortho].x;
+        box[idx_box_inv].y = FLOAT_T(1.) / box[idx_box_ortho].y;
+        box[idx_box_inv].z = FLOAT_T(1.) / box[idx_box_ortho].z;
         break;
     case triclinic:
         for (int i=0; i<3; ++i) {
@@ -806,13 +804,10 @@ void histograms_template_dispatcher(NP_TUPLE3_T *r_ptr,   // coordinate tuples
             box[i].y = FLOAT_T(box_ptr[3*i+1]);
             box[i].z = FLOAT_T(box_ptr[3*i+2]);
         }
-//          calclulate_inverse_triclinic_box<TUPLE3_T, FLOAT_T>
-//             (box, &box[idx_box_tri_inv]);
-// #pragma omp parallel for default(shared) schedule(guided)
-//          for (int i=0; i<n_tot; ++i) {
-//             transform_to_triclinic_coordinates<TUPLE3_T, FLOAT_T>
-//                (r_copy[i], &box[idx_box_tri_inv]);
-//          }
+        // "box_tri_inv"
+        box[idx_box_inv].x = FLOAT_T(1.) / box[0].x;
+        box[idx_box_inv].y = FLOAT_T(1.) / box[1].y;
+        box[idx_box_inv].z = FLOAT_T(1.) / box[2].z;
         break;
     }
     // --- NOTE: n_tot is redefined below for all nested code ---

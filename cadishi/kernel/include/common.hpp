@@ -114,9 +114,10 @@ mic_orthorhombic(TUPLE3_T &dp, const TUPLE3_T &box, const TUPLE3_T &box_inv) {
 #pragma omp declare simd
 template <typename TUPLE3_T, typename FLOAT_T>
 DEVICE inline FLOAT_T
-mic_triclinic(TUPLE3_T &dp, const TUPLE3_T * const box) {
+mic_triclinic(TUPLE3_T &dp, const TUPLE3_T * const box, const TUPLE3_T &box_inv) {
     FLOAT_T dsq_min = float_t_maxval(FLOAT_T());
 
+/*
     dp.x = dp.x - box[2].x * cad_round(dp.z / box[2].z);
     dp.y = dp.y - box[2].y * cad_round(dp.z / box[2].z);
     dp.z = dp.z - box[2].z * cad_round(dp.z / box[2].z);
@@ -125,6 +126,18 @@ mic_triclinic(TUPLE3_T &dp, const TUPLE3_T * const box) {
     dp.y = dp.y - box[1].y * cad_round(dp.y / box[1].y);
 
     dp.x = dp.x - box[0].x * cad_round(dp.x / box[0].x);
+*/
+    const FLOAT_T frac_z = cad_round(box_inv.z * dp.z);
+    dp.x = dp.x - frac_z * box[2].x;
+    dp.y = dp.y - frac_z * box[2].y;
+    dp.z = dp.z - frac_z * box[2].z;
+
+    const FLOAT_T frac_y = cad_round(box_inv.y * dp.y);
+    dp.x = dp.x - frac_y * box[1].x;
+    dp.y = dp.y - frac_y * box[1].y;
+
+    const FLOAT_T frac_x = cad_round(box_inv.x * dp.x);
+    dp.x = dp.x - frac_x * box[0].x;
 
     // search images to find the minimum distance
     for (int x = -1; x <= 1; ++x) {
@@ -158,7 +171,7 @@ DEVICE inline FLOAT_T
 dist(const TUPLE3_T &p1, const TUPLE3_T &p2,
      const TUPLE3_T * const box,
      const TUPLE3_T &box_ortho,
-     const TUPLE3_T &box_ortho_inv) {
+     const TUPLE3_T &box_inv) {
     TUPLE3_T dp;
     FLOAT_T dsq;
     dp.x = p1.x - p2.x;
@@ -166,14 +179,14 @@ dist(const TUPLE3_T &p1, const TUPLE3_T &p2,
     dp.z = p1.z - p2.z;
     switch (box_type_id) {
     case orthorhombic:
-        mic_orthorhombic <TUPLE3_T, FLOAT_T> (dp, box_ortho, box_ortho_inv);
+        mic_orthorhombic <TUPLE3_T, FLOAT_T> (dp, box_ortho, box_inv);
         dsq = dp.x * dp.x + dp.y * dp.y + dp.z * dp.z;
         break;
     case none:
         dsq = dp.x * dp.x + dp.y * dp.y + dp.z * dp.z;
         break;
     case triclinic:
-        dsq = mic_triclinic<TUPLE3_T, FLOAT_T>(dp, box);
+        dsq = mic_triclinic<TUPLE3_T, FLOAT_T>(dp, box, box_inv);
         break;
     }
     return std::sqrt(dsq);
