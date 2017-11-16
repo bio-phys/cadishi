@@ -63,7 +63,7 @@ const char SEP[] = "------------------------------------------------------------
 // Note: C++11 would provide std::round()
 #pragma omp declare simd
 DEVICE inline float cad_round(const float &val) {
-    return roundf(val);
+    return roundf(val);  // 3 FLOPS, see Agners tables latency for SandyBridge
 }
 #pragma omp declare simd
 DEVICE inline double cad_round(const double &val) {
@@ -94,23 +94,25 @@ DEVICE inline double float_t_maxval(double dummy) {
 
 
 // minimum image convention for orthorhombic systems
+// 12 FLOPS in total
 #pragma omp declare simd
 template <typename TUPLE3_T, typename FLOAT_T>
 DEVICE inline void
 mic_orthorhombic(TUPLE3_T &dp, const TUPLE3_T &box, const TUPLE3_T &box_inv) {
     TUPLE3_T t;
-    t.x = box_inv.x * dp.x;
-    t.y = box_inv.y * dp.y;
-    t.z = box_inv.z * dp.z;
+    t.x = box_inv.x * dp.x;  // 1 FLOP
+    t.y = box_inv.y * dp.y;  // 1 FLOP
+    t.z = box_inv.z * dp.z;  // 1 FLOP
 
-    dp.x = box.x * (t.x - cad_round(t.x));
-    dp.y = box.y * (t.y - cad_round(t.y));
-    dp.z = box.z * (t.z - cad_round(t.z));
+    dp.x = box.x * (t.x - cad_round(t.x));  // 3 FLOPs (counting round as 1)
+    dp.y = box.y * (t.y - cad_round(t.y));  // 3 FLOPs (counting round as 1)
+    dp.z = box.z * (t.z - cad_round(t.z));  // 3 FLOPs (counting round as 1)
 }
 
 
 // new attempt to implement a correct triclinic minimum image convention
 // credit: Max Linke, pbc_distances
+// 358 FLOPS in total
 #pragma omp declare simd
 template <typename TUPLE3_T, typename FLOAT_T>
 DEVICE inline FLOAT_T
@@ -127,44 +129,50 @@ mic_triclinic(TUPLE3_T &dp, const TUPLE3_T * const box, const TUPLE3_T &box_inv)
 
     dp.x = dp.x - box[0].x * cad_round(dp.x / box[0].x);
 */
-    const FLOAT_T frac_z = cad_round(box_inv.z * dp.z);
-    dp.x = dp.x - frac_z * box[2].x;
-    dp.y = dp.y - frac_z * box[2].y;
-    dp.z = dp.z - frac_z * box[2].z;
+    const FLOAT_T frac_z = cad_round(box_inv.z * dp.z);  // 2 FLOP
+    dp.x = dp.x - frac_z * box[2].x;  // 2 FLOP
+    dp.y = dp.y - frac_z * box[2].y;  // 2 FLOP
+    dp.z = dp.z - frac_z * box[2].z;  // 2 FLOP
 
-    const FLOAT_T frac_y = cad_round(box_inv.y * dp.y);
-    dp.x = dp.x - frac_y * box[1].x;
-    dp.y = dp.y - frac_y * box[1].y;
+    const FLOAT_T frac_y = cad_round(box_inv.y * dp.y);  // 2 FLOP
+    dp.x = dp.x - frac_y * box[1].x;  // 2 FLOP
+    dp.y = dp.y - frac_y * box[1].y;  // 2 FLOP
 
-    const FLOAT_T frac_x = cad_round(box_inv.x * dp.x);
-    dp.x = dp.x - frac_x * box[0].x;
+    const FLOAT_T frac_x = cad_round(box_inv.x * dp.x);  // 2 FLOP
+    dp.x = dp.x - frac_x * box[0].x;  // 2 FLOP
 
     // search images to find the minimum distance
     for (int x = -1; x <= 1; ++x) {
         TUPLE3_T dpx = dp;
-        dpx.x += box[0].x * static_cast<FLOAT_T>(x);
+        dpx.x += box[0].x * static_cast<FLOAT_T>(x);  // 2 FLOP
         for (int y = -1; y <= 1; ++y) {
             TUPLE3_T dpy = dpx;
-            dpy.x += box[1].x * static_cast<FLOAT_T>(y);
-            dpy.y += box[1].y * static_cast<FLOAT_T>(y);
+            dpy.x += box[1].x * static_cast<FLOAT_T>(y);  // 2 FLOP
+            dpy.y += box[1].y * static_cast<FLOAT_T>(y);  // 2 FLOP
             for (int z = -1; z <= 1; ++z) {
                 TUPLE3_T dpz = dpy;
-                dpz.x += box[2].x * static_cast<FLOAT_T>(z);
-                dpz.y += box[2].y * static_cast<FLOAT_T>(z);
-                dpz.z += box[2].z * static_cast<FLOAT_T>(z);
+                dpz.x += box[2].x * static_cast<FLOAT_T>(z);  // 2 FLOP
+                dpz.y += box[2].y * static_cast<FLOAT_T>(z);  // 2 FLOP
+                dpz.z += box[2].z * static_cast<FLOAT_T>(z);  // 2 FLOP
 
-                FLOAT_T dsq = dpz.x * dpz.x + dpz.y * dpz.y + dpz.z * dpz.z;
+                FLOAT_T dsq = dpz.x * dpz.x + dpz.y * dpz.y + dpz.z * dpz.z;  // 5 FLOP
+
+                // 11 FLOPS
 
                 dsq_min = cad_min(dsq, dsq_min);
             }
         }
     }
-
+    // LOOP: 3*3*3 * 11 FLOPS  + 3*3 * 4 FLOPS + 3 * 2 FLOPS = 339 FLOPS
     return dsq_min;
 }
 
 
 // distance calculation
+// TOTAL FLOP EVALUATION
+// no box:         28 FLOPS
+// orthorhombic:   40 FLOPS
+// triclinic:     381 FLOPS
 #pragma omp declare simd
 template <typename TUPLE3_T, typename FLOAT_T, int box_type_id>
 DEVICE inline FLOAT_T
@@ -174,22 +182,22 @@ dist(const TUPLE3_T &p1, const TUPLE3_T &p2,
      const TUPLE3_T &box_inv) {
     TUPLE3_T dp;
     FLOAT_T dsq;
-    dp.x = p1.x - p2.x;
-    dp.y = p1.y - p2.y;
-    dp.z = p1.z - p2.z;
+    dp.x = p1.x - p2.x;  // 1 FLOP
+    dp.y = p1.y - p2.y;  // 1 FLOP
+    dp.z = p1.z - p2.z;  // 1 FLOP
     switch (box_type_id) {
     case orthorhombic:
-        mic_orthorhombic <TUPLE3_T, FLOAT_T> (dp, box_ortho, box_inv);
-        dsq = dp.x * dp.x + dp.y * dp.y + dp.z * dp.z;
+        mic_orthorhombic <TUPLE3_T, FLOAT_T> (dp, box_ortho, box_inv);  // 12 FLOPS
+        dsq = dp.x * dp.x + dp.y * dp.y + dp.z * dp.z;  // 5 FLOPS
         break;
     case none:
-        dsq = dp.x * dp.x + dp.y * dp.y + dp.z * dp.z;
+        dsq = dp.x * dp.x + dp.y * dp.y + dp.z * dp.z;  // 5 FLOPS
         break;
     case triclinic:
-        dsq = mic_triclinic<TUPLE3_T, FLOAT_T>(dp, box, box_inv);
+        dsq = mic_triclinic<TUPLE3_T, FLOAT_T>(dp, box, box_inv);  // 358 FLOPS
         break;
     }
-    return std::sqrt(dsq);
+    return std::sqrt(dsq);  // 20 FLOPS(?)  // 10-21 (DP 21-43) Agners tables latency for SandyBridge
 }
 
 
