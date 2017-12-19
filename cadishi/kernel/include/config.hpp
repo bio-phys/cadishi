@@ -19,6 +19,7 @@
 
 // config data structure for pydh and cuda, in order not to alter the parameter list later when adding new stuff
 class config {
+public:
     // parameters relevant to both the kernels
     int precision;
     bool check_input;

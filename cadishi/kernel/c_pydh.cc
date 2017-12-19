@@ -538,6 +538,46 @@ void histograms_template_dispatcher(NP_TUPLE3_T *r_ptr,
 
 #ifdef BUILD_C_LIBRARY
 
+int histograms_cpu(np_tuple3d_t *r_ptr,
+                   int n_tot,
+                   int *nel_ptr,
+                   int n_El,
+                   uint64_t *histo_ptr,
+                   int n_bins,
+                   double r_max,
+                   int *mask_ptr,
+                   double *box_ptr,
+                   int box_type_id,
+                   const config & cfg) {
+    int exit_status = 0;
+    // TODO: move the cfg data structure further in
+    try {
+        if (cfg.precision == single_precision) {
+            // NOTE: histograms_template_dispatcher() does the conversion to single precision internally
+            histograms_template_dispatcher <np_tuple3d_t, tuple3s_t, float>
+                (r_ptr, n_tot, nel_ptr, n_El, histo_ptr, n_bins, r_max, mask_ptr, box_ptr, cfg.check_input, box_type_id);
+        } else {
+            histograms_template_dispatcher <np_tuple3d_t, tuple3d_t, double>
+                (r_ptr, n_tot, nel_ptr, n_El, histo_ptr, n_bins, r_max, mask_ptr, box_ptr, cfg.check_input, box_type_id);
+        }
+    } catch (std::overflow_error & err) {
+        const std::string msg = std::string(err.what());
+        printf("%s\n", msg.c_str());
+        exit_status = 1;
+    } catch (std::runtime_error & err) {
+        const std::string msg = std::string(err.what());
+        printf("%s\n", msg.c_str());
+        exit_status = 2;
+    } catch (...) {
+        // --- general unknown error
+        exit_status = 3;
+    }
+    return exit_status;
+}
+
+
+// TODO functions below obsolete
+
 int histograms_cpu_single(np_tuple3s_t *r_ptr,
                           int n_tot,
                           int *nel_ptr,
