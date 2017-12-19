@@ -15,13 +15,7 @@
 #include <cmath>
 #include <cstdlib>
 #include <stdint.h>
-
-#ifdef BUILD_C_LIBRARY
 #include "c_pydh.h"
-#else
-#include <Python.h>
-#include <numpy/ndarrayobject.h>
-#endif
 
 #ifdef _OPENMP
 #include <omp.h>
@@ -536,208 +530,8 @@ void histograms_template_dispatcher(NP_TUPLE3_T *r_ptr,
 }
 
 
-#ifdef BUILD_C_LIBRARY
-
-int histograms_cpu(np_tuple3d_t *r_ptr,
-                   int n_tot,
-                   int *nel_ptr,
-                   int n_El,
-                   uint64_t *histo_ptr,
-                   int n_bins,
-                   double r_max,
-                   int *mask_ptr,
-                   double *box_ptr,
-                   int box_type_id,
-                   const config & cfg) {
-    int exit_status = 0;
-    // TODO: move the cfg data structure further in
-    try {
-        if (cfg.precision == single_precision) {
-            // NOTE: histograms_template_dispatcher() does the conversion to single precision internally
-            histograms_template_dispatcher <np_tuple3d_t, tuple3s_t, float>
-                (r_ptr, n_tot, nel_ptr, n_El, histo_ptr, n_bins, r_max, mask_ptr, box_ptr, cfg.check_input, box_type_id);
-        } else {
-            histograms_template_dispatcher <np_tuple3d_t, tuple3d_t, double>
-                (r_ptr, n_tot, nel_ptr, n_El, histo_ptr, n_bins, r_max, mask_ptr, box_ptr, cfg.check_input, box_type_id);
-        }
-    } catch (std::overflow_error & err) {
-        const std::string msg = std::string(err.what());
-        printf("%s\n", msg.c_str());
-        exit_status = 1;
-    } catch (std::runtime_error & err) {
-        const std::string msg = std::string(err.what());
-        printf("%s\n", msg.c_str());
-        exit_status = 2;
-    } catch (...) {
-        // --- general unknown error
-        exit_status = 3;
-    }
-    return exit_status;
-}
-
-
-// TODO functions below obsolete
-
-int histograms_cpu_single(np_tuple3s_t *r_ptr,
-                          int n_tot,
-                          int *nel_ptr,
-                          int n_El,
-                          uint64_t *histo_ptr,
-                          int n_bins,
-                          double r_max,
-                          int *mask_ptr,
-                          double *box_ptr,
-                          bool check_input,
-                          int box_type_id) {
-    int exit_status = 0;
-    try {
-        histograms_template_dispatcher <np_tuple3s_t, tuple3s_t, float>
-        (r_ptr, n_tot, nel_ptr, n_El, histo_ptr, n_bins, r_max, mask_ptr, box_ptr, check_input, box_type_id);
-    } catch (std::overflow_error & err) {
-        const std::string msg = std::string(err.what());
-        printf("%s\n", msg.c_str());
-        exit_status = 1;
-    } catch (std::runtime_error & err) {
-        const std::string msg = std::string(err.what());
-        printf("%s\n", msg.c_str());
-        exit_status = 2;
-    } catch (...) {
-        // --- general unknown error
-        exit_status = 3;
-    }
-    return exit_status;
-}
-
-int histograms_cpu_double(np_tuple3d_t *r_ptr,
-                          int n_tot,
-                          int *nel_ptr,
-                          int n_El,
-                          uint64_t *histo_ptr,
-                          int n_bins,
-                          double r_max,
-                          int *mask_ptr,
-                          double *box_ptr,
-                          bool check_input,
-                          int box_type_id) {
-    int exit_status = 0;
-    try {
-        histograms_template_dispatcher <np_tuple3d_t, tuple3d_t, double>
-        (r_ptr, n_tot, nel_ptr, n_El, histo_ptr, n_bins, r_max, mask_ptr, box_ptr, check_input, box_type_id);
-    } catch (std::overflow_error & err) {
-        const std::string msg = std::string(err.what());
-        printf("%s\n", msg.c_str());
-        exit_status = 1;
-    } catch (std::runtime_error & err) {
-        const std::string msg = std::string(err.what());
-        printf("%s\n", msg.c_str());
-        exit_status = 2;
-    } catch (...) {
-        // --- general unknown error
-        exit_status = 3;
-    }
-    return exit_status;
-}
-
-
-#else
-
-
-/**
- * Function: histograms
- *
- * histograms() function exposed to Python.
- *
- * Dispatches the templates on the precision level.
- */
-static PyObject* histograms(PyObject* self, PyObject* args) {
-    // --- required parameters
-    PyArrayObject *coords;
-    PyArrayObject *nelems;
-    PyArrayObject *histos;
-    double r_max;
-    PyArrayObject *mask;
-    PyArrayObject *box;
-    int box_type_id = none;
-    // --- optional parameters
-    int precision = single_precision;
-    int n_threads = 1;
-    int check_input = 1;
-    int do_histo2_only = 0;
-    // --- translate C++ exceptions into integer exit status
-    int exit_status;
-#ifdef _OPENMP
-    // --- save current number of openmp threads
-    static int omp_threads_val = -1;
-#endif
-
-    exit_status = 0;
-    try {
-        if (!PyArg_ParseTuple(args, "OOOdOOi|iiii", &coords, &nelems, &histos, &r_max, &mask, &box, &box_type_id,
-                              /*optional parameters:*/ &precision, &n_threads, &check_input, &do_histo2_only))
-            return NULL;
-
-        // --- 2D double precision coordinate array for all species
-        RT_ASSERT( coords->nd == 2 );
-        RT_ASSERT( coords->dimensions[1] == 3 );
-        int n_tot = coords->dimensions[0];
-        np_tuple3d_t *r_ptr = (np_tuple3d_t*) coords->data;
-
-        // --- 1D integer array containing the number of elements for each species
-        RT_ASSERT( nelems->nd == 1 );
-        int n_El = nelems->dimensions[0];
-        int *nel_ptr = (int*) nelems->data;
-
-        // --- 2D integer array containing the histograms
-        RT_ASSERT( histos->nd == 2 );
-        int n_bins = histos->dimensions[0];
-        uint64_t *histo_ptr = (uint64_t*) histos->data;
-
-        int n_Hij = (histos->dimensions[1])-1;
-        RT_ASSERT(n_Hij == mask->dimensions[0]);
-        int *mask_ptr = (int*) mask->data;
-
-        RT_ASSERT(box->dimensions[0] == 3);
-        RT_ASSERT(box->dimensions[1] == 3);
-        double *box_ptr = (double*) box->data;
-
-#ifdef _OPENMP
-        if (n_threads != omp_threads_val) {
-            omp_set_num_threads(n_threads);
-            omp_threads_val = n_threads;
-        }
-#endif
-
-        if ( precision == single_precision ) {
-            histograms_template_dispatcher <np_tuple3d_t, tuple3s_t, float>
-            (r_ptr, n_tot, nel_ptr, n_El, histo_ptr, n_bins, r_max, mask_ptr,
-             box_ptr, check_input, box_type_id, do_histo2_only);
-        } else if ( precision == double_precision ) {
-            histograms_template_dispatcher <np_tuple3d_t, tuple3d_t, double>
-            (r_ptr, n_tot, nel_ptr, n_El, histo_ptr, n_bins, r_max, mask_ptr,
-             box_ptr, check_input, box_type_id, do_histo2_only);
-        } else {
-            RT_ERROR(std::string("unknown precision identifier passed"));
-        }
-
-    } catch (std::overflow_error & err) {
-        const std::string msg = std::string(err.what());
-        printf("%s\n", msg.c_str());
-        exit_status = 1;
-    } catch (std::runtime_error & err) {
-        const std::string msg = std::string(err.what());
-        printf("%s\n", msg.c_str());
-        exit_status = 2;
-    } catch (...) {
-        // --- general unknown error
-        exit_status = 3;
-    }
-
-    return Py_BuildValue("i", exit_status);
-}
-
-
-template <typename TUPLE3_T, typename FLOAT_T>
-void dist_driver_template_dispatcher(np_tuple3d_t *r_ptr,
+template <typename NP_TUPLE3_T, typename TUPLE3_T, typename FLOAT_T>
+void dist_driver_template_dispatcher(NP_TUPLE3_T *r_ptr,
                                      int n_tot,
                                      FLOAT_T *distances_ptr,
                                      double *box_ptr,
@@ -811,50 +605,33 @@ void dist_driver_template_dispatcher(np_tuple3d_t *r_ptr,
 }
 
 
-static PyObject* dist_driver(PyObject* self, PyObject* args) {
-    PyArrayObject *coords;
-    PyArrayObject *distances;
-    PyArrayObject *box;
-    int box_type_id = none;
-    int precision = single_precision;
-    int exit_status;
+// --- primary interfaces below ---
 
-    exit_status = 0;
+
+int histograms_cpu(np_tuple3d_t *r_ptr,
+                   int n_tot,
+                   int *nel_ptr,
+                   int n_El,
+                   uint64_t *histo_ptr,
+                   int n_bins,
+                   double r_max,
+                   int *mask_ptr,
+                   double *box_ptr,
+                   int box_type_id,
+                   const config & cfg) {
+#ifdef _OPENMP
+    omp_set_num_threads(cfg.cpu_threads);
+#endif
+    int exit_status = 0;
+    // TODO: move the cfg data structure further in
     try {
-        if (!PyArg_ParseTuple(args, "OOOii", &coords, &distances, &box, &box_type_id, &precision))
-            return NULL;
-
-        // --- 2D double precision coordinate array
-        RT_ASSERT( coords->nd == 2 );
-        RT_ASSERT( coords->dimensions[1] == 3 );
-        int n_tot = coords->dimensions[0];
-        np_tuple3d_t *r_ptr = (np_tuple3d_t*) coords->data;
-
-        // --- 1D array containing the distances
-        int n_dist = n_tot * (n_tot - 1) / 2;
-        RT_ASSERT( distances->nd == 1 );
-        RT_ASSERT( distances->dimensions[0] == n_dist);
-
-        RT_ASSERT(box->dimensions[0] == 3);
-        RT_ASSERT(box->dimensions[1] == 3);
-        double *box_ptr = (double*) box->data;
-
-        if ( precision == single_precision ) {
-            float *distances_ptr = (float*) malloc(n_dist*sizeof(float));
-            memset(distances_ptr, 0, n_dist*sizeof(float));
-            dist_driver_template_dispatcher <tuple3s_t, float>
-            (r_ptr, n_tot, distances_ptr, box_ptr, box_type_id);
-            double *distances_raw = (double*) distances->data;
-            for (int i=0; i<n_dist; ++i) {
-                distances_raw[i] = double(distances_ptr[i]);
-            }
-            free(distances_ptr);
-        } else if ( precision == double_precision ) {
-            double *distances_ptr = (double*) distances->data;
-            dist_driver_template_dispatcher <tuple3d_t, double>
-            (r_ptr, n_tot, distances_ptr, box_ptr, box_type_id);
+        if (cfg.precision == single_precision) {
+            // NOTE: histograms_template_dispatcher() does the conversion to single precision internally
+            histograms_template_dispatcher <np_tuple3d_t, tuple3s_t, float>
+                (r_ptr, n_tot, nel_ptr, n_El, histo_ptr, n_bins, r_max, mask_ptr, box_ptr, cfg.check_input, box_type_id);
         } else {
-            RT_ERROR(std::string("unknown precision identifier passed"));
+            histograms_template_dispatcher <np_tuple3d_t, tuple3d_t, double>
+                (r_ptr, n_tot, nel_ptr, n_El, histo_ptr, n_bins, r_max, mask_ptr, box_ptr, cfg.check_input, box_type_id);
         }
     } catch (std::overflow_error & err) {
         const std::string msg = std::string(err.what());
@@ -868,25 +645,166 @@ static PyObject* dist_driver(PyObject* self, PyObject* args) {
         // --- general unknown error
         exit_status = 3;
     }
-
-    return Py_BuildValue("i", exit_status);
+    return exit_status;
 }
 
 
-// --- register C functions as Python modules
-static PyMethodDef c_pydh_Methods[] = {
-    {"histograms",  histograms,  METH_VARARGS, "calculate distance histogram between two species"},
-    {"dist_driver", dist_driver, METH_VARARGS, "driver for the distance calculation only, for testing purposes"},
-    {NULL, NULL, 0, NULL}
-};
-
-
-// --- Python module initialization
-PyMODINIT_FUNC
-initc_pydh(void) {
-    (void) Py_InitModule("c_pydh", c_pydh_Methods);
-    // --- the following helper function must be called
-    import_array();
+int histograms_cpu_single(np_tuple3s_t *r_ptr,
+                          int n_tot,
+                          int *nel_ptr,
+                          int n_El,
+                          uint64_t *histo_ptr,
+                          int n_bins,
+                          double r_max,
+                          int *mask_ptr,
+                          double *box_ptr,
+                          bool check_input,
+                          int box_type_id) {
+    int exit_status = 0;
+    try {
+        histograms_template_dispatcher <np_tuple3s_t, tuple3s_t, float>
+        (r_ptr, n_tot, nel_ptr, n_El, histo_ptr, n_bins, r_max, mask_ptr, box_ptr, check_input, box_type_id);
+    } catch (std::overflow_error & err) {
+        const std::string msg = std::string(err.what());
+        printf("%s\n", msg.c_str());
+        exit_status = 1;
+    } catch (std::runtime_error & err) {
+        const std::string msg = std::string(err.what());
+        printf("%s\n", msg.c_str());
+        exit_status = 2;
+    } catch (...) {
+        // --- general unknown error
+        exit_status = 3;
+    }
+    return exit_status;
 }
 
-#endif // BUILD_C_LIBRARY
+int histograms_cpu_double(np_tuple3d_t *r_ptr,
+                          int n_tot,
+                          int *nel_ptr,
+                          int n_El,
+                          uint64_t *histo_ptr,
+                          int n_bins,
+                          double r_max,
+                          int *mask_ptr,
+                          double *box_ptr,
+                          bool check_input,
+                          int box_type_id) {
+    int exit_status = 0;
+    try {
+        histograms_template_dispatcher <np_tuple3d_t, tuple3d_t, double>
+        (r_ptr, n_tot, nel_ptr, n_El, histo_ptr, n_bins, r_max, mask_ptr, box_ptr, check_input, box_type_id);
+    } catch (std::overflow_error & err) {
+        const std::string msg = std::string(err.what());
+        printf("%s\n", msg.c_str());
+        exit_status = 1;
+    } catch (std::runtime_error & err) {
+        const std::string msg = std::string(err.what());
+        printf("%s\n", msg.c_str());
+        exit_status = 2;
+    } catch (...) {
+        // --- general unknown error
+        exit_status = 3;
+    }
+    return exit_status;
+}
+
+
+
+
+int distances_cpu(np_tuple3d_t *r_ptr,
+                  int n_tot,
+                  double *distances,
+                  double *box_ptr,
+                  int box_type_id,
+                  const config & cfg) {
+#ifdef _OPENMP
+    omp_set_num_threads(cfg.cpu_threads);
+#endif
+    int exit_status = 0;
+    // TODO: move the cfg data structure further in
+    try {
+        if (cfg.precision == single_precision) {
+            throw std::runtime_error(std::string("not implemented"));
+        } else {
+            dist_driver_template_dispatcher <np_tuple3d_t, tuple3d_t, double>
+                (r_ptr, n_tot, distances, box_ptr, box_type_id);
+        }
+    } catch (std::overflow_error & err) {
+        const std::string msg = std::string(err.what());
+        printf("%s\n", msg.c_str());
+        exit_status = 1;
+    } catch (std::runtime_error & err) {
+        const std::string msg = std::string(err.what());
+        printf("%s\n", msg.c_str());
+        exit_status = 2;
+    } catch (...) {
+        // --- general unknown error
+        exit_status = 3;
+    }
+    return exit_status;
+}
+
+
+
+
+// static PyObject* dist_driver(PyObject* self, PyObject* args) {
+//     PyArrayObject *coords;
+//     PyArrayObject *distances;
+//     PyArrayObject *box;
+//     int box_type_id = none;
+//     int precision = single_precision;
+//     int exit_status;
+//
+//     exit_status = 0;
+//     try {
+//         if (!PyArg_ParseTuple(args, "OOOii", &coords, &distances, &box, &box_type_id, &precision))
+//             return NULL;
+//
+//         // --- 2D double precision coordinate array
+//         RT_ASSERT( coords->nd == 2 );
+//         RT_ASSERT( coords->dimensions[1] == 3 );
+//         int n_tot = coords->dimensions[0];
+//         np_tuple3d_t *r_ptr = (np_tuple3d_t*) coords->data;
+//
+//         // --- 1D array containing the distances
+//         int n_dist = n_tot * (n_tot - 1) / 2;
+//         RT_ASSERT( distances->nd == 1 );
+//         RT_ASSERT( distances->dimensions[0] == n_dist);
+//
+//         RT_ASSERT(box->dimensions[0] == 3);
+//         RT_ASSERT(box->dimensions[1] == 3);
+//         double *box_ptr = (double*) box->data;
+//
+//         if ( precision == single_precision ) {
+//             float *distances_ptr = (float*) malloc(n_dist*sizeof(float));
+//             memset(distances_ptr, 0, n_dist*sizeof(float));
+//             dist_driver_template_dispatcher <tuple3s_t, float>
+//             (r_ptr, n_tot, distances_ptr, box_ptr, box_type_id);
+//             double *distances_raw = (double*) distances->data;
+//             for (int i=0; i<n_dist; ++i) {
+//                 distances_raw[i] = double(distances_ptr[i]);
+//             }
+//             free(distances_ptr);
+//         } else if ( precision == double_precision ) {
+//             double *distances_ptr = (double*) distances->data;
+//             dist_driver_template_dispatcher <tuple3d_t, double>
+//             (r_ptr, n_tot, distances_ptr, box_ptr, box_type_id);
+//         } else {
+//             RT_ERROR(std::string("unknown precision identifier passed"));
+//         }
+//     } catch (std::overflow_error & err) {
+//         const std::string msg = std::string(err.what());
+//         printf("%s\n", msg.c_str());
+//         exit_status = 1;
+//     } catch (std::runtime_error & err) {
+//         const std::string msg = std::string(err.what());
+//         printf("%s\n", msg.c_str());
+//         exit_status = 2;
+//     } catch (...) {
+//         // --- general unknown error
+//         exit_status = 3;
+//     }
+//
+//     return Py_BuildValue("i", exit_status);
+// }

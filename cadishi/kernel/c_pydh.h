@@ -18,6 +18,13 @@
 #include <stdint.h>
 
 
+int distances_cpu(np_tuple3d_t *r_ptr,
+                  int n_tot,
+                  double *distances,
+                  double *box_ptr,
+                  int box_type_id,
+                  const config & cfg);
+
 int histograms_cpu(np_tuple3d_t *r_ptr,
                    int n_tot,
                    int *nel_ptr,

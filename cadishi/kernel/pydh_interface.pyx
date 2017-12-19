@@ -44,17 +44,18 @@ cdef extern from "c_pydh.h":
                         int box_type_id,
                         const config & cfg)
 
+    int distances_cpu(  np_tuple3d_t *r_ptr,
+                        int n_tot,
+                        double *distances,
+                        double *box_ptr,
+                        int box_type_id,
+                        const config & cfg)
 
-#        if (!PyArg_ParseTuple(args, "OOOdOOi|iiii", &coords, &nelems, &histos, &r_max, &mask, &box, &box_type_id,
-#                              /*optional parameters:*/ &precision, &n_threads, &check_input, &do_histo2_only))
 
 # wrapper to make histograms_cpu() accessible from Python
 def histograms(np.ndarray r_ptr,
-               int n_tot,
                np.ndarray nel_ptr,
-               int n_El,
                np.ndarray histo_ptr,
-               int n_bins,
                float r_max,
                np.ndarray mask_ptr,
                np.ndarray box_ptr,
@@ -63,9 +64,21 @@ def histograms(np.ndarray r_ptr,
                int n_threads,
                bool check_input,
                bool do_histo2_only):
+
+    # derive dimensions from NumPy data structures
+    cdef int n_tot
+    cdef int n_El
+    cdef int n_bins
+    n_tot = r_ptr.shape[0]
+    n_El = nel_ptr.shape[0]
+    n_bins = histo_ptr.shape[0]
+    # checked OK:
+    # print n_tot
+    # print n_El
+    # print n_bins
+
     # create Python instance of C++ config class
     cdef config cfg
-
     cfg.set_precision(precision)
     cfg.set_cpu_threads(n_threads)
     cfg.set_check_input(check_input)
@@ -83,4 +96,33 @@ def histograms(np.ndarray r_ptr,
                                  <double*> box_ptr.data,
                                  <int> box_type_id,
                                  cfg)
+    return exit_status
+
+
+# wrapper to make histograms_cpu() accessible from Python
+def distances(np.ndarray r_ptr,
+              np.ndarray box_ptr,
+              int box_type_id,
+              int precision):
+
+    # derive dimensions from NumPy data structures
+    cdef int n_tot
+    cdef int n_dist
+
+    n_tot = r_ptr.shape[0]
+    n_dist = n_tot * (n_tot - 1) / 2;
+
+    cdef np.ndarray distances = np.zeros([n_dist] , dtype=np.double)
+
+    # create Python instance of C++ config class
+    cdef config cfg
+    cfg.set_precision(precision)
+
+    cdef int exit_status
+    exit_status = distances_cpu(<np_tuple3d_t*> r_ptr.data,
+                                <int> n_tot,
+                                <double*> distances.data,
+                                <double*> box_ptr.data,
+                                <int> box_type_id,
+                                cfg)
     return exit_status

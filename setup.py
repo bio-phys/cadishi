@@ -344,17 +344,17 @@ def extensions():
             extra_compile_args=cc_flags,
             extra_link_args=cc_flags))
 
-    exts.append(
-        Extension(
-            'cadishi.kernel.c_pydh',
-            sources=['cadishi/kernel/c_pydh.cc'],
-            include_dirs=[numpy_include, 'cadishi/kernel/include'],
-            extra_compile_args=cc_flags,
-            extra_link_args=cc_flags))
+    # exts.append(
+    #     Extension(
+    #         'cadishi.kernel.c_pydh',
+    #         sources=['cadishi/kernel/c_pydh.cc'],
+    #         include_dirs=[numpy_include, 'cadishi/kernel/include'],
+    #         extra_compile_args=cc_flags,
+    #         extra_link_args=cc_flags))
 
     exts.append(
         Extension(
-            'cadishi.kernel.pydh_interface',
+            'cadishi.kernel.c_pydh',
             sources=['cadishi/kernel/pydh_interface.pyx', 'cadishi/kernel/c_pydh.cc'],
             language="c++",
             include_dirs=[numpy_include, 'cadishi/kernel/include'],
