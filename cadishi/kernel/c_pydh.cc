@@ -28,6 +28,7 @@
 #endif
 #define OMP_SCHEDULE schedule(guided)
 
+#include "config.hpp"
 #include "common.hpp"
 #include "exceptions.hpp"
 

@@ -21,6 +21,16 @@ enum box_type {
     triclinic
 };
 
+// enum/integer values used to select the precision (also see common.py)
+enum precision {
+    single_precision,
+    double_precision
+};
+const char id_single[] = "single";
+const char id_double[] = "double";
+
+const char SEP[] = "-----------------------------------------------------------------------------";
+
 // double precision coordinate triple (used to access the NumPy data pointer passed by Python)
 typedef struct np_tuple3d_t {
     double x;

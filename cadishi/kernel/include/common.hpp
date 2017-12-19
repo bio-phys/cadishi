@@ -11,12 +11,11 @@
 */
 
 
-#ifndef _CPP_COMMON_HPP_
-#define _CPP_COMMON_HPP_
+#ifndef _COMMON_HPP_
+#define _COMMON_HPP_
 
 #include <cmath>
 #include <stdint.h>
-//#include <limits>
 #include <float.h>
 #include "common.h"
 
@@ -48,15 +47,6 @@ typedef struct tuple3d_t {
     double w;  // padding element
 } tuple3d_t;
 
-// enum/integer values used to select the precision (also see common.py)
-enum precision {
-    single_precision,
-    double_precision
-};
-const char id_single[] = "single";
-const char id_double[] = "double";
-
-const char SEP[] = "-----------------------------------------------------------------------------";
 
 
 // Cadishi round wrapper functions for both the precisions
