@@ -17,7 +17,7 @@
 #include <stdint.h>
 
 #ifdef BUILD_C_LIBRARY
-#include "pydh.h"
+#include "c_pydh.h"
 #else
 #include <Python.h>
 #include <numpy/ndarrayobject.h>
