@@ -1,3 +1,11 @@
-cudh and pydh high performance kernels for GPUs and CPUs.
+cudh and pydh high performance kernels for GPUs and CPUs
+========================================================
 
-Note: The triclinic box is considered highly experimental. Check your results carefully.
+code structure
+--------------
+
+Python module (pydh.py)
+
+Cython interface (c_pydh.pyx)
+
+C++ library (c_pydh.cc)

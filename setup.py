@@ -344,6 +344,7 @@ def extensions():
             extra_compile_args=cc_flags,
             extra_link_args=cc_flags))
 
+    # old extension, using Python 2 C API bindings, deprecated
     # exts.append(
     #     Extension(
     #         'cadishi.kernel.c_pydh',
@@ -355,7 +356,8 @@ def extensions():
     exts.append(
         Extension(
             'cadishi.kernel.c_pydh',
-            sources=['cadishi/kernel/pydh_interface.pyx', 'cadishi/kernel/c_pydh.cc'],
+            sources=['cadishi/kernel/c_pydh_interface.pyx',
+                     'cadishi/kernel/c_pydh.cc'],
             language="c++",
             include_dirs=[numpy_include, 'cadishi/kernel/include'],
             extra_compile_args=cc_flags + ['-DBUILD_C_LIBRARY'],

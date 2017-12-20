@@ -668,7 +668,7 @@ static const char *__pyx_filename;
 
 
 static const char *__pyx_f[] = {
-  "cadishi/kernel/pydh_interface.pyx",
+  "cadishi/kernel/c_pydh_interface.pyx",
   "__init__.pxd",
   "type.pxd",
 };
@@ -1353,7 +1353,7 @@ static const char __pyx_k_RuntimeError[] = "RuntimeError";
 static const char __pyx_k_do_histo2_only[] = "do_histo2_only";
 static const char __pyx_k_cadishi_kernel_c_pydh[] = "cadishi.kernel.c_pydh";
 static const char __pyx_k_ndarray_is_not_C_contiguous[] = "ndarray is not C contiguous";
-static const char __pyx_k_home_khr_unison_histobin_git_ca[] = "/home/khr/unison/histobin/git/cadishi.git/cadishi/kernel/pydh_interface.pyx";
+static const char __pyx_k_home_khr_unison_histobin_git_ca[] = "/home/khr/unison/histobin/git/cadishi.git/cadishi/kernel/c_pydh_interface.pyx";
 static const char __pyx_k_numpy_core_multiarray_failed_to[] = "numpy.core.multiarray failed to import";
 static const char __pyx_k_unknown_dtype_code_in_numpy_pxd[] = "unknown dtype code in numpy.pxd (%d)";
 static const char __pyx_k_Format_string_allocated_too_shor[] = "Format string allocated too short, see comment in numpy.pxd";
@@ -1420,7 +1420,7 @@ static PyObject *__pyx_tuple__12;
 static PyObject *__pyx_codeobj__11;
 static PyObject *__pyx_codeobj__13;
 
-/* "cadishi/kernel/pydh_interface.pyx":56
+/* "cadishi/kernel/c_pydh_interface.pyx":56
  * 
  * # wrapper to make histograms_cpu() accessible from Python
  * def histograms(np.ndarray r_ptr,             # <<<<<<<<<<<<<<
@@ -1588,7 +1588,7 @@ static PyObject *__pyx_pf_7cadishi_6kernel_6c_pydh_histograms(CYTHON_UNUSED PyOb
   PyObject *__pyx_t_1 = NULL;
   __Pyx_RefNannySetupContext("histograms", 0);
 
-  /* "cadishi/kernel/pydh_interface.pyx":72
+  /* "cadishi/kernel/c_pydh_interface.pyx":72
  *     cdef int n_El
  *     cdef int n_bins
  *     n_tot = r_ptr.shape[0]             # <<<<<<<<<<<<<<
@@ -1597,7 +1597,7 @@ static PyObject *__pyx_pf_7cadishi_6kernel_6c_pydh_histograms(CYTHON_UNUSED PyOb
  */
   __pyx_v_n_tot = (__pyx_v_r_ptr->dimensions[0]);
 
-  /* "cadishi/kernel/pydh_interface.pyx":73
+  /* "cadishi/kernel/c_pydh_interface.pyx":73
  *     cdef int n_bins
  *     n_tot = r_ptr.shape[0]
  *     n_El = nel_ptr.shape[0]             # <<<<<<<<<<<<<<
@@ -1606,7 +1606,7 @@ static PyObject *__pyx_pf_7cadishi_6kernel_6c_pydh_histograms(CYTHON_UNUSED PyOb
  */
   __pyx_v_n_El = (__pyx_v_nel_ptr->dimensions[0]);
 
-  /* "cadishi/kernel/pydh_interface.pyx":74
+  /* "cadishi/kernel/c_pydh_interface.pyx":74
  *     n_tot = r_ptr.shape[0]
  *     n_El = nel_ptr.shape[0]
  *     n_bins = histo_ptr.shape[0]             # <<<<<<<<<<<<<<
@@ -1615,7 +1615,7 @@ static PyObject *__pyx_pf_7cadishi_6kernel_6c_pydh_histograms(CYTHON_UNUSED PyOb
  */
   __pyx_v_n_bins = (__pyx_v_histo_ptr->dimensions[0]);
 
-  /* "cadishi/kernel/pydh_interface.pyx":82
+  /* "cadishi/kernel/c_pydh_interface.pyx":82
  *     # create Python instance of C++ config class
  *     cdef config cfg
  *     cfg.set_precision(precision)             # <<<<<<<<<<<<<<
@@ -1624,7 +1624,7 @@ static PyObject *__pyx_pf_7cadishi_6kernel_6c_pydh_histograms(CYTHON_UNUSED PyOb
  */
   __pyx_v_cfg.set_precision(__pyx_v_precision);
 
-  /* "cadishi/kernel/pydh_interface.pyx":83
+  /* "cadishi/kernel/c_pydh_interface.pyx":83
  *     cdef config cfg
  *     cfg.set_precision(precision)
  *     cfg.set_cpu_threads(n_threads)             # <<<<<<<<<<<<<<
@@ -1633,7 +1633,7 @@ static PyObject *__pyx_pf_7cadishi_6kernel_6c_pydh_histograms(CYTHON_UNUSED PyOb
  */
   __pyx_v_cfg.set_cpu_threads(__pyx_v_n_threads);
 
-  /* "cadishi/kernel/pydh_interface.pyx":84
+  /* "cadishi/kernel/c_pydh_interface.pyx":84
  *     cfg.set_precision(precision)
  *     cfg.set_cpu_threads(n_threads)
  *     cfg.set_check_input(check_input)             # <<<<<<<<<<<<<<
@@ -1642,7 +1642,7 @@ static PyObject *__pyx_pf_7cadishi_6kernel_6c_pydh_histograms(CYTHON_UNUSED PyOb
  */
   __pyx_v_cfg.set_check_input(__pyx_v_check_input);
 
-  /* "cadishi/kernel/pydh_interface.pyx":85
+  /* "cadishi/kernel/c_pydh_interface.pyx":85
  *     cfg.set_cpu_threads(n_threads)
  *     cfg.set_check_input(check_input)
  *     cfg.set_histo2_only(do_histo2_only)             # <<<<<<<<<<<<<<
@@ -1651,7 +1651,7 @@ static PyObject *__pyx_pf_7cadishi_6kernel_6c_pydh_histograms(CYTHON_UNUSED PyOb
  */
   __pyx_v_cfg.set_histo2_only(__pyx_v_do_histo2_only);
 
-  /* "cadishi/kernel/pydh_interface.pyx":88
+  /* "cadishi/kernel/c_pydh_interface.pyx":88
  * 
  *     cdef int exit_status
  *     exit_status = histograms_cpu(<np_tuple3d_t*> r_ptr.data,             # <<<<<<<<<<<<<<
@@ -1660,7 +1660,7 @@ static PyObject *__pyx_pf_7cadishi_6kernel_6c_pydh_histograms(CYTHON_UNUSED PyOb
  */
   __pyx_v_exit_status = histograms_cpu(((np_tuple3d_t *)__pyx_v_r_ptr->data), ((int)__pyx_v_n_tot), ((int *)__pyx_v_nel_ptr->data), ((int)__pyx_v_n_El), ((__pyx_t_5numpy_uint64_t *)__pyx_v_histo_ptr->data), ((int)__pyx_v_n_bins), ((double)__pyx_v_r_max), ((int *)__pyx_v_mask_ptr->data), ((double *)__pyx_v_box_ptr->data), ((int)__pyx_v_box_type_id), __pyx_v_cfg);
 
-  /* "cadishi/kernel/pydh_interface.pyx":99
+  /* "cadishi/kernel/c_pydh_interface.pyx":99
  *                                  <int> box_type_id,
  *                                  cfg)
  *     return exit_status             # <<<<<<<<<<<<<<
@@ -1674,7 +1674,7 @@ static PyObject *__pyx_pf_7cadishi_6kernel_6c_pydh_histograms(CYTHON_UNUSED PyOb
   __pyx_t_1 = 0;
   goto __pyx_L0;
 
-  /* "cadishi/kernel/pydh_interface.pyx":56
+  /* "cadishi/kernel/c_pydh_interface.pyx":56
  * 
  * # wrapper to make histograms_cpu() accessible from Python
  * def histograms(np.ndarray r_ptr,             # <<<<<<<<<<<<<<
@@ -1693,7 +1693,7 @@ static PyObject *__pyx_pf_7cadishi_6kernel_6c_pydh_histograms(CYTHON_UNUSED PyOb
   return __pyx_r;
 }
 
-/* "cadishi/kernel/pydh_interface.pyx":103
+/* "cadishi/kernel/c_pydh_interface.pyx":103
  * 
  * # wrapper to make histograms_cpu() accessible from Python
  * def distances(np.ndarray r_ptr,             # <<<<<<<<<<<<<<
@@ -1799,7 +1799,7 @@ static PyObject *__pyx_pf_7cadishi_6kernel_6c_pydh_2distances(CYTHON_UNUSED PyOb
   PyObject *__pyx_t_5 = NULL;
   __Pyx_RefNannySetupContext("distances", 0);
 
-  /* "cadishi/kernel/pydh_interface.pyx":112
+  /* "cadishi/kernel/c_pydh_interface.pyx":112
  *     cdef int n_dist
  * 
  *     n_tot = r_ptr.shape[0]             # <<<<<<<<<<<<<<
@@ -1808,7 +1808,7 @@ static PyObject *__pyx_pf_7cadishi_6kernel_6c_pydh_2distances(CYTHON_UNUSED PyOb
  */
   __pyx_v_n_tot = (__pyx_v_r_ptr->dimensions[0]);
 
-  /* "cadishi/kernel/pydh_interface.pyx":113
+  /* "cadishi/kernel/c_pydh_interface.pyx":113
  * 
  *     n_tot = r_ptr.shape[0]
  *     n_dist = n_tot * (n_tot - 1) / 2;             # <<<<<<<<<<<<<<
@@ -1817,7 +1817,7 @@ static PyObject *__pyx_pf_7cadishi_6kernel_6c_pydh_2distances(CYTHON_UNUSED PyOb
  */
   __pyx_v_n_dist = __Pyx_div_long((__pyx_v_n_tot * (__pyx_v_n_tot - 1)), 2);
 
-  /* "cadishi/kernel/pydh_interface.pyx":115
+  /* "cadishi/kernel/c_pydh_interface.pyx":115
  *     n_dist = n_tot * (n_tot - 1) / 2;
  * 
  *     cdef np.ndarray distances = np.zeros([n_dist] , dtype=np.double)             # <<<<<<<<<<<<<<
@@ -1859,7 +1859,7 @@ static PyObject *__pyx_pf_7cadishi_6kernel_6c_pydh_2distances(CYTHON_UNUSED PyOb
   __pyx_v_distances = ((PyArrayObject *)__pyx_t_5);
   __pyx_t_5 = 0;
 
-  /* "cadishi/kernel/pydh_interface.pyx":119
+  /* "cadishi/kernel/c_pydh_interface.pyx":119
  *     # create Python instance of C++ config class
  *     cdef config cfg
  *     cfg.set_precision(precision)             # <<<<<<<<<<<<<<
@@ -1868,7 +1868,7 @@ static PyObject *__pyx_pf_7cadishi_6kernel_6c_pydh_2distances(CYTHON_UNUSED PyOb
  */
   __pyx_v_cfg.set_precision(__pyx_v_precision);
 
-  /* "cadishi/kernel/pydh_interface.pyx":122
+  /* "cadishi/kernel/c_pydh_interface.pyx":122
  * 
  *     cdef int exit_status
  *     exit_status = distances_cpu(<np_tuple3d_t*> r_ptr.data,             # <<<<<<<<<<<<<<
@@ -1877,7 +1877,7 @@ static PyObject *__pyx_pf_7cadishi_6kernel_6c_pydh_2distances(CYTHON_UNUSED PyOb
  */
   __pyx_v_exit_status = distances_cpu(((np_tuple3d_t *)__pyx_v_r_ptr->data), ((int)__pyx_v_n_tot), ((double *)__pyx_v_distances->data), ((double *)__pyx_v_box_ptr->data), ((int)__pyx_v_box_type_id), __pyx_v_cfg);
 
-  /* "cadishi/kernel/pydh_interface.pyx":128
+  /* "cadishi/kernel/c_pydh_interface.pyx":128
  *                                 <int> box_type_id,
  *                                 cfg)
  *     return exit_status             # <<<<<<<<<<<<<<
@@ -1889,7 +1889,7 @@ static PyObject *__pyx_pf_7cadishi_6kernel_6c_pydh_2distances(CYTHON_UNUSED PyOb
   __pyx_t_5 = 0;
   goto __pyx_L0;
 
-  /* "cadishi/kernel/pydh_interface.pyx":103
+  /* "cadishi/kernel/c_pydh_interface.pyx":103
  * 
  * # wrapper to make histograms_cpu() accessible from Python
  * def distances(np.ndarray r_ptr,             # <<<<<<<<<<<<<<
@@ -4604,7 +4604,7 @@ static int __Pyx_InitCachedConstants(void) {
   __Pyx_GOTREF(__pyx_tuple__9);
   __Pyx_GIVEREF(__pyx_tuple__9);
 
-  /* "cadishi/kernel/pydh_interface.pyx":56
+  /* "cadishi/kernel/c_pydh_interface.pyx":56
  * 
  * # wrapper to make histograms_cpu() accessible from Python
  * def histograms(np.ndarray r_ptr,             # <<<<<<<<<<<<<<
@@ -4616,7 +4616,7 @@ static int __Pyx_InitCachedConstants(void) {
   __Pyx_GIVEREF(__pyx_tuple__10);
   __pyx_codeobj__11 = (PyObject*)__Pyx_PyCode_New(11, 0, 16, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__10, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_home_khr_unison_histobin_git_ca, __pyx_n_s_histograms, 56, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__11)) __PYX_ERR(0, 56, __pyx_L1_error)
 
-  /* "cadishi/kernel/pydh_interface.pyx":103
+  /* "cadishi/kernel/c_pydh_interface.pyx":103
  * 
  * # wrapper to make histograms_cpu() accessible from Python
  * def distances(np.ndarray r_ptr,             # <<<<<<<<<<<<<<
@@ -4745,7 +4745,7 @@ PyMODINIT_FUNC PyInit_c_pydh(void)
   if (__Pyx_patch_abc() < 0) __PYX_ERR(0, 1, __pyx_L1_error)
   #endif
 
-  /* "cadishi/kernel/pydh_interface.pyx":1
+  /* "cadishi/kernel/c_pydh_interface.pyx":1
  * import numpy as np             # <<<<<<<<<<<<<<
  * cimport numpy as np
  * from libcpp cimport bool
@@ -4755,7 +4755,7 @@ PyMODINIT_FUNC PyInit_c_pydh(void)
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_np, __pyx_t_1) < 0) __PYX_ERR(0, 1, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "cadishi/kernel/pydh_interface.pyx":56
+  /* "cadishi/kernel/c_pydh_interface.pyx":56
  * 
  * # wrapper to make histograms_cpu() accessible from Python
  * def histograms(np.ndarray r_ptr,             # <<<<<<<<<<<<<<
@@ -4767,7 +4767,7 @@ PyMODINIT_FUNC PyInit_c_pydh(void)
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_histograms, __pyx_t_1) < 0) __PYX_ERR(0, 56, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "cadishi/kernel/pydh_interface.pyx":103
+  /* "cadishi/kernel/c_pydh_interface.pyx":103
  * 
  * # wrapper to make histograms_cpu() accessible from Python
  * def distances(np.ndarray r_ptr,             # <<<<<<<<<<<<<<
@@ -4779,7 +4779,7 @@ PyMODINIT_FUNC PyInit_c_pydh(void)
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_distances, __pyx_t_1) < 0) __PYX_ERR(0, 103, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "cadishi/kernel/pydh_interface.pyx":1
+  /* "cadishi/kernel/c_pydh_interface.pyx":1
  * import numpy as np             # <<<<<<<<<<<<<<
  * cimport numpy as np
  * from libcpp cimport bool

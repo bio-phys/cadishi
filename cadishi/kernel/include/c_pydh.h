@@ -14,8 +14,16 @@
 #define _PYDH_H_
 
 #include "common.h"
+#include "config.h"
 #include <stdint.h>
 
+
+int distances_cpu(np_tuple3d_t *r_ptr,
+                  int n_tot,
+                  double *distances,
+                  double *box_ptr,
+                  int box_type_id,
+                  const config & cfg);
 
 int histograms_cpu(np_tuple3d_t *r_ptr,
                    int n_tot,
@@ -29,6 +37,7 @@ int histograms_cpu(np_tuple3d_t *r_ptr,
                    int box_type_id,
                    const config & cfg);
 
+/*
 int histograms_cpu_single(np_tuple3s_t *r_ptr,
                           int n_tot,
                           int *nel_ptr,
@@ -52,5 +61,6 @@ int histograms_cpu_double(np_tuple3d_t *r_ptr,
                           double *box_ptr,
                           bool check_input,
                           int box_type_id);
+*/
 
 #endif

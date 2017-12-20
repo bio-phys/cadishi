@@ -531,7 +531,7 @@ void histograms_template_dispatcher(NP_TUPLE3_T *r_ptr,
 
 
 template <typename NP_TUPLE3_T, typename TUPLE3_T, typename FLOAT_T>
-void dist_driver_template_dispatcher(NP_TUPLE3_T *r_ptr,
+void distances_template_dispatcher(NP_TUPLE3_T *r_ptr,
                                      int n_tot,
                                      FLOAT_T *distances_ptr,
                                      double *box_ptr,
@@ -605,7 +605,7 @@ void dist_driver_template_dispatcher(NP_TUPLE3_T *r_ptr,
 }
 
 
-// --- primary interfaces below ---
+// --- interfaces below, to be called from user code ---
 
 
 int histograms_cpu(np_tuple3d_t *r_ptr,
@@ -648,7 +648,7 @@ int histograms_cpu(np_tuple3d_t *r_ptr,
     return exit_status;
 }
 
-
+/*
 int histograms_cpu_single(np_tuple3s_t *r_ptr,
                           int n_tot,
                           int *nel_ptr,
@@ -708,9 +708,7 @@ int histograms_cpu_double(np_tuple3d_t *r_ptr,
     }
     return exit_status;
 }
-
-
-
+*/
 
 int distances_cpu(np_tuple3d_t *r_ptr,
                   int n_tot,
@@ -718,16 +716,12 @@ int distances_cpu(np_tuple3d_t *r_ptr,
                   double *box_ptr,
                   int box_type_id,
                   const config & cfg) {
-#ifdef _OPENMP
-    omp_set_num_threads(cfg.cpu_threads);
-#endif
     int exit_status = 0;
-    // TODO: move the cfg data structure further in
     try {
         if (cfg.precision == single_precision) {
-            throw std::runtime_error(std::string("not implemented"));
+            throw std::runtime_error(std::string("single precision distances are currently not implemented"));
         } else {
-            dist_driver_template_dispatcher <np_tuple3d_t, tuple3d_t, double>
+            distances_template_dispatcher <np_tuple3d_t, tuple3d_t, double>
                 (r_ptr, n_tot, distances, box_ptr, box_type_id);
         }
     } catch (std::overflow_error & err) {
@@ -744,67 +738,3 @@ int distances_cpu(np_tuple3d_t *r_ptr,
     }
     return exit_status;
 }
-
-
-
-
-// static PyObject* dist_driver(PyObject* self, PyObject* args) {
-//     PyArrayObject *coords;
-//     PyArrayObject *distances;
-//     PyArrayObject *box;
-//     int box_type_id = none;
-//     int precision = single_precision;
-//     int exit_status;
-//
-//     exit_status = 0;
-//     try {
-//         if (!PyArg_ParseTuple(args, "OOOii", &coords, &distances, &box, &box_type_id, &precision))
-//             return NULL;
-//
-//         // --- 2D double precision coordinate array
-//         RT_ASSERT( coords->nd == 2 );
-//         RT_ASSERT( coords->dimensions[1] == 3 );
-//         int n_tot = coords->dimensions[0];
-//         np_tuple3d_t *r_ptr = (np_tuple3d_t*) coords->data;
-//
-//         // --- 1D array containing the distances
-//         int n_dist = n_tot * (n_tot - 1) / 2;
-//         RT_ASSERT( distances->nd == 1 );
-//         RT_ASSERT( distances->dimensions[0] == n_dist);
-//
-//         RT_ASSERT(box->dimensions[0] == 3);
-//         RT_ASSERT(box->dimensions[1] == 3);
-//         double *box_ptr = (double*) box->data;
-//
-//         if ( precision == single_precision ) {
-//             float *distances_ptr = (float*) malloc(n_dist*sizeof(float));
-//             memset(distances_ptr, 0, n_dist*sizeof(float));
-//             dist_driver_template_dispatcher <tuple3s_t, float>
-//             (r_ptr, n_tot, distances_ptr, box_ptr, box_type_id);
-//             double *distances_raw = (double*) distances->data;
-//             for (int i=0; i<n_dist; ++i) {
-//                 distances_raw[i] = double(distances_ptr[i]);
-//             }
-//             free(distances_ptr);
-//         } else if ( precision == double_precision ) {
-//             double *distances_ptr = (double*) distances->data;
-//             dist_driver_template_dispatcher <tuple3d_t, double>
-//             (r_ptr, n_tot, distances_ptr, box_ptr, box_type_id);
-//         } else {
-//             RT_ERROR(std::string("unknown precision identifier passed"));
-//         }
-//     } catch (std::overflow_error & err) {
-//         const std::string msg = std::string(err.what());
-//         printf("%s\n", msg.c_str());
-//         exit_status = 1;
-//     } catch (std::runtime_error & err) {
-//         const std::string msg = std::string(err.what());
-//         printf("%s\n", msg.c_str());
-//         exit_status = 2;
-//     } catch (...) {
-//         // --- general unknown error
-//         exit_status = 3;
-//     }
-//
-//     return Py_BuildValue("i", exit_status);
-// }
