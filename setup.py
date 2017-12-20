@@ -225,10 +225,8 @@ def locate_cuda():
 def cuda_compiler_flags():
     gcc_flags = get_gcc_flags()
     gcc_flags += ['-DCUDA_DEBUG']
-    gcc_flags += ['-DBUILD_C_LIBRARY']  # added during the transition to the Cython interface
     gcc_flags_string = " ".join(gcc_flags)
     nvcc_flags = ['-DCUDA_DEBUG']  # hardly adds overhead, recommended
-    nvcc_flags = ['-DBUILD_C_LIBRARY']  # added during the transition to the Cython interface
     if CAD_DEBUG:
         nvcc_flags += ['-O0', '-g', '-G']
     else:
@@ -356,7 +354,7 @@ def extensions():
                      'cadishi/kernel/c_pydh_functions.cc'],
             language="c++",
             include_dirs=[numpy_include, 'cadishi/kernel/include'],
-            extra_compile_args=cc_flags + ['-DBUILD_C_LIBRARY'],
+            extra_compile_args=cc_flags,
             extra_link_args=cc_flags))
 
     if CUDA is None:
