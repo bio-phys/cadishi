@@ -4,8 +4,24 @@ cudh and pydh high performance kernels for GPUs and CPUs
 code structure
 --------------
 
-Python module (pydh.py)
 
-Cython interface (c_pydh.pyx)
+PYDH
 
-C++ library (c_pydh.cc)
+    Python module (pydh.py)
+
+    Cython interface (c_pydh_interface.pyx)
+
+    C++ library (c_pydh.cc)
+
+    (.pyx and .cc are in the same compilation unit)
+
+
+CUDH
+
+    Python module (cudh.py)
+
+    Cython interface (c_cudh_interface.pyx)
+
+    C++ library (c_cudh.cu)
+
+    (.pyx and .cu are in different compilation units)

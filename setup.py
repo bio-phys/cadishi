@@ -225,8 +225,10 @@ def locate_cuda():
 def cuda_compiler_flags():
     gcc_flags = get_gcc_flags()
     gcc_flags += ['-DCUDA_DEBUG']
+    gcc_flags += ['-DBUILD_C_LIBRARY']
     gcc_flags_string = " ".join(gcc_flags)
     nvcc_flags = ['-DCUDA_DEBUG']  # hardly adds overhead, recommended
+    nvcc_flags = ['-DBUILD_C_LIBRARY']  # hardly adds overhead, recommended
     if CAD_DEBUG:
         nvcc_flags += ['-O0', '-g', '-G']
     else:
