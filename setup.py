@@ -352,8 +352,8 @@ def extensions():
     exts.append(
         Extension(
             'cadishi.kernel.c_pydh',
-            sources=['cadishi/kernel/c_pydh_interface.pyx',
-                     'cadishi/kernel/c_pydh.cc'],
+            sources=['cadishi/kernel/c_pydh.pyx',
+                     'cadishi/kernel/c_pydh_functions.cc'],
             language="c++",
             include_dirs=[numpy_include, 'cadishi/kernel/include'],
             extra_compile_args=cc_flags + ['-DBUILD_C_LIBRARY'],
@@ -368,7 +368,8 @@ def extensions():
         exts.append(
             Extension(
                 'cadishi.kernel.c_cudh',
-                sources=['cadishi/kernel/c_cudh_interface.pyx', 'cadishi/kernel/c_cudh.cu'],
+                sources=['cadishi/kernel/c_cudh.pyx',
+                         'cadishi/kernel/c_cudh_functions.cu'],
                 language="c++",
                 include_dirs=[numpy_include, 'cadishi/kernel/include'],
                 libraries=link_libraries,
