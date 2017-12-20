@@ -100,11 +100,8 @@ def histograms(coordinate_sets,
     return np_histos
 
 
-def distances(coordinates,
-                precision="single",
-                box=[],
-                force_triclinic=False):
-    """Debug driver for the distance calculation functions."""
+def distances(coordinates, precision="single", box=[], force_triclinic=False):
+    """Driver for the distance calculation functions."""
 
     if not have_c_pydh:
         raise RuntimeError(common.import_pydh_error_msg)

@@ -48,6 +48,10 @@ typedef struct tuple3d_t {
 } tuple3d_t;
 
 
+const char id_single[] = "single";
+const char id_double[] = "double";
+const char SEP[] = "-----------------------------------------------------------------------------";
+
 
 // Cadishi round wrapper functions for both the precisions
 // Note: C++11 would provide std::round()

@@ -101,18 +101,13 @@ def histograms(np.ndarray r_ptr,
 
 # wrapper to make histograms_cpu() accessible from Python
 def distances(np.ndarray r_ptr,
+              np.ndarray dists,
               np.ndarray box_ptr,
               int box_type_id,
               int precision):
-
-    # derive dimensions from NumPy data structures
+    # derive dimension from NumPy data structure
     cdef int n_tot
-    cdef int n_dist
-
     n_tot = r_ptr.shape[0]
-    n_dist = n_tot * (n_tot - 1) / 2;
-
-    cdef np.ndarray distances = np.zeros([n_dist] , dtype=np.double)
 
     # create Python instance of C++ config class
     cdef config cfg
@@ -121,7 +116,7 @@ def distances(np.ndarray r_ptr,
     cdef int exit_status
     exit_status = distances_cpu(<np_tuple3d_t*> r_ptr.data,
                                 <int> n_tot,
-                                <double*> distances.data,
+                                <double*> dists.data,
                                 <double*> box_ptr.data,
                                 <int> box_type_id,
                                 cfg)

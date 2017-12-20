@@ -1004,9 +1004,6 @@ static int __Pyx_ParseOptionalKeywords(PyObject *kwds, PyObject **argnames[],\
 static CYTHON_INLINE int __Pyx_ArgTypeTest(PyObject *obj, PyTypeObject *type, int none_allowed,
     const char *name, int exact);
 
-/* None.proto */
-static CYTHON_INLINE long __Pyx_div_long(long, long);
-
 /* PyObjectGetAttrStr.proto */
 #if CYTHON_USE_TYPE_SLOTS
 static CYTHON_INLINE PyObject* __Pyx_PyObject_GetAttrStr(PyObject* obj, PyObject* attr_name) {
@@ -1026,18 +1023,12 @@ static CYTHON_INLINE PyObject* __Pyx_PyObject_GetAttrStr(PyObject* obj, PyObject
 /* GetBuiltinName.proto */
 static PyObject *__Pyx_GetBuiltinName(PyObject *name);
 
-/* GetModuleGlobalName.proto */
-static CYTHON_INLINE PyObject *__Pyx_GetModuleGlobalName(PyObject *name);
-
 /* PyObjectCall.proto */
 #if CYTHON_COMPILING_IN_CPYTHON
 static CYTHON_INLINE PyObject* __Pyx_PyObject_Call(PyObject *func, PyObject *arg, PyObject *kw);
 #else
 #define __Pyx_PyObject_Call(func, arg, kw) PyObject_Call(func, arg, kw)
 #endif
-
-/* ExtTypeTest.proto */
-static CYTHON_INLINE int __Pyx_TypeTest(PyObject *obj, PyTypeObject *type);
 
 /* PyThreadStateGet.proto */
 #if CYTHON_FAST_THREAD_STATE
@@ -1095,6 +1086,9 @@ static CYTHON_INLINE void __Pyx_RaiseNeedMoreValuesError(Py_ssize_t index);
 
 /* RaiseNoneIterError.proto */
 static CYTHON_INLINE void __Pyx_RaiseNoneNotIterableError(void);
+
+/* ExtTypeTest.proto */
+static CYTHON_INLINE int __Pyx_TypeTest(PyObject *obj, PyTypeObject *type);
 
 /* SaveResetException.proto */
 #if CYTHON_FAST_THREAD_STATE
@@ -1325,17 +1319,14 @@ static const char __pyx_k_cfg[] = "cfg";
 static const char __pyx_k_main[] = "__main__";
 static const char __pyx_k_n_El[] = "n_El";
 static const char __pyx_k_test[] = "__test__";
-static const char __pyx_k_dtype[] = "dtype";
+static const char __pyx_k_dists[] = "dists";
 static const char __pyx_k_n_tot[] = "n_tot";
 static const char __pyx_k_numpy[] = "numpy";
 static const char __pyx_k_r_max[] = "r_max";
 static const char __pyx_k_r_ptr[] = "r_ptr";
 static const char __pyx_k_range[] = "range";
-static const char __pyx_k_zeros[] = "zeros";
-static const char __pyx_k_double[] = "double";
 static const char __pyx_k_import[] = "__import__";
 static const char __pyx_k_n_bins[] = "n_bins";
-static const char __pyx_k_n_dist[] = "n_dist";
 static const char __pyx_k_box_ptr[] = "box_ptr";
 static const char __pyx_k_nel_ptr[] = "nel_ptr";
 static const char __pyx_k_mask_ptr[] = "mask_ptr";
@@ -1373,9 +1364,8 @@ static PyObject *__pyx_n_s_cadishi_kernel_c_pydh;
 static PyObject *__pyx_n_s_cfg;
 static PyObject *__pyx_n_s_check_input;
 static PyObject *__pyx_n_s_distances;
+static PyObject *__pyx_n_s_dists;
 static PyObject *__pyx_n_s_do_histo2_only;
-static PyObject *__pyx_n_s_double;
-static PyObject *__pyx_n_s_dtype;
 static PyObject *__pyx_n_s_exit_status;
 static PyObject *__pyx_n_s_histo_ptr;
 static PyObject *__pyx_n_s_histograms;
@@ -1385,7 +1375,6 @@ static PyObject *__pyx_n_s_main;
 static PyObject *__pyx_n_s_mask_ptr;
 static PyObject *__pyx_n_s_n_El;
 static PyObject *__pyx_n_s_n_bins;
-static PyObject *__pyx_n_s_n_dist;
 static PyObject *__pyx_n_s_n_threads;
 static PyObject *__pyx_n_s_n_tot;
 static PyObject *__pyx_kp_u_ndarray_is_not_C_contiguous;
@@ -1401,9 +1390,8 @@ static PyObject *__pyx_n_s_r_ptr;
 static PyObject *__pyx_n_s_range;
 static PyObject *__pyx_n_s_test;
 static PyObject *__pyx_kp_u_unknown_dtype_code_in_numpy_pxd;
-static PyObject *__pyx_n_s_zeros;
 static PyObject *__pyx_pf_7cadishi_6kernel_6c_pydh_histograms(CYTHON_UNUSED PyObject *__pyx_self, PyArrayObject *__pyx_v_r_ptr, PyArrayObject *__pyx_v_nel_ptr, PyArrayObject *__pyx_v_histo_ptr, float __pyx_v_r_max, PyArrayObject *__pyx_v_mask_ptr, PyArrayObject *__pyx_v_box_ptr, int __pyx_v_box_type_id, int __pyx_v_precision, int __pyx_v_n_threads, bool __pyx_v_check_input, bool __pyx_v_do_histo2_only); /* proto */
-static PyObject *__pyx_pf_7cadishi_6kernel_6c_pydh_2distances(CYTHON_UNUSED PyObject *__pyx_self, PyArrayObject *__pyx_v_r_ptr, PyArrayObject *__pyx_v_box_ptr, int __pyx_v_box_type_id, int __pyx_v_precision); /* proto */
+static PyObject *__pyx_pf_7cadishi_6kernel_6c_pydh_2distances(CYTHON_UNUSED PyObject *__pyx_self, PyArrayObject *__pyx_v_r_ptr, PyArrayObject *__pyx_v_dists, PyArrayObject *__pyx_v_box_ptr, int __pyx_v_box_type_id, int __pyx_v_precision); /* proto */
 static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, Py_buffer *__pyx_v_info, int __pyx_v_flags); /* proto */
 static void __pyx_pf_5numpy_7ndarray_2__releasebuffer__(PyArrayObject *__pyx_v_self, Py_buffer *__pyx_v_info); /* proto */
 static PyObject *__pyx_tuple_;
@@ -1697,8 +1685,8 @@ static PyObject *__pyx_pf_7cadishi_6kernel_6c_pydh_histograms(CYTHON_UNUSED PyOb
  * 
  * # wrapper to make histograms_cpu() accessible from Python
  * def distances(np.ndarray r_ptr,             # <<<<<<<<<<<<<<
+ *               np.ndarray dists,
  *               np.ndarray box_ptr,
- *               int box_type_id,
  */
 
 /* Python wrapper */
@@ -1706,6 +1694,7 @@ static PyObject *__pyx_pw_7cadishi_6kernel_6c_pydh_3distances(PyObject *__pyx_se
 static PyMethodDef __pyx_mdef_7cadishi_6kernel_6c_pydh_3distances = {"distances", (PyCFunction)__pyx_pw_7cadishi_6kernel_6c_pydh_3distances, METH_VARARGS|METH_KEYWORDS, 0};
 static PyObject *__pyx_pw_7cadishi_6kernel_6c_pydh_3distances(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
   PyArrayObject *__pyx_v_r_ptr = 0;
+  PyArrayObject *__pyx_v_dists = 0;
   PyArrayObject *__pyx_v_box_ptr = 0;
   int __pyx_v_box_type_id;
   int __pyx_v_precision;
@@ -1713,12 +1702,13 @@ static PyObject *__pyx_pw_7cadishi_6kernel_6c_pydh_3distances(PyObject *__pyx_se
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("distances (wrapper)", 0);
   {
-    static PyObject **__pyx_pyargnames[] = {&__pyx_n_s_r_ptr,&__pyx_n_s_box_ptr,&__pyx_n_s_box_type_id,&__pyx_n_s_precision,0};
-    PyObject* values[4] = {0,0,0,0};
+    static PyObject **__pyx_pyargnames[] = {&__pyx_n_s_r_ptr,&__pyx_n_s_dists,&__pyx_n_s_box_ptr,&__pyx_n_s_box_type_id,&__pyx_n_s_precision,0};
+    PyObject* values[5] = {0,0,0,0,0};
     if (unlikely(__pyx_kwds)) {
       Py_ssize_t kw_args;
       const Py_ssize_t pos_args = PyTuple_GET_SIZE(__pyx_args);
       switch (pos_args) {
+        case  5: values[4] = PyTuple_GET_ITEM(__pyx_args, 4);
         case  4: values[3] = PyTuple_GET_ITEM(__pyx_args, 3);
         case  3: values[2] = PyTuple_GET_ITEM(__pyx_args, 2);
         case  2: values[1] = PyTuple_GET_ITEM(__pyx_args, 1);
@@ -1732,48 +1722,56 @@ static PyObject *__pyx_pw_7cadishi_6kernel_6c_pydh_3distances(PyObject *__pyx_se
         if (likely((values[0] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_r_ptr)) != 0)) kw_args--;
         else goto __pyx_L5_argtuple_error;
         case  1:
-        if (likely((values[1] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_box_ptr)) != 0)) kw_args--;
+        if (likely((values[1] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_dists)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("distances", 1, 4, 4, 1); __PYX_ERR(0, 103, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("distances", 1, 5, 5, 1); __PYX_ERR(0, 103, __pyx_L3_error)
         }
         case  2:
-        if (likely((values[2] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_box_type_id)) != 0)) kw_args--;
+        if (likely((values[2] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_box_ptr)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("distances", 1, 4, 4, 2); __PYX_ERR(0, 103, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("distances", 1, 5, 5, 2); __PYX_ERR(0, 103, __pyx_L3_error)
         }
         case  3:
-        if (likely((values[3] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_precision)) != 0)) kw_args--;
+        if (likely((values[3] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_box_type_id)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("distances", 1, 4, 4, 3); __PYX_ERR(0, 103, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("distances", 1, 5, 5, 3); __PYX_ERR(0, 103, __pyx_L3_error)
+        }
+        case  4:
+        if (likely((values[4] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_precision)) != 0)) kw_args--;
+        else {
+          __Pyx_RaiseArgtupleInvalid("distances", 1, 5, 5, 4); __PYX_ERR(0, 103, __pyx_L3_error)
         }
       }
       if (unlikely(kw_args > 0)) {
         if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "distances") < 0)) __PYX_ERR(0, 103, __pyx_L3_error)
       }
-    } else if (PyTuple_GET_SIZE(__pyx_args) != 4) {
+    } else if (PyTuple_GET_SIZE(__pyx_args) != 5) {
       goto __pyx_L5_argtuple_error;
     } else {
       values[0] = PyTuple_GET_ITEM(__pyx_args, 0);
       values[1] = PyTuple_GET_ITEM(__pyx_args, 1);
       values[2] = PyTuple_GET_ITEM(__pyx_args, 2);
       values[3] = PyTuple_GET_ITEM(__pyx_args, 3);
+      values[4] = PyTuple_GET_ITEM(__pyx_args, 4);
     }
     __pyx_v_r_ptr = ((PyArrayObject *)values[0]);
-    __pyx_v_box_ptr = ((PyArrayObject *)values[1]);
-    __pyx_v_box_type_id = __Pyx_PyInt_As_int(values[2]); if (unlikely((__pyx_v_box_type_id == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 105, __pyx_L3_error)
-    __pyx_v_precision = __Pyx_PyInt_As_int(values[3]); if (unlikely((__pyx_v_precision == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 106, __pyx_L3_error)
+    __pyx_v_dists = ((PyArrayObject *)values[1]);
+    __pyx_v_box_ptr = ((PyArrayObject *)values[2]);
+    __pyx_v_box_type_id = __Pyx_PyInt_As_int(values[3]); if (unlikely((__pyx_v_box_type_id == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 106, __pyx_L3_error)
+    __pyx_v_precision = __Pyx_PyInt_As_int(values[4]); if (unlikely((__pyx_v_precision == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 107, __pyx_L3_error)
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("distances", 1, 4, 4, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 103, __pyx_L3_error)
+  __Pyx_RaiseArgtupleInvalid("distances", 1, 5, 5, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 103, __pyx_L3_error)
   __pyx_L3_error:;
   __Pyx_AddTraceback("cadishi.kernel.c_pydh.distances", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
   if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_r_ptr), __pyx_ptype_5numpy_ndarray, 1, "r_ptr", 0))) __PYX_ERR(0, 103, __pyx_L1_error)
-  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_box_ptr), __pyx_ptype_5numpy_ndarray, 1, "box_ptr", 0))) __PYX_ERR(0, 104, __pyx_L1_error)
-  __pyx_r = __pyx_pf_7cadishi_6kernel_6c_pydh_2distances(__pyx_self, __pyx_v_r_ptr, __pyx_v_box_ptr, __pyx_v_box_type_id, __pyx_v_precision);
+  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_dists), __pyx_ptype_5numpy_ndarray, 1, "dists", 0))) __PYX_ERR(0, 104, __pyx_L1_error)
+  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_box_ptr), __pyx_ptype_5numpy_ndarray, 1, "box_ptr", 0))) __PYX_ERR(0, 105, __pyx_L1_error)
+  __pyx_r = __pyx_pf_7cadishi_6kernel_6c_pydh_2distances(__pyx_self, __pyx_v_r_ptr, __pyx_v_dists, __pyx_v_box_ptr, __pyx_v_box_type_id, __pyx_v_precision);
 
   /* function exit code */
   goto __pyx_L0;
@@ -1784,82 +1782,25 @@ static PyObject *__pyx_pw_7cadishi_6kernel_6c_pydh_3distances(PyObject *__pyx_se
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_7cadishi_6kernel_6c_pydh_2distances(CYTHON_UNUSED PyObject *__pyx_self, PyArrayObject *__pyx_v_r_ptr, PyArrayObject *__pyx_v_box_ptr, int __pyx_v_box_type_id, int __pyx_v_precision) {
+static PyObject *__pyx_pf_7cadishi_6kernel_6c_pydh_2distances(CYTHON_UNUSED PyObject *__pyx_self, PyArrayObject *__pyx_v_r_ptr, PyArrayObject *__pyx_v_dists, PyArrayObject *__pyx_v_box_ptr, int __pyx_v_box_type_id, int __pyx_v_precision) {
   int __pyx_v_n_tot;
-  int __pyx_v_n_dist;
-  PyArrayObject *__pyx_v_distances = 0;
   config __pyx_v_cfg;
   int __pyx_v_exit_status;
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
-  PyObject *__pyx_t_2 = NULL;
-  PyObject *__pyx_t_3 = NULL;
-  PyObject *__pyx_t_4 = NULL;
-  PyObject *__pyx_t_5 = NULL;
   __Pyx_RefNannySetupContext("distances", 0);
 
-  /* "cadishi/kernel/c_pydh_interface.pyx":112
- *     cdef int n_dist
- * 
+  /* "cadishi/kernel/c_pydh_interface.pyx":110
+ *     # derive dimension from NumPy data structure
+ *     cdef int n_tot
  *     n_tot = r_ptr.shape[0]             # <<<<<<<<<<<<<<
- *     n_dist = n_tot * (n_tot - 1) / 2;
- * 
- */
-  __pyx_v_n_tot = (__pyx_v_r_ptr->dimensions[0]);
-
-  /* "cadishi/kernel/c_pydh_interface.pyx":113
- * 
- *     n_tot = r_ptr.shape[0]
- *     n_dist = n_tot * (n_tot - 1) / 2;             # <<<<<<<<<<<<<<
- * 
- *     cdef np.ndarray distances = np.zeros([n_dist] , dtype=np.double)
- */
-  __pyx_v_n_dist = __Pyx_div_long((__pyx_v_n_tot * (__pyx_v_n_tot - 1)), 2);
-
-  /* "cadishi/kernel/c_pydh_interface.pyx":115
- *     n_dist = n_tot * (n_tot - 1) / 2;
- * 
- *     cdef np.ndarray distances = np.zeros([n_dist] , dtype=np.double)             # <<<<<<<<<<<<<<
  * 
  *     # create Python instance of C++ config class
  */
-  __pyx_t_1 = __Pyx_GetModuleGlobalName(__pyx_n_s_np); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 115, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_1);
-  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_zeros); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 115, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_2);
-  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-  __pyx_t_1 = __Pyx_PyInt_From_int(__pyx_v_n_dist); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 115, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_1);
-  __pyx_t_3 = PyList_New(1); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 115, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_3);
-  __Pyx_GIVEREF(__pyx_t_1);
-  PyList_SET_ITEM(__pyx_t_3, 0, __pyx_t_1);
-  __pyx_t_1 = 0;
-  __pyx_t_1 = PyTuple_New(1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 115, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_1);
-  __Pyx_GIVEREF(__pyx_t_3);
-  PyTuple_SET_ITEM(__pyx_t_1, 0, __pyx_t_3);
-  __pyx_t_3 = 0;
-  __pyx_t_3 = PyDict_New(); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 115, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_3);
-  __pyx_t_4 = __Pyx_GetModuleGlobalName(__pyx_n_s_np); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 115, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_4);
-  __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_n_s_double); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 115, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_5);
-  __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-  if (PyDict_SetItem(__pyx_t_3, __pyx_n_s_dtype, __pyx_t_5) < 0) __PYX_ERR(0, 115, __pyx_L1_error)
-  __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-  __pyx_t_5 = __Pyx_PyObject_Call(__pyx_t_2, __pyx_t_1, __pyx_t_3); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 115, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_5);
-  __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-  __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-  if (!(likely(((__pyx_t_5) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_5, __pyx_ptype_5numpy_ndarray))))) __PYX_ERR(0, 115, __pyx_L1_error)
-  __pyx_v_distances = ((PyArrayObject *)__pyx_t_5);
-  __pyx_t_5 = 0;
+  __pyx_v_n_tot = (__pyx_v_r_ptr->dimensions[0]);
 
-  /* "cadishi/kernel/c_pydh_interface.pyx":119
+  /* "cadishi/kernel/c_pydh_interface.pyx":114
  *     # create Python instance of C++ config class
  *     cdef config cfg
  *     cfg.set_precision(precision)             # <<<<<<<<<<<<<<
@@ -1868,46 +1809,41 @@ static PyObject *__pyx_pf_7cadishi_6kernel_6c_pydh_2distances(CYTHON_UNUSED PyOb
  */
   __pyx_v_cfg.set_precision(__pyx_v_precision);
 
-  /* "cadishi/kernel/c_pydh_interface.pyx":122
+  /* "cadishi/kernel/c_pydh_interface.pyx":117
  * 
  *     cdef int exit_status
  *     exit_status = distances_cpu(<np_tuple3d_t*> r_ptr.data,             # <<<<<<<<<<<<<<
  *                                 <int> n_tot,
- *                                 <double*> distances.data,
+ *                                 <double*> dists.data,
  */
-  __pyx_v_exit_status = distances_cpu(((np_tuple3d_t *)__pyx_v_r_ptr->data), ((int)__pyx_v_n_tot), ((double *)__pyx_v_distances->data), ((double *)__pyx_v_box_ptr->data), ((int)__pyx_v_box_type_id), __pyx_v_cfg);
+  __pyx_v_exit_status = distances_cpu(((np_tuple3d_t *)__pyx_v_r_ptr->data), ((int)__pyx_v_n_tot), ((double *)__pyx_v_dists->data), ((double *)__pyx_v_box_ptr->data), ((int)__pyx_v_box_type_id), __pyx_v_cfg);
 
-  /* "cadishi/kernel/c_pydh_interface.pyx":128
+  /* "cadishi/kernel/c_pydh_interface.pyx":123
  *                                 <int> box_type_id,
  *                                 cfg)
  *     return exit_status             # <<<<<<<<<<<<<<
  */
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_5 = __Pyx_PyInt_From_int(__pyx_v_exit_status); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 128, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_5);
-  __pyx_r = __pyx_t_5;
-  __pyx_t_5 = 0;
+  __pyx_t_1 = __Pyx_PyInt_From_int(__pyx_v_exit_status); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 123, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_1);
+  __pyx_r = __pyx_t_1;
+  __pyx_t_1 = 0;
   goto __pyx_L0;
 
   /* "cadishi/kernel/c_pydh_interface.pyx":103
  * 
  * # wrapper to make histograms_cpu() accessible from Python
  * def distances(np.ndarray r_ptr,             # <<<<<<<<<<<<<<
+ *               np.ndarray dists,
  *               np.ndarray box_ptr,
- *               int box_type_id,
  */
 
   /* function exit code */
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_1);
-  __Pyx_XDECREF(__pyx_t_2);
-  __Pyx_XDECREF(__pyx_t_3);
-  __Pyx_XDECREF(__pyx_t_4);
-  __Pyx_XDECREF(__pyx_t_5);
   __Pyx_AddTraceback("cadishi.kernel.c_pydh.distances", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
-  __Pyx_XDECREF((PyObject *)__pyx_v_distances);
   __Pyx_XGIVEREF(__pyx_r);
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
@@ -4462,9 +4398,8 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_n_s_cfg, __pyx_k_cfg, sizeof(__pyx_k_cfg), 0, 0, 1, 1},
   {&__pyx_n_s_check_input, __pyx_k_check_input, sizeof(__pyx_k_check_input), 0, 0, 1, 1},
   {&__pyx_n_s_distances, __pyx_k_distances, sizeof(__pyx_k_distances), 0, 0, 1, 1},
+  {&__pyx_n_s_dists, __pyx_k_dists, sizeof(__pyx_k_dists), 0, 0, 1, 1},
   {&__pyx_n_s_do_histo2_only, __pyx_k_do_histo2_only, sizeof(__pyx_k_do_histo2_only), 0, 0, 1, 1},
-  {&__pyx_n_s_double, __pyx_k_double, sizeof(__pyx_k_double), 0, 0, 1, 1},
-  {&__pyx_n_s_dtype, __pyx_k_dtype, sizeof(__pyx_k_dtype), 0, 0, 1, 1},
   {&__pyx_n_s_exit_status, __pyx_k_exit_status, sizeof(__pyx_k_exit_status), 0, 0, 1, 1},
   {&__pyx_n_s_histo_ptr, __pyx_k_histo_ptr, sizeof(__pyx_k_histo_ptr), 0, 0, 1, 1},
   {&__pyx_n_s_histograms, __pyx_k_histograms, sizeof(__pyx_k_histograms), 0, 0, 1, 1},
@@ -4474,7 +4409,6 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_n_s_mask_ptr, __pyx_k_mask_ptr, sizeof(__pyx_k_mask_ptr), 0, 0, 1, 1},
   {&__pyx_n_s_n_El, __pyx_k_n_El, sizeof(__pyx_k_n_El), 0, 0, 1, 1},
   {&__pyx_n_s_n_bins, __pyx_k_n_bins, sizeof(__pyx_k_n_bins), 0, 0, 1, 1},
-  {&__pyx_n_s_n_dist, __pyx_k_n_dist, sizeof(__pyx_k_n_dist), 0, 0, 1, 1},
   {&__pyx_n_s_n_threads, __pyx_k_n_threads, sizeof(__pyx_k_n_threads), 0, 0, 1, 1},
   {&__pyx_n_s_n_tot, __pyx_k_n_tot, sizeof(__pyx_k_n_tot), 0, 0, 1, 1},
   {&__pyx_kp_u_ndarray_is_not_C_contiguous, __pyx_k_ndarray_is_not_C_contiguous, sizeof(__pyx_k_ndarray_is_not_C_contiguous), 0, 1, 0, 0},
@@ -4490,7 +4424,6 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_n_s_range, __pyx_k_range, sizeof(__pyx_k_range), 0, 0, 1, 1},
   {&__pyx_n_s_test, __pyx_k_test, sizeof(__pyx_k_test), 0, 0, 1, 1},
   {&__pyx_kp_u_unknown_dtype_code_in_numpy_pxd, __pyx_k_unknown_dtype_code_in_numpy_pxd, sizeof(__pyx_k_unknown_dtype_code_in_numpy_pxd), 0, 1, 0, 0},
-  {&__pyx_n_s_zeros, __pyx_k_zeros, sizeof(__pyx_k_zeros), 0, 0, 1, 1},
   {0, 0, 0, 0, 0, 0, 0}
 };
 static int __Pyx_InitCachedBuiltins(void) {
@@ -4620,13 +4553,13 @@ static int __Pyx_InitCachedConstants(void) {
  * 
  * # wrapper to make histograms_cpu() accessible from Python
  * def distances(np.ndarray r_ptr,             # <<<<<<<<<<<<<<
+ *               np.ndarray dists,
  *               np.ndarray box_ptr,
- *               int box_type_id,
  */
-  __pyx_tuple__12 = PyTuple_Pack(9, __pyx_n_s_r_ptr, __pyx_n_s_box_ptr, __pyx_n_s_box_type_id, __pyx_n_s_precision, __pyx_n_s_n_tot, __pyx_n_s_n_dist, __pyx_n_s_distances, __pyx_n_s_cfg, __pyx_n_s_exit_status); if (unlikely(!__pyx_tuple__12)) __PYX_ERR(0, 103, __pyx_L1_error)
+  __pyx_tuple__12 = PyTuple_Pack(8, __pyx_n_s_r_ptr, __pyx_n_s_dists, __pyx_n_s_box_ptr, __pyx_n_s_box_type_id, __pyx_n_s_precision, __pyx_n_s_n_tot, __pyx_n_s_cfg, __pyx_n_s_exit_status); if (unlikely(!__pyx_tuple__12)) __PYX_ERR(0, 103, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__12);
   __Pyx_GIVEREF(__pyx_tuple__12);
-  __pyx_codeobj__13 = (PyObject*)__Pyx_PyCode_New(4, 0, 9, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__12, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_home_khr_unison_histobin_git_ca, __pyx_n_s_distances, 103, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__13)) __PYX_ERR(0, 103, __pyx_L1_error)
+  __pyx_codeobj__13 = (PyObject*)__Pyx_PyCode_New(5, 0, 8, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__12, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_home_khr_unison_histobin_git_ca, __pyx_n_s_distances, 103, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__13)) __PYX_ERR(0, 103, __pyx_L1_error)
   __Pyx_RefNannyFinishContext();
   return 0;
   __pyx_L1_error:;
@@ -4771,8 +4704,8 @@ PyMODINIT_FUNC PyInit_c_pydh(void)
  * 
  * # wrapper to make histograms_cpu() accessible from Python
  * def distances(np.ndarray r_ptr,             # <<<<<<<<<<<<<<
+ *               np.ndarray dists,
  *               np.ndarray box_ptr,
- *               int box_type_id,
  */
   __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_7cadishi_6kernel_6c_pydh_3distances, NULL, __pyx_n_s_cadishi_kernel_c_pydh); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 103, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
@@ -5006,14 +4939,6 @@ static CYTHON_INLINE int __Pyx_ArgTypeTest(PyObject *obj, PyTypeObject *type, in
     return 0;
 }
 
-/* None */
-static CYTHON_INLINE long __Pyx_div_long(long a, long b) {
-    long q = a / b;
-    long r = a - q*b;
-    q -= ((r != 0) & ((r ^ b) < 0));
-    return q;
-}
-
 /* GetBuiltinName */
 static PyObject *__Pyx_GetBuiltinName(PyObject *name) {
     PyObject* result = __Pyx_PyObject_GetAttrStr(__pyx_b, name);
@@ -5028,26 +4953,8 @@ static PyObject *__Pyx_GetBuiltinName(PyObject *name) {
     return result;
 }
 
-/* GetModuleGlobalName */
-static CYTHON_INLINE PyObject *__Pyx_GetModuleGlobalName(PyObject *name) {
-    PyObject *result;
-#if !CYTHON_AVOID_BORROWED_REFS
-    result = PyDict_GetItem(__pyx_d, name);
-    if (likely(result)) {
-        Py_INCREF(result);
-    } else {
-#else
-    result = PyObject_GetItem(__pyx_d, name);
-    if (!result) {
-        PyErr_Clear();
-#endif
-        result = __Pyx_GetBuiltinName(name);
-    }
-    return result;
-}
-
 /* PyObjectCall */
-  #if CYTHON_COMPILING_IN_CPYTHON
+#if CYTHON_COMPILING_IN_CPYTHON
 static CYTHON_INLINE PyObject* __Pyx_PyObject_Call(PyObject *func, PyObject *arg, PyObject *kw) {
     PyObject *result;
     ternaryfunc call = func->ob_type->tp_call;
@@ -5066,21 +4973,8 @@ static CYTHON_INLINE PyObject* __Pyx_PyObject_Call(PyObject *func, PyObject *arg
 }
 #endif
 
-/* ExtTypeTest */
-  static CYTHON_INLINE int __Pyx_TypeTest(PyObject *obj, PyTypeObject *type) {
-    if (unlikely(!type)) {
-        PyErr_SetString(PyExc_SystemError, "Missing type object");
-        return 0;
-    }
-    if (likely(PyObject_TypeCheck(obj, type)))
-        return 1;
-    PyErr_Format(PyExc_TypeError, "Cannot convert %.200s to %.200s",
-                 Py_TYPE(obj)->tp_name, type->tp_name);
-    return 0;
-}
-
 /* PyErrFetchRestore */
-  #if CYTHON_FAST_THREAD_STATE
+#if CYTHON_FAST_THREAD_STATE
 static CYTHON_INLINE void __Pyx_ErrRestoreInState(PyThreadState *tstate, PyObject *type, PyObject *value, PyObject *tb) {
     PyObject *tmp_type, *tmp_value, *tmp_tb;
     tmp_type = tstate->curexc_type;
@@ -5104,7 +4998,7 @@ static CYTHON_INLINE void __Pyx_ErrFetchInState(PyThreadState *tstate, PyObject 
 #endif
 
 /* RaiseException */
-  #if PY_MAJOR_VERSION < 3
+#if PY_MAJOR_VERSION < 3
 static void __Pyx_Raise(PyObject *type, PyObject *value, PyObject *tb,
                         CYTHON_UNUSED PyObject *cause) {
     __Pyx_PyThreadState_declare
@@ -5267,25 +5161,38 @@ bad:
 #endif
 
 /* RaiseTooManyValuesToUnpack */
-    static CYTHON_INLINE void __Pyx_RaiseTooManyValuesError(Py_ssize_t expected) {
+  static CYTHON_INLINE void __Pyx_RaiseTooManyValuesError(Py_ssize_t expected) {
     PyErr_Format(PyExc_ValueError,
                  "too many values to unpack (expected %" CYTHON_FORMAT_SSIZE_T "d)", expected);
 }
 
 /* RaiseNeedMoreValuesToUnpack */
-    static CYTHON_INLINE void __Pyx_RaiseNeedMoreValuesError(Py_ssize_t index) {
+  static CYTHON_INLINE void __Pyx_RaiseNeedMoreValuesError(Py_ssize_t index) {
     PyErr_Format(PyExc_ValueError,
                  "need more than %" CYTHON_FORMAT_SSIZE_T "d value%.1s to unpack",
                  index, (index == 1) ? "" : "s");
 }
 
 /* RaiseNoneIterError */
-    static CYTHON_INLINE void __Pyx_RaiseNoneNotIterableError(void) {
+  static CYTHON_INLINE void __Pyx_RaiseNoneNotIterableError(void) {
     PyErr_SetString(PyExc_TypeError, "'NoneType' object is not iterable");
 }
 
+/* ExtTypeTest */
+  static CYTHON_INLINE int __Pyx_TypeTest(PyObject *obj, PyTypeObject *type) {
+    if (unlikely(!type)) {
+        PyErr_SetString(PyExc_SystemError, "Missing type object");
+        return 0;
+    }
+    if (likely(PyObject_TypeCheck(obj, type)))
+        return 1;
+    PyErr_Format(PyExc_TypeError, "Cannot convert %.200s to %.200s",
+                 Py_TYPE(obj)->tp_name, type->tp_name);
+    return 0;
+}
+
 /* SaveResetException */
-    #if CYTHON_FAST_THREAD_STATE
+  #if CYTHON_FAST_THREAD_STATE
 static CYTHON_INLINE void __Pyx__ExceptionSave(PyThreadState *tstate, PyObject **type, PyObject **value, PyObject **tb) {
     *type = tstate->exc_type;
     *value = tstate->exc_value;
@@ -5309,7 +5216,7 @@ static CYTHON_INLINE void __Pyx__ExceptionReset(PyThreadState *tstate, PyObject 
 #endif
 
 /* PyErrExceptionMatches */
-    #if CYTHON_FAST_THREAD_STATE
+  #if CYTHON_FAST_THREAD_STATE
 static CYTHON_INLINE int __Pyx_PyErr_ExceptionMatchesInState(PyThreadState* tstate, PyObject* err) {
     PyObject *exc_type = tstate->curexc_type;
     if (exc_type == err) return 1;
@@ -5319,7 +5226,7 @@ static CYTHON_INLINE int __Pyx_PyErr_ExceptionMatchesInState(PyThreadState* tsta
 #endif
 
 /* GetException */
-    #if CYTHON_FAST_THREAD_STATE
+  #if CYTHON_FAST_THREAD_STATE
 static int __Pyx__GetException(PyThreadState *tstate, PyObject **type, PyObject **value, PyObject **tb) {
 #else
 static int __Pyx_GetException(PyObject **type, PyObject **value, PyObject **tb) {
@@ -5380,7 +5287,7 @@ bad:
 }
 
 /* Import */
-      static PyObject *__Pyx_Import(PyObject *name, PyObject *from_list, int level) {
+    static PyObject *__Pyx_Import(PyObject *name, PyObject *from_list, int level) {
     PyObject *empty_list = 0;
     PyObject *module = 0;
     PyObject *global_dict = 0;
@@ -5454,7 +5361,7 @@ bad:
 }
 
 /* CodeObjectCache */
-      static int __pyx_bisect_code_objects(__Pyx_CodeObjectCacheEntry* entries, int count, int code_line) {
+    static int __pyx_bisect_code_objects(__Pyx_CodeObjectCacheEntry* entries, int count, int code_line) {
     int start = 0, mid = 0, end = count - 1;
     if (end >= 0 && code_line > entries[end].code_line) {
         return count;
@@ -5534,7 +5441,7 @@ static void __pyx_insert_code_object(int code_line, PyCodeObject* code_object) {
 }
 
 /* AddTraceback */
-      #include "compile.h"
+    #include "compile.h"
 #include "frameobject.h"
 #include "traceback.h"
 static PyCodeObject* __Pyx_CreateCodeObjectForTraceback(
@@ -5615,7 +5522,7 @@ bad:
 }
 
 /* CIntFromPyVerify */
-      #define __PYX_VERIFY_RETURN_INT(target_type, func_type, func_value)\
+    #define __PYX_VERIFY_RETURN_INT(target_type, func_type, func_value)\
     __PYX__VERIFY_RETURN_INT(target_type, func_type, func_value, 0)
 #define __PYX_VERIFY_RETURN_INT_EXC(target_type, func_type, func_value)\
     __PYX__VERIFY_RETURN_INT(target_type, func_type, func_value, 1)
@@ -5637,7 +5544,7 @@ bad:
     }
 
 /* CIntToPy */
-      static CYTHON_INLINE PyObject* __Pyx_PyInt_From_int(int value) {
+    static CYTHON_INLINE PyObject* __Pyx_PyInt_From_int(int value) {
     const int neg_one = (int) -1, const_zero = (int) 0;
     const int is_unsigned = neg_one > const_zero;
     if (is_unsigned) {
@@ -5668,7 +5575,7 @@ bad:
 }
 
 /* Declarations */
-      #if CYTHON_CCOMPLEX
+    #if CYTHON_CCOMPLEX
   #ifdef __cplusplus
     static CYTHON_INLINE __pyx_t_float_complex __pyx_t_float_complex_from_parts(float x, float y) {
       return ::std::complex< float >(x, y);
@@ -5688,7 +5595,7 @@ bad:
 #endif
 
 /* Arithmetic */
-      #if CYTHON_CCOMPLEX
+    #if CYTHON_CCOMPLEX
 #else
     static CYTHON_INLINE int __Pyx_c_eq_float(__pyx_t_float_complex a, __pyx_t_float_complex b) {
        return (a.real == b.real) && (a.imag == b.imag);
@@ -5823,7 +5730,7 @@ bad:
 #endif
 
 /* Declarations */
-      #if CYTHON_CCOMPLEX
+    #if CYTHON_CCOMPLEX
   #ifdef __cplusplus
     static CYTHON_INLINE __pyx_t_double_complex __pyx_t_double_complex_from_parts(double x, double y) {
       return ::std::complex< double >(x, y);
@@ -5843,7 +5750,7 @@ bad:
 #endif
 
 /* Arithmetic */
-      #if CYTHON_CCOMPLEX
+    #if CYTHON_CCOMPLEX
 #else
     static CYTHON_INLINE int __Pyx_c_eq_double(__pyx_t_double_complex a, __pyx_t_double_complex b) {
        return (a.real == b.real) && (a.imag == b.imag);
@@ -5978,7 +5885,7 @@ bad:
 #endif
 
 /* CIntToPy */
-      static CYTHON_INLINE PyObject* __Pyx_PyInt_From_enum__NPY_TYPES(enum NPY_TYPES value) {
+    static CYTHON_INLINE PyObject* __Pyx_PyInt_From_enum__NPY_TYPES(enum NPY_TYPES value) {
     const enum NPY_TYPES neg_one = (enum NPY_TYPES) -1, const_zero = (enum NPY_TYPES) 0;
     const int is_unsigned = neg_one > const_zero;
     if (is_unsigned) {
@@ -6009,7 +5916,7 @@ bad:
 }
 
 /* CIntFromPy */
-      static CYTHON_INLINE int __Pyx_PyInt_As_int(PyObject *x) {
+    static CYTHON_INLINE int __Pyx_PyInt_As_int(PyObject *x) {
     const int neg_one = (int) -1, const_zero = (int) 0;
     const int is_unsigned = neg_one > const_zero;
 #if PY_MAJOR_VERSION < 3
@@ -6198,7 +6105,7 @@ raise_neg_overflow:
 }
 
 /* CIntToPy */
-      static CYTHON_INLINE PyObject* __Pyx_PyInt_From_long(long value) {
+    static CYTHON_INLINE PyObject* __Pyx_PyInt_From_long(long value) {
     const long neg_one = (long) -1, const_zero = (long) 0;
     const int is_unsigned = neg_one > const_zero;
     if (is_unsigned) {
@@ -6229,7 +6136,7 @@ raise_neg_overflow:
 }
 
 /* CIntFromPy */
-      static CYTHON_INLINE long __Pyx_PyInt_As_long(PyObject *x) {
+    static CYTHON_INLINE long __Pyx_PyInt_As_long(PyObject *x) {
     const long neg_one = (long) -1, const_zero = (long) 0;
     const int is_unsigned = neg_one > const_zero;
 #if PY_MAJOR_VERSION < 3
@@ -6418,7 +6325,7 @@ raise_neg_overflow:
 }
 
 /* CheckBinaryVersion */
-      static int __Pyx_check_binary_version(void) {
+    static int __Pyx_check_binary_version(void) {
     char ctversion[4], rtversion[4];
     PyOS_snprintf(ctversion, 4, "%d.%d", PY_MAJOR_VERSION, PY_MINOR_VERSION);
     PyOS_snprintf(rtversion, 4, "%s", Py_GetVersion());
@@ -6434,7 +6341,7 @@ raise_neg_overflow:
 }
 
 /* ModuleImport */
-      #ifndef __PYX_HAVE_RT_ImportModule
+    #ifndef __PYX_HAVE_RT_ImportModule
 #define __PYX_HAVE_RT_ImportModule
 static PyObject *__Pyx_ImportModule(const char *name) {
     PyObject *py_name = 0;
@@ -6452,7 +6359,7 @@ bad:
 #endif
 
 /* TypeImport */
-      #ifndef __PYX_HAVE_RT_ImportType
+    #ifndef __PYX_HAVE_RT_ImportType
 #define __PYX_HAVE_RT_ImportType
 static PyTypeObject *__Pyx_ImportType(const char *module_name, const char *class_name,
     size_t size, int strict)
@@ -6517,7 +6424,7 @@ bad:
 #endif
 
 /* InitStrings */
-      static int __Pyx_InitStrings(__Pyx_StringTabEntry *t) {
+    static int __Pyx_InitStrings(__Pyx_StringTabEntry *t) {
     while (t->p) {
         #if PY_MAJOR_VERSION < 3
         if (t->is_unicode) {

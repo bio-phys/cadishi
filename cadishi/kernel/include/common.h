@@ -7,7 +7,7 @@
 * Released under the MIT License, see the file LICENSE.txt.
 *
 *
-* Common code used by the pydh and cudh kernels, either as Python module or as C library.
+* Common header code used by the pydh and cudh kernels.
 */
 
 
@@ -26,10 +26,6 @@ enum precision {
     single_precision,
     double_precision
 };
-const char id_single[] = "single";
-const char id_double[] = "double";
-
-const char SEP[] = "-----------------------------------------------------------------------------";
 
 // double precision coordinate triple (used to access the NumPy data pointer passed by Python)
 typedef struct np_tuple3d_t {
