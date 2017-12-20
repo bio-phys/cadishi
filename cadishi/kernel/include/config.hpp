@@ -21,6 +21,7 @@ config::config() {
     precision = single_precision;
     check_input = true;
     histo2_only = false;
+    verbose = false;
     cpu_threads = 1;
     cpu_blocksize = -1;  // TODO
     gpu_id = 0;
@@ -38,6 +39,10 @@ void config::set_check_input(bool val) {
 
 void config::set_histo2_only(bool val) {
     histo2_only = val;
+}
+
+void config::set_verbose(bool val) {
+    verbose = val;
 }
 
 void config::set_cpu_threads(int val) {

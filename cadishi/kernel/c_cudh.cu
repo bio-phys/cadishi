@@ -39,6 +39,7 @@
 #include <string>
 
 #include "common.hpp"
+#include "config.hpp"
 #include "exceptions.hpp"
 #include "cuda_exceptions.hpp"
 
@@ -760,13 +761,14 @@ void histograms_template_dispatcher(NP_TUPLE3_T *r_ptr,   // coordinate tuples
                                     int n_tot,            // total number of coordinate tuples
                                     int *nel_ptr,         // number of atoms per species
                                     int n_El,             // number of species
-                                    int n_Hij,            // number of histograms
                                     uint64_t *histo_ptr,  // histograms
                                     int n_bins,           // histogram width
+                                    int n_Hij,            // number of histograms
                                     double r_max,         // histogram cutoff
                                     int *mask_ptr,        // boolean mask specifying if nth histogram shall be computed
                                     double *box_ptr,      // periodic box specifier
                                     int box_type_id,      // type of periodic box
+                                    // ---
                                     int check_input,      // switch if distance should be checked before binning
                                     int gpu_id,           // id of the GPU to be used
                                     int thread_block_x,   // CUDA thread block size
@@ -878,6 +880,58 @@ void histograms_template_dispatcher(NP_TUPLE3_T *r_ptr,   // coordinate tuples
 
 #ifdef BUILD_C_LIBRARY
 
+
+int get_num_cuda_devices() {
+    int n;
+    if (cudaGetDeviceCount(&n) != cudaSuccess) {
+        n = 0;
+    }
+    return n;
+}
+
+
+int histograms_gpu(np_tuple3d_t *r_ptr,
+                   int n_tot,
+                   int *nel_ptr,
+                   int n_El,
+                   uint64_t *histo_ptr,
+                   int n_bins,
+                   int n_Hij,
+                   double r_max,
+                   int *mask_ptr,
+                   double *box_ptr,
+                   int box_type_id,
+                   const config & cfg) {
+    int exit_status = 0;
+    // TODO: move the cfg data structure further in
+    try {
+        if (cfg.precision == single_precision) {
+            // NOTE: histograms_template_dispatcher() does the conversion to single precision internally
+            histograms_template_dispatcher <np_tuple3d_t, tuple3s_t, float>
+                (r_ptr, n_tot, nel_ptr, n_El, histo_ptr, n_bins, n_Hij, r_max, mask_ptr, box_ptr, box_type_id,
+                cfg.check_input, cfg.gpu_id, cfg.gpu_thread_block_x, cfg.histo2_only, cfg.verbose, cfg.gpu_algorithm);
+        } else {
+            histograms_template_dispatcher <np_tuple3d_t, tuple3d_t, double>
+                (r_ptr, n_tot, nel_ptr, n_El, histo_ptr, n_bins, n_Hij, r_max, mask_ptr, box_ptr, box_type_id,
+                cfg.check_input, cfg.gpu_id, cfg.gpu_thread_block_x, cfg.histo2_only, cfg.verbose, cfg.gpu_algorithm);
+        }
+    } catch (std::overflow_error & err) {
+        const std::string msg = std::string(err.what());
+        printf("%s\n", msg.c_str());
+        exit_status = 1;
+    } catch (std::runtime_error & err) {
+        const std::string msg = std::string(err.what());
+        printf("%s\n", msg.c_str());
+        exit_status = 2;
+    } catch (...) {
+        // --- general unknown error
+        exit_status = 3;
+    }
+    return exit_status;
+}
+
+/*
+
 int histograms_gpu_single(np_tuple3s_t *r_ptr,  // coordinate tuples
                           int n_tot,            // total number of coordinate tuples
                           int *nel_ptr,         // number of atoms per species
@@ -963,6 +1017,8 @@ int histograms_gpu_double(np_tuple3d_t *r_ptr,  // coordinate tuples
     }
     return exit_status;
 }
+*/
+
 
 #else
 

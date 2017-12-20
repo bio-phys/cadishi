@@ -225,10 +225,10 @@ def locate_cuda():
 def cuda_compiler_flags():
     gcc_flags = get_gcc_flags()
     gcc_flags += ['-DCUDA_DEBUG']
-    gcc_flags += ['-DBUILD_C_LIBRARY']
+    gcc_flags += ['-DBUILD_C_LIBRARY']  # added during the transition to the Cython interface
     gcc_flags_string = " ".join(gcc_flags)
     nvcc_flags = ['-DCUDA_DEBUG']  # hardly adds overhead, recommended
-    nvcc_flags = ['-DBUILD_C_LIBRARY']  # hardly adds overhead, recommended
+    nvcc_flags = ['-DBUILD_C_LIBRARY']  # added during the transition to the Cython interface
     if CAD_DEBUG:
         nvcc_flags += ['-O0', '-g', '-G']
     else:
@@ -294,7 +294,10 @@ class cuda_build_ext(build_ext):
                 # translated from the extra_compile_args in the Extension class
                 postargs = extra_postargs['nvcc']
             else:
-                postargs = extra_postargs  # ['gcc']
+                if isinstance(extra_postargs, dict):
+                    postargs = extra_postargs['gcc']
+                else:
+                    postargs = extra_postargs
             super(obj, src, ext, cc_args, postargs, pp_opts)
             # reset the default compiler_so, which we might have changed for
             # cuda
@@ -346,15 +349,6 @@ def extensions():
             extra_compile_args=cc_flags,
             extra_link_args=cc_flags))
 
-    # old extension, using Python 2 C API bindings, deprecated
-    # exts.append(
-    #     Extension(
-    #         'cadishi.kernel.c_pydh',
-    #         sources=['cadishi/kernel/c_pydh.cc'],
-    #         include_dirs=[numpy_include, 'cadishi/kernel/include'],
-    #         extra_compile_args=cc_flags,
-    #         extra_link_args=cc_flags))
-
     exts.append(
         Extension(
             'cadishi.kernel.c_pydh',
@@ -374,7 +368,8 @@ def extensions():
         exts.append(
             Extension(
                 'cadishi.kernel.c_cudh',
-                sources=['cadishi/kernel/c_cudh.cu'],
+                sources=['cadishi/kernel/c_cudh_interface.pyx', 'cadishi/kernel/c_cudh.cu'],
+                language="c++",
                 include_dirs=[numpy_include, 'cadishi/kernel/include'],
                 libraries=link_libraries,
                 library_dirs=[CUDA['lib']],

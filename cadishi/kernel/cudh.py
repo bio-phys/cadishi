@@ -163,10 +163,8 @@ def histograms(coordinate_sets,
     precision = common.precision_to_enum(precision)
 
     # --- run the CUDH distance histogram kernel
-    exit_status = c_cudh.histograms(np_coord, np_nelem, histos, r_max, np_mask,
-                                    np_box, box_type_id,
-                                    precision, gpu_id, do_histo2_only, thread_block_x,
-                                    check_input, verbose, algorithm)
+    exit_status = c_cudh.histograms(np_coord, np_nelem, histos, r_max, np_mask, np_box, box_type_id,
+                                    precision, check_input, do_histo2_only, verbose, gpu_id, thread_block_x, algorithm)
 
     if (exit_status == 1):
         c_cudh.free()

@@ -32,25 +32,26 @@ cdef extern from "common.h":
         np.float64_t z
 
 
-cdef extern from "c_pydh.h":
-    int histograms_cpu( np_tuple3d_t *r_ptr,
+cdef extern from "c_cudh.h":
+    int get_num_cuda_devices()
+    int histograms_gpu( np_tuple3d_t *r_ptr,
                         int n_tot,
                         int *nel_ptr,
                         int n_El,
                         np.uint64_t *histo_ptr,
                         int n_bins,
+                        int n_Hij,
                         double r_max,
                         int *mask_ptr,
                         double *box_ptr,
                         int box_type_id,
                         const config & cfg)
 
-    int distances_cpu(  np_tuple3d_t *r_ptr,
-                        int n_tot,
-                        double *distances,
-                        double *box_ptr,
-                        int box_type_id,
-                        const config & cfg)
+
+def get_num_devices():
+    cdef int n
+    n = get_num_cuda_devices()
+    return n
 
 
 # wrapper to make histograms_cpu() accessible from Python
@@ -62,19 +63,23 @@ def histograms(np.ndarray r_ptr,
                np.ndarray box_ptr,
                int box_type_id,
                # ---
-               int precision,    # single or double precision
-               int check_input,  # perform distance check before binning
-               int histo2_only,  # only compute the histograms between two sets of points
-               int verbose,      # verbose output
-               int n_threads):   # number of OpenMP threads to be used
+               int precision,       # single or double precision
+               int check_input,     # perform distance check before binning
+               int histo2_only,     #  only compute the histograms between two sets of points
+               int verbose,         #  verbose output
+               int gpu_id,          #  id of the GPU to be used
+               int thread_block_x,  #  CUDA thread block size
+               int algorithm):      #  algorithm selection
 
     # derive dimensions from NumPy data structures
     cdef int n_tot
     cdef int n_El
     cdef int n_bins
+    cdef int n_Hij
     n_tot = r_ptr.shape[0]
     n_El = nel_ptr.shape[0]
     n_bins = histo_ptr.shape[0]
+    n_Hij = histo_ptr.shape[1]
     # checked OK:
     # print n_tot
     # print n_El
@@ -86,42 +91,21 @@ def histograms(np.ndarray r_ptr,
     cfg.set_check_input(check_input)
     cfg.set_histo2_only(histo2_only)
     cfg.set_verbose(verbose)
-    cfg.set_cpu_threads(n_threads)
+    cfg.set_gpu_id(gpu_id)
+    cfg.set_gpu_thread_block_x(thread_block_x)
+    cfg.set_gpu_algorithm(algorithm)
 
     cdef int exit_status
-    exit_status = histograms_cpu(<np_tuple3d_t*> r_ptr.data,
+    exit_status = histograms_gpu(<np_tuple3d_t*> r_ptr.data,
                                  <int> n_tot,
                                  <int*> nel_ptr.data,
                                  <int> n_El,
                                  <np.uint64_t*> histo_ptr.data,
                                  <int> n_bins,
+                                 <int> n_Hij,
                                  <double> r_max,
                                  <int*> mask_ptr.data,
                                  <double*> box_ptr.data,
                                  <int> box_type_id,
                                  cfg)
-    return exit_status
-
-
-# wrapper to make histograms_cpu() accessible from Python
-def distances(np.ndarray r_ptr,
-              np.ndarray dists,
-              np.ndarray box_ptr,
-              int box_type_id,
-              int precision):
-    # derive dimension from NumPy data structure
-    cdef int n_tot
-    n_tot = r_ptr.shape[0]
-
-    # create Python instance of C++ config class
-    cdef config cfg
-    cfg.set_precision(precision)
-
-    cdef int exit_status
-    exit_status = distances_cpu(<np_tuple3d_t*> r_ptr.data,
-                                <int> n_tot,
-                                <double*> dists.data,
-                                <double*> box_ptr.data,
-                                <int> box_type_id,
-                                cfg)
     return exit_status

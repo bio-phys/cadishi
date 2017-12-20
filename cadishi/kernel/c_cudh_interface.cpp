@@ -441,8 +441,8 @@ static CYTHON_INLINE float __PYX_NAN() {
   #endif
 #endif
 
-#define __PYX_HAVE__cadishi__kernel__c_pydh
-#define __PYX_HAVE_API__cadishi__kernel__c_pydh
+#define __PYX_HAVE__cadishi__kernel__c_cudh_interface
+#define __PYX_HAVE_API__cadishi__kernel__c_cudh_interface
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -450,7 +450,7 @@ static CYTHON_INLINE float __PYX_NAN() {
 #include "numpy/ufuncobject.h"
 #include "config.h"
 #include "common.h"
-#include "c_pydh.h"
+#include "c_cudh.h"
 #ifdef _OPENMP
 #include <omp.h>
 #endif /* _OPENMP */
@@ -668,7 +668,7 @@ static const char *__pyx_filename;
 
 
 static const char *__pyx_f[] = {
-  "cadishi/kernel/c_pydh_interface.pyx",
+  "cadishi/kernel/c_cudh_interface.pyx",
   "__init__.pxd",
   "type.pxd",
 };
@@ -1305,35 +1305,36 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *, cha
 
 /* Module declarations from 'libcpp' */
 
-/* Module declarations from 'cadishi.kernel.c_pydh' */
-#define __Pyx_MODULE_NAME "cadishi.kernel.c_pydh"
-int __pyx_module_is_main_cadishi__kernel__c_pydh = 0;
+/* Module declarations from 'cadishi.kernel.c_cudh_interface' */
+#define __Pyx_MODULE_NAME "cadishi.kernel.c_cudh_interface"
+int __pyx_module_is_main_cadishi__kernel__c_cudh_interface = 0;
 
-/* Implementation of 'cadishi.kernel.c_pydh' */
+/* Implementation of 'cadishi.kernel.c_cudh_interface' */
 static PyObject *__pyx_builtin_ValueError;
 static PyObject *__pyx_builtin_range;
 static PyObject *__pyx_builtin_RuntimeError;
 static PyObject *__pyx_builtin_ImportError;
+static const char __pyx_k_n[] = "n";
 static const char __pyx_k_np[] = "np";
 static const char __pyx_k_cfg[] = "cfg";
 static const char __pyx_k_main[] = "__main__";
 static const char __pyx_k_n_El[] = "n_El";
 static const char __pyx_k_test[] = "__test__";
-static const char __pyx_k_dists[] = "dists";
+static const char __pyx_k_n_Hij[] = "n_Hij";
 static const char __pyx_k_n_tot[] = "n_tot";
 static const char __pyx_k_numpy[] = "numpy";
 static const char __pyx_k_r_max[] = "r_max";
 static const char __pyx_k_r_ptr[] = "r_ptr";
 static const char __pyx_k_range[] = "range";
+static const char __pyx_k_gpu_id[] = "gpu_id";
 static const char __pyx_k_import[] = "__import__";
 static const char __pyx_k_n_bins[] = "n_bins";
 static const char __pyx_k_box_ptr[] = "box_ptr";
 static const char __pyx_k_nel_ptr[] = "nel_ptr";
 static const char __pyx_k_verbose[] = "verbose";
 static const char __pyx_k_mask_ptr[] = "mask_ptr";
-static const char __pyx_k_distances[] = "distances";
+static const char __pyx_k_algorithm[] = "algorithm";
 static const char __pyx_k_histo_ptr[] = "histo_ptr";
-static const char __pyx_k_n_threads[] = "n_threads";
 static const char __pyx_k_precision[] = "precision";
 static const char __pyx_k_ValueError[] = "ValueError";
 static const char __pyx_k_histograms[] = "histograms";
@@ -1343,9 +1344,11 @@ static const char __pyx_k_check_input[] = "check_input";
 static const char __pyx_k_exit_status[] = "exit_status";
 static const char __pyx_k_histo2_only[] = "histo2_only";
 static const char __pyx_k_RuntimeError[] = "RuntimeError";
-static const char __pyx_k_cadishi_kernel_c_pydh[] = "cadishi.kernel.c_pydh";
+static const char __pyx_k_thread_block_x[] = "thread_block_x";
+static const char __pyx_k_get_num_devices[] = "get_num_devices";
 static const char __pyx_k_ndarray_is_not_C_contiguous[] = "ndarray is not C contiguous";
-static const char __pyx_k_home_khr_unison_histobin_git_ca[] = "/home/khr/unison/histobin/git/cadishi.git/cadishi/kernel/c_pydh_interface.pyx";
+static const char __pyx_k_cadishi_kernel_c_cudh_interface[] = "cadishi.kernel.c_cudh_interface";
+static const char __pyx_k_home_khr_unison_histobin_git_ca[] = "/home/khr/unison/histobin/git/cadishi.git/cadishi/kernel/c_cudh_interface.pyx";
 static const char __pyx_k_numpy_core_multiarray_failed_to[] = "numpy.core.multiarray failed to import";
 static const char __pyx_k_unknown_dtype_code_in_numpy_pxd[] = "unknown dtype code in numpy.pxd (%d)";
 static const char __pyx_k_Format_string_allocated_too_shor[] = "Format string allocated too short, see comment in numpy.pxd";
@@ -1359,14 +1362,15 @@ static PyObject *__pyx_n_s_ImportError;
 static PyObject *__pyx_kp_u_Non_native_byte_order_not_suppor;
 static PyObject *__pyx_n_s_RuntimeError;
 static PyObject *__pyx_n_s_ValueError;
+static PyObject *__pyx_n_s_algorithm;
 static PyObject *__pyx_n_s_box_ptr;
 static PyObject *__pyx_n_s_box_type_id;
-static PyObject *__pyx_n_s_cadishi_kernel_c_pydh;
+static PyObject *__pyx_n_s_cadishi_kernel_c_cudh_interface;
 static PyObject *__pyx_n_s_cfg;
 static PyObject *__pyx_n_s_check_input;
-static PyObject *__pyx_n_s_distances;
-static PyObject *__pyx_n_s_dists;
 static PyObject *__pyx_n_s_exit_status;
+static PyObject *__pyx_n_s_get_num_devices;
+static PyObject *__pyx_n_s_gpu_id;
 static PyObject *__pyx_n_s_histo2_only;
 static PyObject *__pyx_n_s_histo_ptr;
 static PyObject *__pyx_n_s_histograms;
@@ -1374,9 +1378,10 @@ static PyObject *__pyx_kp_s_home_khr_unison_histobin_git_ca;
 static PyObject *__pyx_n_s_import;
 static PyObject *__pyx_n_s_main;
 static PyObject *__pyx_n_s_mask_ptr;
+static PyObject *__pyx_n_s_n;
 static PyObject *__pyx_n_s_n_El;
+static PyObject *__pyx_n_s_n_Hij;
 static PyObject *__pyx_n_s_n_bins;
-static PyObject *__pyx_n_s_n_threads;
 static PyObject *__pyx_n_s_n_tot;
 static PyObject *__pyx_kp_u_ndarray_is_not_C_contiguous;
 static PyObject *__pyx_kp_u_ndarray_is_not_Fortran_contiguou;
@@ -1390,10 +1395,11 @@ static PyObject *__pyx_n_s_r_max;
 static PyObject *__pyx_n_s_r_ptr;
 static PyObject *__pyx_n_s_range;
 static PyObject *__pyx_n_s_test;
+static PyObject *__pyx_n_s_thread_block_x;
 static PyObject *__pyx_kp_u_unknown_dtype_code_in_numpy_pxd;
 static PyObject *__pyx_n_s_verbose;
-static PyObject *__pyx_pf_7cadishi_6kernel_6c_pydh_histograms(CYTHON_UNUSED PyObject *__pyx_self, PyArrayObject *__pyx_v_r_ptr, PyArrayObject *__pyx_v_nel_ptr, PyArrayObject *__pyx_v_histo_ptr, float __pyx_v_r_max, PyArrayObject *__pyx_v_mask_ptr, PyArrayObject *__pyx_v_box_ptr, int __pyx_v_box_type_id, int __pyx_v_precision, int __pyx_v_check_input, int __pyx_v_histo2_only, int __pyx_v_verbose, int __pyx_v_n_threads); /* proto */
-static PyObject *__pyx_pf_7cadishi_6kernel_6c_pydh_2distances(CYTHON_UNUSED PyObject *__pyx_self, PyArrayObject *__pyx_v_r_ptr, PyArrayObject *__pyx_v_dists, PyArrayObject *__pyx_v_box_ptr, int __pyx_v_box_type_id, int __pyx_v_precision); /* proto */
+static PyObject *__pyx_pf_7cadishi_6kernel_16c_cudh_interface_get_num_devices(CYTHON_UNUSED PyObject *__pyx_self); /* proto */
+static PyObject *__pyx_pf_7cadishi_6kernel_16c_cudh_interface_2histograms(CYTHON_UNUSED PyObject *__pyx_self, PyArrayObject *__pyx_v_r_ptr, PyArrayObject *__pyx_v_nel_ptr, PyArrayObject *__pyx_v_histo_ptr, float __pyx_v_r_max, PyArrayObject *__pyx_v_mask_ptr, PyArrayObject *__pyx_v_box_ptr, int __pyx_v_box_type_id, int __pyx_v_precision, int __pyx_v_check_input, int __pyx_v_histo2_only, int __pyx_v_verbose, int __pyx_v_gpu_id, int __pyx_v_thread_block_x, int __pyx_v_algorithm); /* proto */
 static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, Py_buffer *__pyx_v_info, int __pyx_v_flags); /* proto */
 static void __pyx_pf_5numpy_7ndarray_2__releasebuffer__(PyArrayObject *__pyx_v_self, Py_buffer *__pyx_v_info); /* proto */
 static PyObject *__pyx_tuple_;
@@ -1410,7 +1416,78 @@ static PyObject *__pyx_tuple__12;
 static PyObject *__pyx_codeobj__11;
 static PyObject *__pyx_codeobj__13;
 
-/* "cadishi/kernel/c_pydh_interface.pyx":57
+/* "cadishi/kernel/c_cudh_interface.pyx":51
+ * 
+ * 
+ * def get_num_devices():             # <<<<<<<<<<<<<<
+ *     cdef int n
+ *     n = get_num_cuda_devices()
+ */
+
+/* Python wrapper */
+static PyObject *__pyx_pw_7cadishi_6kernel_16c_cudh_interface_1get_num_devices(PyObject *__pyx_self, CYTHON_UNUSED PyObject *unused); /*proto*/
+static PyMethodDef __pyx_mdef_7cadishi_6kernel_16c_cudh_interface_1get_num_devices = {"get_num_devices", (PyCFunction)__pyx_pw_7cadishi_6kernel_16c_cudh_interface_1get_num_devices, METH_NOARGS, 0};
+static PyObject *__pyx_pw_7cadishi_6kernel_16c_cudh_interface_1get_num_devices(PyObject *__pyx_self, CYTHON_UNUSED PyObject *unused) {
+  PyObject *__pyx_r = 0;
+  __Pyx_RefNannyDeclarations
+  __Pyx_RefNannySetupContext("get_num_devices (wrapper)", 0);
+  __pyx_r = __pyx_pf_7cadishi_6kernel_16c_cudh_interface_get_num_devices(__pyx_self);
+
+  /* function exit code */
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+static PyObject *__pyx_pf_7cadishi_6kernel_16c_cudh_interface_get_num_devices(CYTHON_UNUSED PyObject *__pyx_self) {
+  int __pyx_v_n;
+  PyObject *__pyx_r = NULL;
+  __Pyx_RefNannyDeclarations
+  PyObject *__pyx_t_1 = NULL;
+  __Pyx_RefNannySetupContext("get_num_devices", 0);
+
+  /* "cadishi/kernel/c_cudh_interface.pyx":53
+ * def get_num_devices():
+ *     cdef int n
+ *     n = get_num_cuda_devices()             # <<<<<<<<<<<<<<
+ *     return n
+ * 
+ */
+  __pyx_v_n = get_num_cuda_devices();
+
+  /* "cadishi/kernel/c_cudh_interface.pyx":54
+ *     cdef int n
+ *     n = get_num_cuda_devices()
+ *     return n             # <<<<<<<<<<<<<<
+ * 
+ * 
+ */
+  __Pyx_XDECREF(__pyx_r);
+  __pyx_t_1 = __Pyx_PyInt_From_int(__pyx_v_n); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 54, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_1);
+  __pyx_r = __pyx_t_1;
+  __pyx_t_1 = 0;
+  goto __pyx_L0;
+
+  /* "cadishi/kernel/c_cudh_interface.pyx":51
+ * 
+ * 
+ * def get_num_devices():             # <<<<<<<<<<<<<<
+ *     cdef int n
+ *     n = get_num_cuda_devices()
+ */
+
+  /* function exit code */
+  __pyx_L1_error:;
+  __Pyx_XDECREF(__pyx_t_1);
+  __Pyx_AddTraceback("cadishi.kernel.c_cudh_interface.get_num_devices", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __pyx_r = NULL;
+  __pyx_L0:;
+  __Pyx_XGIVEREF(__pyx_r);
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+/* "cadishi/kernel/c_cudh_interface.pyx":58
  * 
  * # wrapper to make histograms_cpu() accessible from Python
  * def histograms(np.ndarray r_ptr,             # <<<<<<<<<<<<<<
@@ -1419,9 +1496,9 @@ static PyObject *__pyx_codeobj__13;
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_7cadishi_6kernel_6c_pydh_1histograms(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static PyMethodDef __pyx_mdef_7cadishi_6kernel_6c_pydh_1histograms = {"histograms", (PyCFunction)__pyx_pw_7cadishi_6kernel_6c_pydh_1histograms, METH_VARARGS|METH_KEYWORDS, 0};
-static PyObject *__pyx_pw_7cadishi_6kernel_6c_pydh_1histograms(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
+static PyObject *__pyx_pw_7cadishi_6kernel_16c_cudh_interface_3histograms(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static PyMethodDef __pyx_mdef_7cadishi_6kernel_16c_cudh_interface_3histograms = {"histograms", (PyCFunction)__pyx_pw_7cadishi_6kernel_16c_cudh_interface_3histograms, METH_VARARGS|METH_KEYWORDS, 0};
+static PyObject *__pyx_pw_7cadishi_6kernel_16c_cudh_interface_3histograms(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
   PyArrayObject *__pyx_v_r_ptr = 0;
   PyArrayObject *__pyx_v_nel_ptr = 0;
   PyArrayObject *__pyx_v_histo_ptr = 0;
@@ -1433,17 +1510,21 @@ static PyObject *__pyx_pw_7cadishi_6kernel_6c_pydh_1histograms(PyObject *__pyx_s
   int __pyx_v_check_input;
   int __pyx_v_histo2_only;
   int __pyx_v_verbose;
-  int __pyx_v_n_threads;
+  int __pyx_v_gpu_id;
+  int __pyx_v_thread_block_x;
+  int __pyx_v_algorithm;
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("histograms (wrapper)", 0);
   {
-    static PyObject **__pyx_pyargnames[] = {&__pyx_n_s_r_ptr,&__pyx_n_s_nel_ptr,&__pyx_n_s_histo_ptr,&__pyx_n_s_r_max,&__pyx_n_s_mask_ptr,&__pyx_n_s_box_ptr,&__pyx_n_s_box_type_id,&__pyx_n_s_precision,&__pyx_n_s_check_input,&__pyx_n_s_histo2_only,&__pyx_n_s_verbose,&__pyx_n_s_n_threads,0};
-    PyObject* values[12] = {0,0,0,0,0,0,0,0,0,0,0,0};
+    static PyObject **__pyx_pyargnames[] = {&__pyx_n_s_r_ptr,&__pyx_n_s_nel_ptr,&__pyx_n_s_histo_ptr,&__pyx_n_s_r_max,&__pyx_n_s_mask_ptr,&__pyx_n_s_box_ptr,&__pyx_n_s_box_type_id,&__pyx_n_s_precision,&__pyx_n_s_check_input,&__pyx_n_s_histo2_only,&__pyx_n_s_verbose,&__pyx_n_s_gpu_id,&__pyx_n_s_thread_block_x,&__pyx_n_s_algorithm,0};
+    PyObject* values[14] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0};
     if (unlikely(__pyx_kwds)) {
       Py_ssize_t kw_args;
       const Py_ssize_t pos_args = PyTuple_GET_SIZE(__pyx_args);
       switch (pos_args) {
+        case 14: values[13] = PyTuple_GET_ITEM(__pyx_args, 13);
+        case 13: values[12] = PyTuple_GET_ITEM(__pyx_args, 12);
         case 12: values[11] = PyTuple_GET_ITEM(__pyx_args, 11);
         case 11: values[10] = PyTuple_GET_ITEM(__pyx_args, 10);
         case 10: values[9] = PyTuple_GET_ITEM(__pyx_args, 9);
@@ -1467,63 +1548,73 @@ static PyObject *__pyx_pw_7cadishi_6kernel_6c_pydh_1histograms(PyObject *__pyx_s
         case  1:
         if (likely((values[1] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_nel_ptr)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("histograms", 1, 12, 12, 1); __PYX_ERR(0, 57, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("histograms", 1, 14, 14, 1); __PYX_ERR(0, 58, __pyx_L3_error)
         }
         case  2:
         if (likely((values[2] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_histo_ptr)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("histograms", 1, 12, 12, 2); __PYX_ERR(0, 57, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("histograms", 1, 14, 14, 2); __PYX_ERR(0, 58, __pyx_L3_error)
         }
         case  3:
         if (likely((values[3] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_r_max)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("histograms", 1, 12, 12, 3); __PYX_ERR(0, 57, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("histograms", 1, 14, 14, 3); __PYX_ERR(0, 58, __pyx_L3_error)
         }
         case  4:
         if (likely((values[4] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_mask_ptr)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("histograms", 1, 12, 12, 4); __PYX_ERR(0, 57, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("histograms", 1, 14, 14, 4); __PYX_ERR(0, 58, __pyx_L3_error)
         }
         case  5:
         if (likely((values[5] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_box_ptr)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("histograms", 1, 12, 12, 5); __PYX_ERR(0, 57, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("histograms", 1, 14, 14, 5); __PYX_ERR(0, 58, __pyx_L3_error)
         }
         case  6:
         if (likely((values[6] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_box_type_id)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("histograms", 1, 12, 12, 6); __PYX_ERR(0, 57, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("histograms", 1, 14, 14, 6); __PYX_ERR(0, 58, __pyx_L3_error)
         }
         case  7:
         if (likely((values[7] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_precision)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("histograms", 1, 12, 12, 7); __PYX_ERR(0, 57, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("histograms", 1, 14, 14, 7); __PYX_ERR(0, 58, __pyx_L3_error)
         }
         case  8:
         if (likely((values[8] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_check_input)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("histograms", 1, 12, 12, 8); __PYX_ERR(0, 57, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("histograms", 1, 14, 14, 8); __PYX_ERR(0, 58, __pyx_L3_error)
         }
         case  9:
         if (likely((values[9] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_histo2_only)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("histograms", 1, 12, 12, 9); __PYX_ERR(0, 57, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("histograms", 1, 14, 14, 9); __PYX_ERR(0, 58, __pyx_L3_error)
         }
         case 10:
         if (likely((values[10] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_verbose)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("histograms", 1, 12, 12, 10); __PYX_ERR(0, 57, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("histograms", 1, 14, 14, 10); __PYX_ERR(0, 58, __pyx_L3_error)
         }
         case 11:
-        if (likely((values[11] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_n_threads)) != 0)) kw_args--;
+        if (likely((values[11] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_gpu_id)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("histograms", 1, 12, 12, 11); __PYX_ERR(0, 57, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("histograms", 1, 14, 14, 11); __PYX_ERR(0, 58, __pyx_L3_error)
+        }
+        case 12:
+        if (likely((values[12] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_thread_block_x)) != 0)) kw_args--;
+        else {
+          __Pyx_RaiseArgtupleInvalid("histograms", 1, 14, 14, 12); __PYX_ERR(0, 58, __pyx_L3_error)
+        }
+        case 13:
+        if (likely((values[13] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_algorithm)) != 0)) kw_args--;
+        else {
+          __Pyx_RaiseArgtupleInvalid("histograms", 1, 14, 14, 13); __PYX_ERR(0, 58, __pyx_L3_error)
         }
       }
       if (unlikely(kw_args > 0)) {
-        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "histograms") < 0)) __PYX_ERR(0, 57, __pyx_L3_error)
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "histograms") < 0)) __PYX_ERR(0, 58, __pyx_L3_error)
       }
-    } else if (PyTuple_GET_SIZE(__pyx_args) != 12) {
+    } else if (PyTuple_GET_SIZE(__pyx_args) != 14) {
       goto __pyx_L5_argtuple_error;
     } else {
       values[0] = PyTuple_GET_ITEM(__pyx_args, 0);
@@ -1538,34 +1629,38 @@ static PyObject *__pyx_pw_7cadishi_6kernel_6c_pydh_1histograms(PyObject *__pyx_s
       values[9] = PyTuple_GET_ITEM(__pyx_args, 9);
       values[10] = PyTuple_GET_ITEM(__pyx_args, 10);
       values[11] = PyTuple_GET_ITEM(__pyx_args, 11);
+      values[12] = PyTuple_GET_ITEM(__pyx_args, 12);
+      values[13] = PyTuple_GET_ITEM(__pyx_args, 13);
     }
     __pyx_v_r_ptr = ((PyArrayObject *)values[0]);
     __pyx_v_nel_ptr = ((PyArrayObject *)values[1]);
     __pyx_v_histo_ptr = ((PyArrayObject *)values[2]);
-    __pyx_v_r_max = __pyx_PyFloat_AsFloat(values[3]); if (unlikely((__pyx_v_r_max == (float)-1) && PyErr_Occurred())) __PYX_ERR(0, 60, __pyx_L3_error)
+    __pyx_v_r_max = __pyx_PyFloat_AsFloat(values[3]); if (unlikely((__pyx_v_r_max == (float)-1) && PyErr_Occurred())) __PYX_ERR(0, 61, __pyx_L3_error)
     __pyx_v_mask_ptr = ((PyArrayObject *)values[4]);
     __pyx_v_box_ptr = ((PyArrayObject *)values[5]);
-    __pyx_v_box_type_id = __Pyx_PyInt_As_int(values[6]); if (unlikely((__pyx_v_box_type_id == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 63, __pyx_L3_error)
-    __pyx_v_precision = __Pyx_PyInt_As_int(values[7]); if (unlikely((__pyx_v_precision == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 65, __pyx_L3_error)
-    __pyx_v_check_input = __Pyx_PyInt_As_int(values[8]); if (unlikely((__pyx_v_check_input == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 66, __pyx_L3_error)
-    __pyx_v_histo2_only = __Pyx_PyInt_As_int(values[9]); if (unlikely((__pyx_v_histo2_only == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 67, __pyx_L3_error)
-    __pyx_v_verbose = __Pyx_PyInt_As_int(values[10]); if (unlikely((__pyx_v_verbose == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 68, __pyx_L3_error)
-    __pyx_v_n_threads = __Pyx_PyInt_As_int(values[11]); if (unlikely((__pyx_v_n_threads == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 69, __pyx_L3_error)
+    __pyx_v_box_type_id = __Pyx_PyInt_As_int(values[6]); if (unlikely((__pyx_v_box_type_id == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 64, __pyx_L3_error)
+    __pyx_v_precision = __Pyx_PyInt_As_int(values[7]); if (unlikely((__pyx_v_precision == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 66, __pyx_L3_error)
+    __pyx_v_check_input = __Pyx_PyInt_As_int(values[8]); if (unlikely((__pyx_v_check_input == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 67, __pyx_L3_error)
+    __pyx_v_histo2_only = __Pyx_PyInt_As_int(values[9]); if (unlikely((__pyx_v_histo2_only == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 68, __pyx_L3_error)
+    __pyx_v_verbose = __Pyx_PyInt_As_int(values[10]); if (unlikely((__pyx_v_verbose == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 69, __pyx_L3_error)
+    __pyx_v_gpu_id = __Pyx_PyInt_As_int(values[11]); if (unlikely((__pyx_v_gpu_id == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 70, __pyx_L3_error)
+    __pyx_v_thread_block_x = __Pyx_PyInt_As_int(values[12]); if (unlikely((__pyx_v_thread_block_x == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 71, __pyx_L3_error)
+    __pyx_v_algorithm = __Pyx_PyInt_As_int(values[13]); if (unlikely((__pyx_v_algorithm == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 72, __pyx_L3_error)
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("histograms", 1, 12, 12, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 57, __pyx_L3_error)
+  __Pyx_RaiseArgtupleInvalid("histograms", 1, 14, 14, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 58, __pyx_L3_error)
   __pyx_L3_error:;
-  __Pyx_AddTraceback("cadishi.kernel.c_pydh.histograms", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("cadishi.kernel.c_cudh_interface.histograms", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
-  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_r_ptr), __pyx_ptype_5numpy_ndarray, 1, "r_ptr", 0))) __PYX_ERR(0, 57, __pyx_L1_error)
-  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_nel_ptr), __pyx_ptype_5numpy_ndarray, 1, "nel_ptr", 0))) __PYX_ERR(0, 58, __pyx_L1_error)
-  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_histo_ptr), __pyx_ptype_5numpy_ndarray, 1, "histo_ptr", 0))) __PYX_ERR(0, 59, __pyx_L1_error)
-  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_mask_ptr), __pyx_ptype_5numpy_ndarray, 1, "mask_ptr", 0))) __PYX_ERR(0, 61, __pyx_L1_error)
-  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_box_ptr), __pyx_ptype_5numpy_ndarray, 1, "box_ptr", 0))) __PYX_ERR(0, 62, __pyx_L1_error)
-  __pyx_r = __pyx_pf_7cadishi_6kernel_6c_pydh_histograms(__pyx_self, __pyx_v_r_ptr, __pyx_v_nel_ptr, __pyx_v_histo_ptr, __pyx_v_r_max, __pyx_v_mask_ptr, __pyx_v_box_ptr, __pyx_v_box_type_id, __pyx_v_precision, __pyx_v_check_input, __pyx_v_histo2_only, __pyx_v_verbose, __pyx_v_n_threads);
+  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_r_ptr), __pyx_ptype_5numpy_ndarray, 1, "r_ptr", 0))) __PYX_ERR(0, 58, __pyx_L1_error)
+  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_nel_ptr), __pyx_ptype_5numpy_ndarray, 1, "nel_ptr", 0))) __PYX_ERR(0, 59, __pyx_L1_error)
+  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_histo_ptr), __pyx_ptype_5numpy_ndarray, 1, "histo_ptr", 0))) __PYX_ERR(0, 60, __pyx_L1_error)
+  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_mask_ptr), __pyx_ptype_5numpy_ndarray, 1, "mask_ptr", 0))) __PYX_ERR(0, 62, __pyx_L1_error)
+  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_box_ptr), __pyx_ptype_5numpy_ndarray, 1, "box_ptr", 0))) __PYX_ERR(0, 63, __pyx_L1_error)
+  __pyx_r = __pyx_pf_7cadishi_6kernel_16c_cudh_interface_2histograms(__pyx_self, __pyx_v_r_ptr, __pyx_v_nel_ptr, __pyx_v_histo_ptr, __pyx_v_r_max, __pyx_v_mask_ptr, __pyx_v_box_ptr, __pyx_v_box_type_id, __pyx_v_precision, __pyx_v_check_input, __pyx_v_histo2_only, __pyx_v_verbose, __pyx_v_gpu_id, __pyx_v_thread_block_x, __pyx_v_algorithm);
 
   /* function exit code */
   goto __pyx_L0;
@@ -1576,10 +1671,11 @@ static PyObject *__pyx_pw_7cadishi_6kernel_6c_pydh_1histograms(PyObject *__pyx_s
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_7cadishi_6kernel_6c_pydh_histograms(CYTHON_UNUSED PyObject *__pyx_self, PyArrayObject *__pyx_v_r_ptr, PyArrayObject *__pyx_v_nel_ptr, PyArrayObject *__pyx_v_histo_ptr, float __pyx_v_r_max, PyArrayObject *__pyx_v_mask_ptr, PyArrayObject *__pyx_v_box_ptr, int __pyx_v_box_type_id, int __pyx_v_precision, int __pyx_v_check_input, int __pyx_v_histo2_only, int __pyx_v_verbose, int __pyx_v_n_threads) {
+static PyObject *__pyx_pf_7cadishi_6kernel_16c_cudh_interface_2histograms(CYTHON_UNUSED PyObject *__pyx_self, PyArrayObject *__pyx_v_r_ptr, PyArrayObject *__pyx_v_nel_ptr, PyArrayObject *__pyx_v_histo_ptr, float __pyx_v_r_max, PyArrayObject *__pyx_v_mask_ptr, PyArrayObject *__pyx_v_box_ptr, int __pyx_v_box_type_id, int __pyx_v_precision, int __pyx_v_check_input, int __pyx_v_histo2_only, int __pyx_v_verbose, int __pyx_v_gpu_id, int __pyx_v_thread_block_x, int __pyx_v_algorithm) {
   int __pyx_v_n_tot;
   int __pyx_v_n_El;
   int __pyx_v_n_bins;
+  int __pyx_v_n_Hij;
   config __pyx_v_cfg;
   int __pyx_v_exit_status;
   PyObject *__pyx_r = NULL;
@@ -1587,34 +1683,43 @@ static PyObject *__pyx_pf_7cadishi_6kernel_6c_pydh_histograms(CYTHON_UNUSED PyOb
   PyObject *__pyx_t_1 = NULL;
   __Pyx_RefNannySetupContext("histograms", 0);
 
-  /* "cadishi/kernel/c_pydh_interface.pyx":75
- *     cdef int n_El
+  /* "cadishi/kernel/c_cudh_interface.pyx":79
  *     cdef int n_bins
+ *     cdef int n_Hij
  *     n_tot = r_ptr.shape[0]             # <<<<<<<<<<<<<<
  *     n_El = nel_ptr.shape[0]
  *     n_bins = histo_ptr.shape[0]
  */
   __pyx_v_n_tot = (__pyx_v_r_ptr->dimensions[0]);
 
-  /* "cadishi/kernel/c_pydh_interface.pyx":76
- *     cdef int n_bins
+  /* "cadishi/kernel/c_cudh_interface.pyx":80
+ *     cdef int n_Hij
  *     n_tot = r_ptr.shape[0]
  *     n_El = nel_ptr.shape[0]             # <<<<<<<<<<<<<<
  *     n_bins = histo_ptr.shape[0]
- *     # checked OK:
+ *     n_Hij = histo_ptr.shape[1]
  */
   __pyx_v_n_El = (__pyx_v_nel_ptr->dimensions[0]);
 
-  /* "cadishi/kernel/c_pydh_interface.pyx":77
+  /* "cadishi/kernel/c_cudh_interface.pyx":81
  *     n_tot = r_ptr.shape[0]
  *     n_El = nel_ptr.shape[0]
  *     n_bins = histo_ptr.shape[0]             # <<<<<<<<<<<<<<
+ *     n_Hij = histo_ptr.shape[1]
  *     # checked OK:
- *     # print n_tot
  */
   __pyx_v_n_bins = (__pyx_v_histo_ptr->dimensions[0]);
 
-  /* "cadishi/kernel/c_pydh_interface.pyx":85
+  /* "cadishi/kernel/c_cudh_interface.pyx":82
+ *     n_El = nel_ptr.shape[0]
+ *     n_bins = histo_ptr.shape[0]
+ *     n_Hij = histo_ptr.shape[1]             # <<<<<<<<<<<<<<
+ *     # checked OK:
+ *     # print n_tot
+ */
+  __pyx_v_n_Hij = (__pyx_v_histo_ptr->dimensions[1]);
+
+  /* "cadishi/kernel/c_cudh_interface.pyx":90
  *     # create Python instance of C++ config class
  *     cdef config cfg
  *     cfg.set_precision(precision)             # <<<<<<<<<<<<<<
@@ -1623,7 +1728,7 @@ static PyObject *__pyx_pf_7cadishi_6kernel_6c_pydh_histograms(CYTHON_UNUSED PyOb
  */
   __pyx_v_cfg.set_precision(__pyx_v_precision);
 
-  /* "cadishi/kernel/c_pydh_interface.pyx":86
+  /* "cadishi/kernel/c_cudh_interface.pyx":91
  *     cdef config cfg
  *     cfg.set_precision(precision)
  *     cfg.set_check_input(check_input)             # <<<<<<<<<<<<<<
@@ -1632,57 +1737,73 @@ static PyObject *__pyx_pf_7cadishi_6kernel_6c_pydh_histograms(CYTHON_UNUSED PyOb
  */
   __pyx_v_cfg.set_check_input(__pyx_v_check_input);
 
-  /* "cadishi/kernel/c_pydh_interface.pyx":87
+  /* "cadishi/kernel/c_cudh_interface.pyx":92
  *     cfg.set_precision(precision)
  *     cfg.set_check_input(check_input)
  *     cfg.set_histo2_only(histo2_only)             # <<<<<<<<<<<<<<
  *     cfg.set_verbose(verbose)
- *     cfg.set_cpu_threads(n_threads)
+ *     cfg.set_gpu_id(gpu_id)
  */
   __pyx_v_cfg.set_histo2_only(__pyx_v_histo2_only);
 
-  /* "cadishi/kernel/c_pydh_interface.pyx":88
+  /* "cadishi/kernel/c_cudh_interface.pyx":93
  *     cfg.set_check_input(check_input)
  *     cfg.set_histo2_only(histo2_only)
  *     cfg.set_verbose(verbose)             # <<<<<<<<<<<<<<
- *     cfg.set_cpu_threads(n_threads)
- * 
+ *     cfg.set_gpu_id(gpu_id)
+ *     cfg.set_gpu_thread_block_x(thread_block_x)
  */
   __pyx_v_cfg.set_verbose(__pyx_v_verbose);
 
-  /* "cadishi/kernel/c_pydh_interface.pyx":89
+  /* "cadishi/kernel/c_cudh_interface.pyx":94
  *     cfg.set_histo2_only(histo2_only)
  *     cfg.set_verbose(verbose)
- *     cfg.set_cpu_threads(n_threads)             # <<<<<<<<<<<<<<
+ *     cfg.set_gpu_id(gpu_id)             # <<<<<<<<<<<<<<
+ *     cfg.set_gpu_thread_block_x(thread_block_x)
+ *     cfg.set_gpu_algorithm(algorithm)
+ */
+  __pyx_v_cfg.set_gpu_id(__pyx_v_gpu_id);
+
+  /* "cadishi/kernel/c_cudh_interface.pyx":95
+ *     cfg.set_verbose(verbose)
+ *     cfg.set_gpu_id(gpu_id)
+ *     cfg.set_gpu_thread_block_x(thread_block_x)             # <<<<<<<<<<<<<<
+ *     cfg.set_gpu_algorithm(algorithm)
+ * 
+ */
+  __pyx_v_cfg.set_gpu_thread_block_x(__pyx_v_thread_block_x);
+
+  /* "cadishi/kernel/c_cudh_interface.pyx":96
+ *     cfg.set_gpu_id(gpu_id)
+ *     cfg.set_gpu_thread_block_x(thread_block_x)
+ *     cfg.set_gpu_algorithm(algorithm)             # <<<<<<<<<<<<<<
  * 
  *     cdef int exit_status
  */
-  __pyx_v_cfg.set_cpu_threads(__pyx_v_n_threads);
+  __pyx_v_cfg.set_gpu_algorithm(__pyx_v_algorithm);
 
-  /* "cadishi/kernel/c_pydh_interface.pyx":92
+  /* "cadishi/kernel/c_cudh_interface.pyx":99
  * 
  *     cdef int exit_status
- *     exit_status = histograms_cpu(<np_tuple3d_t*> r_ptr.data,             # <<<<<<<<<<<<<<
+ *     exit_status = histograms_gpu(<np_tuple3d_t*> r_ptr.data,             # <<<<<<<<<<<<<<
  *                                  <int> n_tot,
  *                                  <int*> nel_ptr.data,
  */
-  __pyx_v_exit_status = histograms_cpu(((np_tuple3d_t *)__pyx_v_r_ptr->data), ((int)__pyx_v_n_tot), ((int *)__pyx_v_nel_ptr->data), ((int)__pyx_v_n_El), ((__pyx_t_5numpy_uint64_t *)__pyx_v_histo_ptr->data), ((int)__pyx_v_n_bins), ((double)__pyx_v_r_max), ((int *)__pyx_v_mask_ptr->data), ((double *)__pyx_v_box_ptr->data), ((int)__pyx_v_box_type_id), __pyx_v_cfg);
+  __pyx_v_exit_status = histograms_gpu(((np_tuple3d_t *)__pyx_v_r_ptr->data), ((int)__pyx_v_n_tot), ((int *)__pyx_v_nel_ptr->data), ((int)__pyx_v_n_El), ((__pyx_t_5numpy_uint64_t *)__pyx_v_histo_ptr->data), ((int)__pyx_v_n_bins), ((int)__pyx_v_n_Hij), ((double)__pyx_v_r_max), ((int *)__pyx_v_mask_ptr->data), ((double *)__pyx_v_box_ptr->data), ((int)__pyx_v_box_type_id), __pyx_v_cfg);
 
-  /* "cadishi/kernel/c_pydh_interface.pyx":103
+  /* "cadishi/kernel/c_cudh_interface.pyx":111
  *                                  <int> box_type_id,
  *                                  cfg)
  *     return exit_status             # <<<<<<<<<<<<<<
- * 
- * 
  */
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_1 = __Pyx_PyInt_From_int(__pyx_v_exit_status); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 103, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyInt_From_int(__pyx_v_exit_status); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 111, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_r = __pyx_t_1;
   __pyx_t_1 = 0;
   goto __pyx_L0;
 
-  /* "cadishi/kernel/c_pydh_interface.pyx":57
+  /* "cadishi/kernel/c_cudh_interface.pyx":58
  * 
  * # wrapper to make histograms_cpu() accessible from Python
  * def histograms(np.ndarray r_ptr,             # <<<<<<<<<<<<<<
@@ -1693,175 +1814,7 @@ static PyObject *__pyx_pf_7cadishi_6kernel_6c_pydh_histograms(CYTHON_UNUSED PyOb
   /* function exit code */
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_1);
-  __Pyx_AddTraceback("cadishi.kernel.c_pydh.histograms", __pyx_clineno, __pyx_lineno, __pyx_filename);
-  __pyx_r = NULL;
-  __pyx_L0:;
-  __Pyx_XGIVEREF(__pyx_r);
-  __Pyx_RefNannyFinishContext();
-  return __pyx_r;
-}
-
-/* "cadishi/kernel/c_pydh_interface.pyx":107
- * 
- * # wrapper to make histograms_cpu() accessible from Python
- * def distances(np.ndarray r_ptr,             # <<<<<<<<<<<<<<
- *               np.ndarray dists,
- *               np.ndarray box_ptr,
- */
-
-/* Python wrapper */
-static PyObject *__pyx_pw_7cadishi_6kernel_6c_pydh_3distances(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static PyMethodDef __pyx_mdef_7cadishi_6kernel_6c_pydh_3distances = {"distances", (PyCFunction)__pyx_pw_7cadishi_6kernel_6c_pydh_3distances, METH_VARARGS|METH_KEYWORDS, 0};
-static PyObject *__pyx_pw_7cadishi_6kernel_6c_pydh_3distances(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
-  PyArrayObject *__pyx_v_r_ptr = 0;
-  PyArrayObject *__pyx_v_dists = 0;
-  PyArrayObject *__pyx_v_box_ptr = 0;
-  int __pyx_v_box_type_id;
-  int __pyx_v_precision;
-  PyObject *__pyx_r = 0;
-  __Pyx_RefNannyDeclarations
-  __Pyx_RefNannySetupContext("distances (wrapper)", 0);
-  {
-    static PyObject **__pyx_pyargnames[] = {&__pyx_n_s_r_ptr,&__pyx_n_s_dists,&__pyx_n_s_box_ptr,&__pyx_n_s_box_type_id,&__pyx_n_s_precision,0};
-    PyObject* values[5] = {0,0,0,0,0};
-    if (unlikely(__pyx_kwds)) {
-      Py_ssize_t kw_args;
-      const Py_ssize_t pos_args = PyTuple_GET_SIZE(__pyx_args);
-      switch (pos_args) {
-        case  5: values[4] = PyTuple_GET_ITEM(__pyx_args, 4);
-        case  4: values[3] = PyTuple_GET_ITEM(__pyx_args, 3);
-        case  3: values[2] = PyTuple_GET_ITEM(__pyx_args, 2);
-        case  2: values[1] = PyTuple_GET_ITEM(__pyx_args, 1);
-        case  1: values[0] = PyTuple_GET_ITEM(__pyx_args, 0);
-        case  0: break;
-        default: goto __pyx_L5_argtuple_error;
-      }
-      kw_args = PyDict_Size(__pyx_kwds);
-      switch (pos_args) {
-        case  0:
-        if (likely((values[0] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_r_ptr)) != 0)) kw_args--;
-        else goto __pyx_L5_argtuple_error;
-        case  1:
-        if (likely((values[1] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_dists)) != 0)) kw_args--;
-        else {
-          __Pyx_RaiseArgtupleInvalid("distances", 1, 5, 5, 1); __PYX_ERR(0, 107, __pyx_L3_error)
-        }
-        case  2:
-        if (likely((values[2] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_box_ptr)) != 0)) kw_args--;
-        else {
-          __Pyx_RaiseArgtupleInvalid("distances", 1, 5, 5, 2); __PYX_ERR(0, 107, __pyx_L3_error)
-        }
-        case  3:
-        if (likely((values[3] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_box_type_id)) != 0)) kw_args--;
-        else {
-          __Pyx_RaiseArgtupleInvalid("distances", 1, 5, 5, 3); __PYX_ERR(0, 107, __pyx_L3_error)
-        }
-        case  4:
-        if (likely((values[4] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_precision)) != 0)) kw_args--;
-        else {
-          __Pyx_RaiseArgtupleInvalid("distances", 1, 5, 5, 4); __PYX_ERR(0, 107, __pyx_L3_error)
-        }
-      }
-      if (unlikely(kw_args > 0)) {
-        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "distances") < 0)) __PYX_ERR(0, 107, __pyx_L3_error)
-      }
-    } else if (PyTuple_GET_SIZE(__pyx_args) != 5) {
-      goto __pyx_L5_argtuple_error;
-    } else {
-      values[0] = PyTuple_GET_ITEM(__pyx_args, 0);
-      values[1] = PyTuple_GET_ITEM(__pyx_args, 1);
-      values[2] = PyTuple_GET_ITEM(__pyx_args, 2);
-      values[3] = PyTuple_GET_ITEM(__pyx_args, 3);
-      values[4] = PyTuple_GET_ITEM(__pyx_args, 4);
-    }
-    __pyx_v_r_ptr = ((PyArrayObject *)values[0]);
-    __pyx_v_dists = ((PyArrayObject *)values[1]);
-    __pyx_v_box_ptr = ((PyArrayObject *)values[2]);
-    __pyx_v_box_type_id = __Pyx_PyInt_As_int(values[3]); if (unlikely((__pyx_v_box_type_id == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 110, __pyx_L3_error)
-    __pyx_v_precision = __Pyx_PyInt_As_int(values[4]); if (unlikely((__pyx_v_precision == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 111, __pyx_L3_error)
-  }
-  goto __pyx_L4_argument_unpacking_done;
-  __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("distances", 1, 5, 5, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 107, __pyx_L3_error)
-  __pyx_L3_error:;
-  __Pyx_AddTraceback("cadishi.kernel.c_pydh.distances", __pyx_clineno, __pyx_lineno, __pyx_filename);
-  __Pyx_RefNannyFinishContext();
-  return NULL;
-  __pyx_L4_argument_unpacking_done:;
-  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_r_ptr), __pyx_ptype_5numpy_ndarray, 1, "r_ptr", 0))) __PYX_ERR(0, 107, __pyx_L1_error)
-  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_dists), __pyx_ptype_5numpy_ndarray, 1, "dists", 0))) __PYX_ERR(0, 108, __pyx_L1_error)
-  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_box_ptr), __pyx_ptype_5numpy_ndarray, 1, "box_ptr", 0))) __PYX_ERR(0, 109, __pyx_L1_error)
-  __pyx_r = __pyx_pf_7cadishi_6kernel_6c_pydh_2distances(__pyx_self, __pyx_v_r_ptr, __pyx_v_dists, __pyx_v_box_ptr, __pyx_v_box_type_id, __pyx_v_precision);
-
-  /* function exit code */
-  goto __pyx_L0;
-  __pyx_L1_error:;
-  __pyx_r = NULL;
-  __pyx_L0:;
-  __Pyx_RefNannyFinishContext();
-  return __pyx_r;
-}
-
-static PyObject *__pyx_pf_7cadishi_6kernel_6c_pydh_2distances(CYTHON_UNUSED PyObject *__pyx_self, PyArrayObject *__pyx_v_r_ptr, PyArrayObject *__pyx_v_dists, PyArrayObject *__pyx_v_box_ptr, int __pyx_v_box_type_id, int __pyx_v_precision) {
-  int __pyx_v_n_tot;
-  config __pyx_v_cfg;
-  int __pyx_v_exit_status;
-  PyObject *__pyx_r = NULL;
-  __Pyx_RefNannyDeclarations
-  PyObject *__pyx_t_1 = NULL;
-  __Pyx_RefNannySetupContext("distances", 0);
-
-  /* "cadishi/kernel/c_pydh_interface.pyx":114
- *     # derive dimension from NumPy data structure
- *     cdef int n_tot
- *     n_tot = r_ptr.shape[0]             # <<<<<<<<<<<<<<
- * 
- *     # create Python instance of C++ config class
- */
-  __pyx_v_n_tot = (__pyx_v_r_ptr->dimensions[0]);
-
-  /* "cadishi/kernel/c_pydh_interface.pyx":118
- *     # create Python instance of C++ config class
- *     cdef config cfg
- *     cfg.set_precision(precision)             # <<<<<<<<<<<<<<
- * 
- *     cdef int exit_status
- */
-  __pyx_v_cfg.set_precision(__pyx_v_precision);
-
-  /* "cadishi/kernel/c_pydh_interface.pyx":121
- * 
- *     cdef int exit_status
- *     exit_status = distances_cpu(<np_tuple3d_t*> r_ptr.data,             # <<<<<<<<<<<<<<
- *                                 <int> n_tot,
- *                                 <double*> dists.data,
- */
-  __pyx_v_exit_status = distances_cpu(((np_tuple3d_t *)__pyx_v_r_ptr->data), ((int)__pyx_v_n_tot), ((double *)__pyx_v_dists->data), ((double *)__pyx_v_box_ptr->data), ((int)__pyx_v_box_type_id), __pyx_v_cfg);
-
-  /* "cadishi/kernel/c_pydh_interface.pyx":127
- *                                 <int> box_type_id,
- *                                 cfg)
- *     return exit_status             # <<<<<<<<<<<<<<
- */
-  __Pyx_XDECREF(__pyx_r);
-  __pyx_t_1 = __Pyx_PyInt_From_int(__pyx_v_exit_status); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 127, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_1);
-  __pyx_r = __pyx_t_1;
-  __pyx_t_1 = 0;
-  goto __pyx_L0;
-
-  /* "cadishi/kernel/c_pydh_interface.pyx":107
- * 
- * # wrapper to make histograms_cpu() accessible from Python
- * def distances(np.ndarray r_ptr,             # <<<<<<<<<<<<<<
- *               np.ndarray dists,
- *               np.ndarray box_ptr,
- */
-
-  /* function exit code */
-  __pyx_L1_error:;
-  __Pyx_XDECREF(__pyx_t_1);
-  __Pyx_AddTraceback("cadishi.kernel.c_pydh.distances", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("cadishi.kernel.c_cudh_interface.histograms", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XGIVEREF(__pyx_r);
@@ -4394,7 +4347,7 @@ static struct PyModuleDef __pyx_moduledef = {
   #else
     PyModuleDef_HEAD_INIT,
   #endif
-    "c_pydh",
+    "c_cudh_interface",
     0, /* m_doc */
     -1, /* m_size */
     __pyx_methods /* m_methods */,
@@ -4412,14 +4365,15 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_kp_u_Non_native_byte_order_not_suppor, __pyx_k_Non_native_byte_order_not_suppor, sizeof(__pyx_k_Non_native_byte_order_not_suppor), 0, 1, 0, 0},
   {&__pyx_n_s_RuntimeError, __pyx_k_RuntimeError, sizeof(__pyx_k_RuntimeError), 0, 0, 1, 1},
   {&__pyx_n_s_ValueError, __pyx_k_ValueError, sizeof(__pyx_k_ValueError), 0, 0, 1, 1},
+  {&__pyx_n_s_algorithm, __pyx_k_algorithm, sizeof(__pyx_k_algorithm), 0, 0, 1, 1},
   {&__pyx_n_s_box_ptr, __pyx_k_box_ptr, sizeof(__pyx_k_box_ptr), 0, 0, 1, 1},
   {&__pyx_n_s_box_type_id, __pyx_k_box_type_id, sizeof(__pyx_k_box_type_id), 0, 0, 1, 1},
-  {&__pyx_n_s_cadishi_kernel_c_pydh, __pyx_k_cadishi_kernel_c_pydh, sizeof(__pyx_k_cadishi_kernel_c_pydh), 0, 0, 1, 1},
+  {&__pyx_n_s_cadishi_kernel_c_cudh_interface, __pyx_k_cadishi_kernel_c_cudh_interface, sizeof(__pyx_k_cadishi_kernel_c_cudh_interface), 0, 0, 1, 1},
   {&__pyx_n_s_cfg, __pyx_k_cfg, sizeof(__pyx_k_cfg), 0, 0, 1, 1},
   {&__pyx_n_s_check_input, __pyx_k_check_input, sizeof(__pyx_k_check_input), 0, 0, 1, 1},
-  {&__pyx_n_s_distances, __pyx_k_distances, sizeof(__pyx_k_distances), 0, 0, 1, 1},
-  {&__pyx_n_s_dists, __pyx_k_dists, sizeof(__pyx_k_dists), 0, 0, 1, 1},
   {&__pyx_n_s_exit_status, __pyx_k_exit_status, sizeof(__pyx_k_exit_status), 0, 0, 1, 1},
+  {&__pyx_n_s_get_num_devices, __pyx_k_get_num_devices, sizeof(__pyx_k_get_num_devices), 0, 0, 1, 1},
+  {&__pyx_n_s_gpu_id, __pyx_k_gpu_id, sizeof(__pyx_k_gpu_id), 0, 0, 1, 1},
   {&__pyx_n_s_histo2_only, __pyx_k_histo2_only, sizeof(__pyx_k_histo2_only), 0, 0, 1, 1},
   {&__pyx_n_s_histo_ptr, __pyx_k_histo_ptr, sizeof(__pyx_k_histo_ptr), 0, 0, 1, 1},
   {&__pyx_n_s_histograms, __pyx_k_histograms, sizeof(__pyx_k_histograms), 0, 0, 1, 1},
@@ -4427,9 +4381,10 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_n_s_import, __pyx_k_import, sizeof(__pyx_k_import), 0, 0, 1, 1},
   {&__pyx_n_s_main, __pyx_k_main, sizeof(__pyx_k_main), 0, 0, 1, 1},
   {&__pyx_n_s_mask_ptr, __pyx_k_mask_ptr, sizeof(__pyx_k_mask_ptr), 0, 0, 1, 1},
+  {&__pyx_n_s_n, __pyx_k_n, sizeof(__pyx_k_n), 0, 0, 1, 1},
   {&__pyx_n_s_n_El, __pyx_k_n_El, sizeof(__pyx_k_n_El), 0, 0, 1, 1},
+  {&__pyx_n_s_n_Hij, __pyx_k_n_Hij, sizeof(__pyx_k_n_Hij), 0, 0, 1, 1},
   {&__pyx_n_s_n_bins, __pyx_k_n_bins, sizeof(__pyx_k_n_bins), 0, 0, 1, 1},
-  {&__pyx_n_s_n_threads, __pyx_k_n_threads, sizeof(__pyx_k_n_threads), 0, 0, 1, 1},
   {&__pyx_n_s_n_tot, __pyx_k_n_tot, sizeof(__pyx_k_n_tot), 0, 0, 1, 1},
   {&__pyx_kp_u_ndarray_is_not_C_contiguous, __pyx_k_ndarray_is_not_C_contiguous, sizeof(__pyx_k_ndarray_is_not_C_contiguous), 0, 1, 0, 0},
   {&__pyx_kp_u_ndarray_is_not_Fortran_contiguou, __pyx_k_ndarray_is_not_Fortran_contiguou, sizeof(__pyx_k_ndarray_is_not_Fortran_contiguou), 0, 1, 0, 0},
@@ -4443,6 +4398,7 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_n_s_r_ptr, __pyx_k_r_ptr, sizeof(__pyx_k_r_ptr), 0, 0, 1, 1},
   {&__pyx_n_s_range, __pyx_k_range, sizeof(__pyx_k_range), 0, 0, 1, 1},
   {&__pyx_n_s_test, __pyx_k_test, sizeof(__pyx_k_test), 0, 0, 1, 1},
+  {&__pyx_n_s_thread_block_x, __pyx_k_thread_block_x, sizeof(__pyx_k_thread_block_x), 0, 0, 1, 1},
   {&__pyx_kp_u_unknown_dtype_code_in_numpy_pxd, __pyx_k_unknown_dtype_code_in_numpy_pxd, sizeof(__pyx_k_unknown_dtype_code_in_numpy_pxd), 0, 1, 0, 0},
   {&__pyx_n_s_verbose, __pyx_k_verbose, sizeof(__pyx_k_verbose), 0, 0, 1, 1},
   {0, 0, 0, 0, 0, 0, 0}
@@ -4558,29 +4514,29 @@ static int __Pyx_InitCachedConstants(void) {
   __Pyx_GOTREF(__pyx_tuple__9);
   __Pyx_GIVEREF(__pyx_tuple__9);
 
-  /* "cadishi/kernel/c_pydh_interface.pyx":57
+  /* "cadishi/kernel/c_cudh_interface.pyx":51
+ * 
+ * 
+ * def get_num_devices():             # <<<<<<<<<<<<<<
+ *     cdef int n
+ *     n = get_num_cuda_devices()
+ */
+  __pyx_tuple__10 = PyTuple_Pack(1, __pyx_n_s_n); if (unlikely(!__pyx_tuple__10)) __PYX_ERR(0, 51, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_tuple__10);
+  __Pyx_GIVEREF(__pyx_tuple__10);
+  __pyx_codeobj__11 = (PyObject*)__Pyx_PyCode_New(0, 0, 1, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__10, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_home_khr_unison_histobin_git_ca, __pyx_n_s_get_num_devices, 51, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__11)) __PYX_ERR(0, 51, __pyx_L1_error)
+
+  /* "cadishi/kernel/c_cudh_interface.pyx":58
  * 
  * # wrapper to make histograms_cpu() accessible from Python
  * def histograms(np.ndarray r_ptr,             # <<<<<<<<<<<<<<
  *                np.ndarray nel_ptr,
  *                np.ndarray histo_ptr,
  */
-  __pyx_tuple__10 = PyTuple_Pack(17, __pyx_n_s_r_ptr, __pyx_n_s_nel_ptr, __pyx_n_s_histo_ptr, __pyx_n_s_r_max, __pyx_n_s_mask_ptr, __pyx_n_s_box_ptr, __pyx_n_s_box_type_id, __pyx_n_s_precision, __pyx_n_s_check_input, __pyx_n_s_histo2_only, __pyx_n_s_verbose, __pyx_n_s_n_threads, __pyx_n_s_n_tot, __pyx_n_s_n_El, __pyx_n_s_n_bins, __pyx_n_s_cfg, __pyx_n_s_exit_status); if (unlikely(!__pyx_tuple__10)) __PYX_ERR(0, 57, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_tuple__10);
-  __Pyx_GIVEREF(__pyx_tuple__10);
-  __pyx_codeobj__11 = (PyObject*)__Pyx_PyCode_New(12, 0, 17, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__10, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_home_khr_unison_histobin_git_ca, __pyx_n_s_histograms, 57, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__11)) __PYX_ERR(0, 57, __pyx_L1_error)
-
-  /* "cadishi/kernel/c_pydh_interface.pyx":107
- * 
- * # wrapper to make histograms_cpu() accessible from Python
- * def distances(np.ndarray r_ptr,             # <<<<<<<<<<<<<<
- *               np.ndarray dists,
- *               np.ndarray box_ptr,
- */
-  __pyx_tuple__12 = PyTuple_Pack(8, __pyx_n_s_r_ptr, __pyx_n_s_dists, __pyx_n_s_box_ptr, __pyx_n_s_box_type_id, __pyx_n_s_precision, __pyx_n_s_n_tot, __pyx_n_s_cfg, __pyx_n_s_exit_status); if (unlikely(!__pyx_tuple__12)) __PYX_ERR(0, 107, __pyx_L1_error)
+  __pyx_tuple__12 = PyTuple_Pack(20, __pyx_n_s_r_ptr, __pyx_n_s_nel_ptr, __pyx_n_s_histo_ptr, __pyx_n_s_r_max, __pyx_n_s_mask_ptr, __pyx_n_s_box_ptr, __pyx_n_s_box_type_id, __pyx_n_s_precision, __pyx_n_s_check_input, __pyx_n_s_histo2_only, __pyx_n_s_verbose, __pyx_n_s_gpu_id, __pyx_n_s_thread_block_x, __pyx_n_s_algorithm, __pyx_n_s_n_tot, __pyx_n_s_n_El, __pyx_n_s_n_bins, __pyx_n_s_n_Hij, __pyx_n_s_cfg, __pyx_n_s_exit_status); if (unlikely(!__pyx_tuple__12)) __PYX_ERR(0, 58, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__12);
   __Pyx_GIVEREF(__pyx_tuple__12);
-  __pyx_codeobj__13 = (PyObject*)__Pyx_PyCode_New(5, 0, 8, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__12, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_home_khr_unison_histobin_git_ca, __pyx_n_s_distances, 107, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__13)) __PYX_ERR(0, 107, __pyx_L1_error)
+  __pyx_codeobj__13 = (PyObject*)__Pyx_PyCode_New(14, 0, 20, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__12, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_home_khr_unison_histobin_git_ca, __pyx_n_s_histograms, 58, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__13)) __PYX_ERR(0, 58, __pyx_L1_error)
   __Pyx_RefNannyFinishContext();
   return 0;
   __pyx_L1_error:;
@@ -4596,11 +4552,11 @@ static int __Pyx_InitGlobals(void) {
 }
 
 #if PY_MAJOR_VERSION < 3
-PyMODINIT_FUNC initc_pydh(void); /*proto*/
-PyMODINIT_FUNC initc_pydh(void)
+PyMODINIT_FUNC initc_cudh_interface(void); /*proto*/
+PyMODINIT_FUNC initc_cudh_interface(void)
 #else
-PyMODINIT_FUNC PyInit_c_pydh(void); /*proto*/
-PyMODINIT_FUNC PyInit_c_pydh(void)
+PyMODINIT_FUNC PyInit_c_cudh_interface(void); /*proto*/
+PyMODINIT_FUNC PyInit_c_cudh_interface(void)
 #endif
 {
   PyObject *__pyx_t_1 = NULL;
@@ -4614,7 +4570,7 @@ PyMODINIT_FUNC PyInit_c_pydh(void)
           Py_FatalError("failed to import 'refnanny' module");
   }
   #endif
-  __Pyx_RefNannySetupContext("PyMODINIT_FUNC PyInit_c_pydh(void)", 0);
+  __Pyx_RefNannySetupContext("PyMODINIT_FUNC PyInit_c_cudh_interface(void)", 0);
   if (__Pyx_check_binary_version() < 0) __PYX_ERR(0, 1, __pyx_L1_error)
   __pyx_empty_tuple = PyTuple_New(0); if (unlikely(!__pyx_empty_tuple)) __PYX_ERR(0, 1, __pyx_L1_error)
   __pyx_empty_bytes = PyBytes_FromStringAndSize("", 0); if (unlikely(!__pyx_empty_bytes)) __PYX_ERR(0, 1, __pyx_L1_error)
@@ -4643,7 +4599,7 @@ PyMODINIT_FUNC PyInit_c_pydh(void)
   #endif
   /*--- Module creation code ---*/
   #if PY_MAJOR_VERSION < 3
-  __pyx_m = Py_InitModule4("c_pydh", __pyx_methods, 0, 0, PYTHON_API_VERSION); Py_XINCREF(__pyx_m);
+  __pyx_m = Py_InitModule4("c_cudh_interface", __pyx_methods, 0, 0, PYTHON_API_VERSION); Py_XINCREF(__pyx_m);
   #else
   __pyx_m = PyModule_Create(&__pyx_moduledef);
   #endif
@@ -4660,14 +4616,14 @@ PyMODINIT_FUNC PyInit_c_pydh(void)
   #if PY_MAJOR_VERSION < 3 && (__PYX_DEFAULT_STRING_ENCODING_IS_ASCII || __PYX_DEFAULT_STRING_ENCODING_IS_DEFAULT)
   if (__Pyx_init_sys_getdefaultencoding_params() < 0) __PYX_ERR(0, 1, __pyx_L1_error)
   #endif
-  if (__pyx_module_is_main_cadishi__kernel__c_pydh) {
+  if (__pyx_module_is_main_cadishi__kernel__c_cudh_interface) {
     if (PyObject_SetAttrString(__pyx_m, "__name__", __pyx_n_s_main) < 0) __PYX_ERR(0, 1, __pyx_L1_error)
   }
   #if PY_MAJOR_VERSION >= 3
   {
     PyObject *modules = PyImport_GetModuleDict(); if (unlikely(!modules)) __PYX_ERR(0, 1, __pyx_L1_error)
-    if (!PyDict_GetItemString(modules, "cadishi.kernel.c_pydh")) {
-      if (unlikely(PyDict_SetItemString(modules, "cadishi.kernel.c_pydh", __pyx_m) < 0)) __PYX_ERR(0, 1, __pyx_L1_error)
+    if (!PyDict_GetItemString(modules, "cadishi.kernel.c_cudh_interface")) {
+      if (unlikely(PyDict_SetItemString(modules, "cadishi.kernel.c_cudh_interface", __pyx_m) < 0)) __PYX_ERR(0, 1, __pyx_L1_error)
     }
   }
   #endif
@@ -4699,7 +4655,7 @@ PyMODINIT_FUNC PyInit_c_pydh(void)
   if (__Pyx_patch_abc() < 0) __PYX_ERR(0, 1, __pyx_L1_error)
   #endif
 
-  /* "cadishi/kernel/c_pydh_interface.pyx":1
+  /* "cadishi/kernel/c_cudh_interface.pyx":1
  * import numpy as np             # <<<<<<<<<<<<<<
  * cimport numpy as np
  * from libcpp cimport bool
@@ -4709,31 +4665,31 @@ PyMODINIT_FUNC PyInit_c_pydh(void)
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_np, __pyx_t_1) < 0) __PYX_ERR(0, 1, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "cadishi/kernel/c_pydh_interface.pyx":57
+  /* "cadishi/kernel/c_cudh_interface.pyx":51
+ * 
+ * 
+ * def get_num_devices():             # <<<<<<<<<<<<<<
+ *     cdef int n
+ *     n = get_num_cuda_devices()
+ */
+  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_7cadishi_6kernel_16c_cudh_interface_1get_num_devices, NULL, __pyx_n_s_cadishi_kernel_c_cudh_interface); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 51, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_1);
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_get_num_devices, __pyx_t_1) < 0) __PYX_ERR(0, 51, __pyx_L1_error)
+  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+
+  /* "cadishi/kernel/c_cudh_interface.pyx":58
  * 
  * # wrapper to make histograms_cpu() accessible from Python
  * def histograms(np.ndarray r_ptr,             # <<<<<<<<<<<<<<
  *                np.ndarray nel_ptr,
  *                np.ndarray histo_ptr,
  */
-  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_7cadishi_6kernel_6c_pydh_1histograms, NULL, __pyx_n_s_cadishi_kernel_c_pydh); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 57, __pyx_L1_error)
+  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_7cadishi_6kernel_16c_cudh_interface_3histograms, NULL, __pyx_n_s_cadishi_kernel_c_cudh_interface); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 58, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_histograms, __pyx_t_1) < 0) __PYX_ERR(0, 57, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_histograms, __pyx_t_1) < 0) __PYX_ERR(0, 58, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "cadishi/kernel/c_pydh_interface.pyx":107
- * 
- * # wrapper to make histograms_cpu() accessible from Python
- * def distances(np.ndarray r_ptr,             # <<<<<<<<<<<<<<
- *               np.ndarray dists,
- *               np.ndarray box_ptr,
- */
-  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_7cadishi_6kernel_6c_pydh_3distances, NULL, __pyx_n_s_cadishi_kernel_c_pydh); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 107, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_1);
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_distances, __pyx_t_1) < 0) __PYX_ERR(0, 107, __pyx_L1_error)
-  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-
-  /* "cadishi/kernel/c_pydh_interface.pyx":1
+  /* "cadishi/kernel/c_cudh_interface.pyx":1
  * import numpy as np             # <<<<<<<<<<<<<<
  * cimport numpy as np
  * from libcpp cimport bool
@@ -4758,11 +4714,11 @@ PyMODINIT_FUNC PyInit_c_pydh(void)
   __Pyx_XDECREF(__pyx_t_1);
   if (__pyx_m) {
     if (__pyx_d) {
-      __Pyx_AddTraceback("init cadishi.kernel.c_pydh", __pyx_clineno, __pyx_lineno, __pyx_filename);
+      __Pyx_AddTraceback("init cadishi.kernel.c_cudh_interface", __pyx_clineno, __pyx_lineno, __pyx_filename);
     }
     Py_DECREF(__pyx_m); __pyx_m = 0;
   } else if (!PyErr_Occurred()) {
-    PyErr_SetString(PyExc_ImportError, "init cadishi.kernel.c_pydh");
+    PyErr_SetString(PyExc_ImportError, "init cadishi.kernel.c_cudh_interface");
   }
   __pyx_L0:;
   __Pyx_RefNannyFinishContext();

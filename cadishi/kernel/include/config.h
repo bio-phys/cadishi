@@ -24,6 +24,7 @@ public:
     int precision;
     bool check_input;
     bool histo2_only;
+    bool verbose;
     // parameters relevant only to the CPU kernel
     int cpu_threads;
     int cpu_blocksize;
@@ -36,6 +37,7 @@ public:
     void set_precision(int);
     void set_check_input(bool);
     void set_histo2_only(bool);
+    void set_verbose(bool);
     void set_cpu_threads(int);
     void set_cpu_blocksize(int);
     void set_gpu_id(int);
