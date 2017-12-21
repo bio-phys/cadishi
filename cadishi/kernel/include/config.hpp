@@ -14,6 +14,7 @@
 #ifndef _CONFIG_HPP_
 #define _CONFIG_HPP_
 
+#include <cstdio>
 #include "common.h"
 #include "config.h"
 
@@ -27,6 +28,20 @@ config::config() {
     gpu_id = 0;
     gpu_thread_block_x = -1;  // TODO
     gpu_algorithm = -1;  // TODO
+}
+
+void config::print_config() const {
+    printf("--- config ---\n");
+    printf(" precision            %d\n", precision);
+    printf(" check_input          %d\n", check_input);
+    printf(" histo2_only          %d\n", histo2_only);
+    printf(" verbose              %d\n", verbose);
+    printf(" cpu_threads          %d\n", cpu_threads);
+    printf(" cpu_blocksize        %d\n", cpu_blocksize);
+    printf(" gpu_id               %d\n", gpu_id);
+    printf(" gpu_thread_block_x   %d\n", gpu_thread_block_x);
+    printf(" gpu_algorithm        %d\n", gpu_algorithm);
+    printf("--------------\n");
 }
 
 void config::set_precision(int val) {

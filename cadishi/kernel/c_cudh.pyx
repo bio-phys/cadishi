@@ -79,7 +79,7 @@ def histograms(np.ndarray r_ptr,
     n_tot = r_ptr.shape[0]
     n_El = nel_ptr.shape[0]
     n_bins = histo_ptr.shape[0]
-    n_Hij = histo_ptr.shape[1]
+    n_Hij = histo_ptr.shape[1] - 1  # mind the original meaning of n_Hij
     # checked OK:
     # print n_tot
     # print n_El

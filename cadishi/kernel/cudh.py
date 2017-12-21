@@ -167,10 +167,10 @@ def histograms(coordinate_sets,
                                     precision, check_input, do_histo2_only, verbose, gpu_id, thread_block_x, algorithm)
 
     if (exit_status == 1):
-        c_cudh.free()
+        #c_cudh.free()
         raise ValueError(common.overflow_error_msg)
     elif (exit_status >= 2):
-        c_cudh.free()
+        #c_cudh.free()
         raise RuntimeError(common.general_error_msg)
 
     if do_reorder:

@@ -736,6 +736,7 @@ void histo_gpu(TUPLE3_T *coords, int n_tot,
 
     default:
         RT_ERROR("unknown implementation requested");
+        //printf("NOTE: unknown implementation requested\n");
     } // end switch
 
     // copy histograms and the error flag back to the host
@@ -894,6 +895,9 @@ int histograms_gpu(np_tuple3d_t *r_ptr,
                    int box_type_id,
                    const config & cfg) {
     int exit_status = 0;
+    if (cfg.verbose) {
+        cfg.print_config();
+    }
     // TODO: move the cfg data structure further in
     try {
         if (cfg.precision == single_precision) {

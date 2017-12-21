@@ -34,6 +34,7 @@ public:
     int gpu_algorithm;
     // --- methods below ---
     config();
+    void print_config() const;
     void set_precision(int);
     void set_check_input(bool);
     void set_histo2_only(bool);

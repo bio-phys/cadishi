@@ -622,6 +622,9 @@ int histograms_cpu(np_tuple3d_t *r_ptr,
 #ifdef _OPENMP
     omp_set_num_threads(cfg.cpu_threads);
 #endif
+    if (cfg.verbose) {
+        cfg.print_config();
+    }
     int exit_status = 0;
     // TODO: move the cfg data structure further in
     try {
