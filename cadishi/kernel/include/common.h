@@ -7,7 +7,7 @@
 * Released under the MIT License, see the file LICENSE.txt.
 *
 *
-* Common code used by the pydh and cudh kernels, either as Python module or as C library.
+* Common header code used by the pydh and cudh kernels.
 */
 
 
@@ -19,6 +19,12 @@ enum box_type {
     none,
     orthorhombic,
     triclinic
+};
+
+// enum/integer values used to select the precision (also see common.py)
+enum precision {
+    single_precision,
+    double_precision
 };
 
 // double precision coordinate triple (used to access the NumPy data pointer passed by Python)

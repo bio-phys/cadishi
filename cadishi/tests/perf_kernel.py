@@ -213,20 +213,22 @@ if run_values['kernel'] == "cudh":
                            run_values['bins'],
                            run_values['precision'],
                            gpu_id=gpu_id,
+                           do_histo2_only=run_values['histo2'],
                            thread_block_x=run_values['thread_block_x'],
                            check_input=run_values['check_input'],
                            box=box,
-                           do_histo2_only=run_values['histo2'],
-                           algorithm=run_values['gpu_algorithm'])
+                           algorithm=run_values['gpu_algorithm'],
+                           verbose=True)
 else:
     pydh = pydh.histograms(coords,
                            r_max,
                            run_values['bins'],
                            run_values['precision'],
-                           pydh_threads=run_values['threads'],
                            check_input=run_values['check_input'],
+                           do_histo2_only=run_values['histo2'],
+                           pydh_threads=run_values['threads'],
                            box=box,
-                           do_histo2_only=run_values['histo2'])
+                           verbose=True)
 t1 = time.time()
 dt = (t1 - t0)
 

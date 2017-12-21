@@ -40,7 +40,7 @@ clean:
 all: libpydh libcudh
 
 libpydh: lib/libpydh.so
-lib/libpydh.so: c_pydh.cc include/pydh.h
+lib/libpydh.so: c_pydh_functions.cc include/pydh.h
 	@mkdir -p lib
 	g++ $(FLAGS) $(GCC_FLAGS) -shared -o $@ $<
 	@echo
@@ -52,7 +52,7 @@ lib/libpydh.so: c_pydh.cc include/pydh.h
 
 
 libcudh: lib/libcudh.so
-lib/libcudh.so: c_cudh.cu include/cudh.h
+lib/libcudh.so: c_cudh_functions.cu include/cudh.h
 	@mkdir -p lib
 	nvcc $(FLAGS) $(NVCC_FLAGS) $(NVCC_ARCHS) --compiler-options "$(GCC_FLAGS)" --linker-options "$(GCC_FLAGS)" -shared -o $@ $<
 	@echo

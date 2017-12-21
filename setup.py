@@ -132,7 +132,7 @@ def get_gcc_flags():
             if not on_mac():
                 if CAD_OPENMP:
                     cc_flags += ['-fopenmp']
-                cc_flags += ['-fopt-info']
+                # cc_flags += ['-fopt-info']
     return cc_flags
 
 
@@ -292,7 +292,10 @@ class cuda_build_ext(build_ext):
                 # translated from the extra_compile_args in the Extension class
                 postargs = extra_postargs['nvcc']
             else:
-                postargs = extra_postargs  # ['gcc']
+                if isinstance(extra_postargs, dict):
+                    postargs = extra_postargs['gcc']
+                else:
+                    postargs = extra_postargs
             super(obj, src, ext, cc_args, postargs, pp_opts)
             # reset the default compiler_so, which we might have changed for
             # cuda
@@ -347,7 +350,9 @@ def extensions():
     exts.append(
         Extension(
             'cadishi.kernel.c_pydh',
-            sources=['cadishi/kernel/c_pydh.cc'],
+            sources=['cadishi/kernel/c_pydh.pyx',
+                     'cadishi/kernel/c_pydh_functions.cc'],
+            language="c++",
             include_dirs=[numpy_include, 'cadishi/kernel/include'],
             extra_compile_args=cc_flags,
             extra_link_args=cc_flags))
@@ -361,7 +366,9 @@ def extensions():
         exts.append(
             Extension(
                 'cadishi.kernel.c_cudh',
-                sources=['cadishi/kernel/c_cudh.cu'],
+                sources=['cadishi/kernel/c_cudh.pyx',
+                         'cadishi/kernel/c_cudh_functions.cu'],
+                language="c++",
                 include_dirs=[numpy_include, 'cadishi/kernel/include'],
                 libraries=link_libraries,
                 library_dirs=[CUDA['lib']],

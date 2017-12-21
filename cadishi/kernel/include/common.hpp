@@ -11,12 +11,11 @@
 */
 
 
-#ifndef _CPP_COMMON_HPP_
-#define _CPP_COMMON_HPP_
+#ifndef _COMMON_HPP_
+#define _COMMON_HPP_
 
 #include <cmath>
 #include <stdint.h>
-//#include <limits>
 #include <float.h>
 #include "common.h"
 
@@ -48,14 +47,9 @@ typedef struct tuple3d_t {
     double w;  // padding element
 } tuple3d_t;
 
-// enum/integer values used to select the precision (also see common.py)
-enum precision {
-    single_precision,
-    double_precision
-};
+
 const char id_single[] = "single";
 const char id_double[] = "double";
-
 const char SEP[] = "-----------------------------------------------------------------------------";
 
 
@@ -63,11 +57,13 @@ const char SEP[] = "------------------------------------------------------------
 // Note: C++11 would provide std::round()
 #pragma omp declare simd
 DEVICE inline float cad_round(const float &val) {
-    return roundf(val);  // 3 FLOPS, see Agners tables latency for SandyBridge
+    // return roundf(val);
+    return nearbyintf(val);  // up to 10% speed advantage on the CPU for orthorhombic compared to roundf
 }
 #pragma omp declare simd
 DEVICE inline double cad_round(const double &val) {
-    return round(val);
+    // return round(val);
+    return nearbyint(val);
 }
 
 // Cadishi min wrapper functions for both the precisions
@@ -112,7 +108,7 @@ mic_orthorhombic(TUPLE3_T &dp, const TUPLE3_T &box, const TUPLE3_T &box_inv) {
 
 // new attempt to implement a correct triclinic minimum image convention
 // credit: Max Linke, pbc_distances
-// 358 FLOPS in total
+// 366 FLOPS in total
 #pragma omp declare simd
 template <typename TUPLE3_T, typename FLOAT_T>
 DEVICE inline FLOAT_T
@@ -157,22 +153,20 @@ mic_triclinic(TUPLE3_T &dp, const TUPLE3_T * const box, const TUPLE3_T &box_inv)
 
                 FLOAT_T dsq = dpz.x * dpz.x + dpz.y * dpz.y + dpz.z * dpz.z;  // 5 FLOP
 
-                // 11 FLOPS
-
-                dsq_min = cad_min(dsq, dsq_min);
+                dsq_min = cad_min(dsq, dsq_min);  // 1 FLOP
             }
         }
     }
-    // LOOP: 3*3*3 * 11 FLOPS  + 3*3 * 4 FLOPS + 3 * 2 FLOPS = 339 FLOPS
+    // LOOP: 3*3*3 * 12 FLOPS  + 3*3 * 4 FLOPS + 3 * 2 FLOPS =  366 FLOPS
     return dsq_min;
 }
 
 
 // distance calculation
 // TOTAL FLOP EVALUATION
-// no box:         28 FLOPS
-// orthorhombic:   40 FLOPS
-// triclinic:     381 FLOPS
+// no box:          9 FLOPS
+// orthorhombic:   21 FLOPS
+// triclinic:     370 FLOPS
 #pragma omp declare simd
 template <typename TUPLE3_T, typename FLOAT_T, int box_type_id>
 DEVICE inline FLOAT_T
@@ -186,18 +180,18 @@ dist(const TUPLE3_T &p1, const TUPLE3_T &p2,
     dp.y = p1.y - p2.y;  // 1 FLOP
     dp.z = p1.z - p2.z;  // 1 FLOP
     switch (box_type_id) {
+    case none:
+        dsq = dp.x * dp.x + dp.y * dp.y + dp.z * dp.z;  // 5 FLOPS
+        break;
     case orthorhombic:
         mic_orthorhombic <TUPLE3_T, FLOAT_T> (dp, box_ortho, box_inv);  // 12 FLOPS
         dsq = dp.x * dp.x + dp.y * dp.y + dp.z * dp.z;  // 5 FLOPS
         break;
-    case none:
-        dsq = dp.x * dp.x + dp.y * dp.y + dp.z * dp.z;  // 5 FLOPS
-        break;
     case triclinic:
-        dsq = mic_triclinic<TUPLE3_T, FLOAT_T>(dp, box, box_inv);  // 358 FLOPS
+        dsq = mic_triclinic<TUPLE3_T, FLOAT_T>(dp, box, box_inv);  // 366 FLOPS
         break;
     }
-    return std::sqrt(dsq);  // 20 FLOPS(?)  // 10-21 (DP 21-43) Agners tables latency for SandyBridge
+    return std::sqrt(dsq);  // 1 FLOP // 10-21 (DP 21-43) Agners tables latency for SandyBridge
 }
 
 

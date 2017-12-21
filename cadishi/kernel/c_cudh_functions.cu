@@ -21,13 +21,6 @@
 */
 
 
-#ifdef BUILD_C_LIBRARY
-#include "cudh.h"
-#else
-#include <Python.h>
-#include <numpy/ndarrayobject.h>
-#endif
-
 #include <stdint.h>
 #include <cuda.h>
 
@@ -38,7 +31,9 @@
 #include <stdexcept>
 #include <string>
 
+#include "cudh.h"
 #include "common.hpp"
+#include "config.hpp"
 #include "exceptions.hpp"
 #include "cuda_exceptions.hpp"
 
@@ -741,6 +736,7 @@ void histo_gpu(TUPLE3_T *coords, int n_tot,
 
     default:
         RT_ERROR("unknown implementation requested");
+        //printf("NOTE: unknown implementation requested\n");
     } // end switch
 
     // copy histograms and the error flag back to the host
@@ -760,13 +756,14 @@ void histograms_template_dispatcher(NP_TUPLE3_T *r_ptr,   // coordinate tuples
                                     int n_tot,            // total number of coordinate tuples
                                     int *nel_ptr,         // number of atoms per species
                                     int n_El,             // number of species
-                                    int n_Hij,            // number of histograms
                                     uint64_t *histo_ptr,  // histograms
                                     int n_bins,           // histogram width
+                                    int n_Hij,            // number of histograms
                                     double r_max,         // histogram cutoff
                                     int *mask_ptr,        // boolean mask specifying if nth histogram shall be computed
                                     double *box_ptr,      // periodic box specifier
                                     int box_type_id,      // type of periodic box
+                                    // ---
                                     int check_input,      // switch if distance should be checked before binning
                                     int gpu_id,           // id of the GPU to be used
                                     int thread_block_x,   // CUDA thread block size
@@ -876,7 +873,59 @@ void histograms_template_dispatcher(NP_TUPLE3_T *r_ptr,   // coordinate tuples
 }
 
 
-#ifdef BUILD_C_LIBRARY
+int get_num_cuda_devices() {
+    int n;
+    if (cudaGetDeviceCount(&n) != cudaSuccess) {
+        n = 0;
+    }
+    return n;
+}
+
+
+int histograms_gpu(np_tuple3d_t *r_ptr,
+                   int n_tot,
+                   int *nel_ptr,
+                   int n_El,
+                   uint64_t *histo_ptr,
+                   int n_bins,
+                   int n_Hij,
+                   double r_max,
+                   int *mask_ptr,
+                   double *box_ptr,
+                   int box_type_id,
+                   const config & cfg) {
+    int exit_status = 0;
+    if (cfg.verbose) {
+        cfg.print_config();
+    }
+    // TODO: move the cfg data structure further in
+    try {
+        if (cfg.precision == single_precision) {
+            // NOTE: histograms_template_dispatcher() does the conversion to single precision internally
+            histograms_template_dispatcher <np_tuple3d_t, tuple3s_t, float>
+                (r_ptr, n_tot, nel_ptr, n_El, histo_ptr, n_bins, n_Hij, r_max, mask_ptr, box_ptr, box_type_id,
+                cfg.check_input, cfg.gpu_id, cfg.gpu_thread_block_x, cfg.histo2_only, cfg.verbose, cfg.gpu_algorithm);
+        } else {
+            histograms_template_dispatcher <np_tuple3d_t, tuple3d_t, double>
+                (r_ptr, n_tot, nel_ptr, n_El, histo_ptr, n_bins, n_Hij, r_max, mask_ptr, box_ptr, box_type_id,
+                cfg.check_input, cfg.gpu_id, cfg.gpu_thread_block_x, cfg.histo2_only, cfg.verbose, cfg.gpu_algorithm);
+        }
+    } catch (std::overflow_error & err) {
+        const std::string msg = std::string(err.what());
+        printf("%s\n", msg.c_str());
+        exit_status = 1;
+    } catch (std::runtime_error & err) {
+        const std::string msg = std::string(err.what());
+        printf("%s\n", msg.c_str());
+        exit_status = 2;
+    } catch (...) {
+        // --- general unknown error
+        exit_status = 3;
+    }
+    return exit_status;
+}
+
+/*
 
 int histograms_gpu_single(np_tuple3s_t *r_ptr,  // coordinate tuples
                           int n_tot,            // total number of coordinate tuples
@@ -963,133 +1012,4 @@ int histograms_gpu_double(np_tuple3d_t *r_ptr,  // coordinate tuples
     }
     return exit_status;
 }
-
-#else
-
-// --- return the number of usable CUDA devices
-static PyObject* get_num_devices(PyObject* self, PyObject* args) {
-    int n;
-    if (cudaGetDeviceCount(&n) != cudaSuccess) {
-        n = 0;
-    }
-    return Py_BuildValue("i", n);
-}
-
-// --- calculate distance histograms for a complete frame ---
-static PyObject* histograms(PyObject* self, PyObject* args) {
-    // --- required parameters
-    PyArrayObject *coords;
-    PyArrayObject *nelems;
-    PyArrayObject *histos;
-    double r_max;
-    PyArrayObject *mask;
-    PyArrayObject *box;
-    int box_type_id = none;
-    // --- optional parameters
-    int precision = single_precision;
-    int gpu_id = 0;
-    int do_histo2_only = 0;
-    int thread_block_x = 0;
-    int check_input = 0;
-    int verbose = 0;
-    int exit_status;
-    int algorithm = -1;
-
-    exit_status = 0;
-    try {
-        if (!PyArg_ParseTuple(args, "OOOdOOi|iiiiiii", &coords, &nelems, &histos, &r_max, &mask, &box, &box_type_id,
-                              /*optional parameters:*/ &precision, &gpu_id, &do_histo2_only,
-                              &thread_block_x, &check_input, &verbose,
-                              &algorithm))
-            return NULL;
-
-        // --- 2D double precision coordinate array for all species
-        RT_ASSERT( coords->nd == 2 );
-        RT_ASSERT( coords->dimensions[1] == 3 );
-        int n_tot = coords->dimensions[0];
-        np_tuple3d_t *r_ptr = (np_tuple3d_t*) coords->data;
-
-        // --- 1D integer array containing the number of elements for each species
-        RT_ASSERT( nelems->nd == 1 );
-        int n_El = nelems->dimensions[0];
-        int *nel_ptr = (int*) nelems->data;
-
-        // --- 2D integer array containing the histograms
-        RT_ASSERT( histos->nd == 2 );
-        int n_bins = histos->dimensions[0];
-        int n_Hij = (histos->dimensions[1])-1;
-        uint64_t *histo_ptr = (uint64_t*) histos->data;
-
-        RT_ASSERT(n_Hij == mask->dimensions[0]);
-        int *mask_ptr = (int*) mask->data;
-
-        RT_ASSERT(box->dimensions[0] == 3);
-        RT_ASSERT(box->dimensions[1] == 3);
-        double *box_ptr = (double*) box->data;
-
-        if ( precision == single_precision ) {
-            histograms_template_dispatcher <np_tuple3d_t, tuple3s_t, float>
-            (r_ptr, n_tot,
-             nel_ptr, n_El, n_Hij,
-             histo_ptr, n_bins, r_max,
-             mask_ptr,
-             box_ptr, box_type_id,
-             check_input,
-             gpu_id, thread_block_x,
-             do_histo2_only, verbose, algorithm);
-        } else if ( precision == double_precision ) {
-            histograms_template_dispatcher <np_tuple3d_t, tuple3d_t, double>
-            (r_ptr, n_tot,
-             nel_ptr, n_El, n_Hij,
-             histo_ptr, n_bins, r_max,
-             mask_ptr,
-             box_ptr, box_type_id,
-             check_input,
-             gpu_id, thread_block_x,
-             do_histo2_only, verbose, algorithm);
-        } else {
-            RT_ERROR(std::string("unknown precision identifier passed"));
-        }
-    } catch (std::overflow_error & err) {
-        const std::string msg = std::string(err.what());
-        printf("%s\n", msg.c_str());
-        exit_status = 1;
-    } catch (std::runtime_error & err) {
-        const std::string msg = std::string(err.what());
-        printf("%s\n", msg.c_str());
-        exit_status = 2;
-    } catch (...) {
-        // --- general unknown error
-        exit_status = 3;
-    }
-
-    return Py_BuildValue("i", exit_status);
-}
-
-
-// --- free any device memory allocated by previous calls
-static PyObject* free(PyObject* self, PyObject* args) {
-    int exit_status;
-    exit_status = 0;
-    return Py_BuildValue("i", exit_status);
-}
-
-
-// --- register C functions as Python modules
-static PyMethodDef c_cudh_Methods[] = {
-    {"get_num_devices", get_num_devices, METH_VARARGS, "return the number of CUDA devices available on the system"},
-    {"histograms", histograms, METH_VARARGS, "calculate distance histograms for a complete frame"},
-    {"free", free, METH_VARARGS, "free CUDA memory allocated by histograms()"},
-    {NULL, NULL, 0, NULL}
-};
-
-
-// --- Python module initialization
-PyMODINIT_FUNC
-initc_cudh(void) {
-    (void) Py_InitModule("c_cudh", c_cudh_Methods);
-    // --- the following helper function must be called
-    import_array();
-}
-
-#endif // BUILD_C_LIBRARY
+*/

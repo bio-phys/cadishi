@@ -83,9 +83,8 @@ def histograms(coordinate_sets,
 
     # --- run the CUDH distance histogram kernel
     exit_status = c_pydh.histograms(np_coord, np_nelem, np_histos, r_max, np_mask,
-                                    np_box, box_type_id,
-                                    precision, pydh_threads, check_input,
-                                    do_histo2_only)
+                                    np_box, box_type_id,  # optional arguments follow
+                                    precision, check_input, do_histo2_only, verbose, pydh_threads)
 
     if (exit_status == 1):
         raise ValueError(common.overflow_error_msg)
@@ -100,11 +99,8 @@ def histograms(coordinate_sets,
     return np_histos
 
 
-def dist_driver(coordinates,
-                precision="single",
-                box=[],
-                force_triclinic=False):
-    """Debug driver for the distance calculation functions."""
+def distances(coordinates, precision="single", box=[], force_triclinic=False):
+    """Driver for the distance calculation functions."""
 
     if not have_c_pydh:
         raise RuntimeError(common.import_pydh_error_msg)
@@ -120,11 +116,11 @@ def dist_driver(coordinates,
     np_box, box_type_id, box_type = pbc.get_standard_box(box, force_triclinic=force_triclinic, verbose=False)
 
     if (len(box) > 0):
-        print("dist_driver box_type: " + str(box_type))
+        print("distances box_type: " + str(box_type))
 
     precision = common.precision_to_enum(precision)
 
-    exit_status = c_pydh.dist_driver(np_coord, np_dist, np_box, box_type_id, precision)
+    exit_status = c_pydh.distances(np_coord, np_dist, np_box, box_type_id, precision)
 
     if (exit_status == 1):
         raise ValueError(common.overflow_error_msg)
