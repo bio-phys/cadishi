@@ -13,8 +13,13 @@
 HDF5 data reader/writer for base.Container instances.  Heavily used by Cadishi
 and Capriqorn.
 """
+from __future__ import print_function
 
 
+from builtins import next
+from builtins import str
+from builtins import range
+from past.builtins import basestring
 import re
 import json
 import h5py
@@ -70,7 +75,7 @@ class H5Reader(base.Reader):
         # --- build a list of all available frames explicitly
         self.frame_pool = []
         for file_idx in range(len(self.file_names)):
-            for frame_idx in sorted(int(keys) for keys in self.get_h5fp(file_idx).keys()):
+            for frame_idx in sorted(int(keys) for keys in list(self.get_h5fp(file_idx).keys())):
                 # check if frame_idx is actually a frame number
                 frame_idx = str(int(frame_idx))
                 if (re.match("[0-9]+", frame_idx) == None):
@@ -89,7 +94,7 @@ class H5Reader(base.Reader):
             else:
                 random.shuffle(self.frame_pool)
         if self.verb:
-            print "H5Reader.next() : frame_pool ", self.frame_pool
+            print("H5Reader.next() : frame_pool ", self.frame_pool)
 
     def __del__(self):
         self.close_h5fp()
@@ -128,7 +133,7 @@ class H5Reader(base.Reader):
         frm.i = int(frame_idx)  # may be changed outside with absolute numbering
         # ---
         frm.data = h5pickle.load(group)
-        if 'log' in frm.data.keys():
+        if 'log' in list(frm.data.keys()):
             json_str = frm.data['log']
             del frm.data['log']
             if len(json_str) > 0:
@@ -138,7 +143,7 @@ class H5Reader(base.Reader):
         # ---
         return frm
 
-    def next(self):
+    def __next__(self):
         """Generator yielding frame by frame (re-numbering frames from one)."""
         c = 1
         for idx_tuple in self.frame_pool:
@@ -147,7 +152,7 @@ class H5Reader(base.Reader):
             frm.i = c  # re-introduce numbering
             frm.put_meta(self.get_meta())
             if self.verb:
-                print "H5Reader.next() : ", frm.i
+                print("H5Reader.next() : ", frm.i)
             yield frm
             c += 1
 
@@ -226,7 +231,7 @@ class H5Writer(base.Writer):
         labeled with the frame number.
         """
         frm.put_meta(self.get_meta())
-        if 'log' in frm.data.keys():
+        if 'log' in list(frm.data.keys()):
             json_str = json.dumps(frm.data['log'])
             del frm.data['log']
             if len(json_str) > 0:
@@ -241,10 +246,10 @@ class H5Writer(base.Writer):
         If the user code sets up a data processing pipeline,
         the dump() routine drives it by providing the final sink.
         """
-        for frm in self.src.next():
+        for frm in next(self.src):
             if isinstance(frm, base.Container):
                 if self.verb:
-                    print "H5Writer.dump() : ", frm.i
+                    print("H5Writer.dump() : ", frm.i)
                 self.put_frame(frm)
             else:
                 # None objects

@@ -10,8 +10,11 @@
 
 """A set of unit tests for the pydh CPU and cudh GPU histogram modules.
 """
+from __future__ import print_function
 
 
+from builtins import str
+from builtins import range
 import os
 import sys
 import numpy as np
@@ -55,17 +58,17 @@ if TEST_CUDH:
     try:
         from cadishi.kernel import cudh
     except Exception as e:
-        print "Error importing >> cudh <<.  Disabling CUDA tests."
-        print "Exception message : " + e.message
+        print("Error importing >> cudh <<.  Disabling CUDA tests.")
+        print("Exception message : " + e.message)
         TEST_CUDH = False
 
 if TEST_CUDH:
     # test if we are able to run the tests at all
     if (cudh.get_num_devices() == 0):
-        print "No usable CUDA device detected.  Disabling CUDA tests."
+        print("No usable CUDA device detected.  Disabling CUDA tests.")
         TEST_CUDH = False
     else:
-        print "CUDA tests: " + str(cudh.get_num_devices()) + " GPUs detected."
+        print("CUDA tests: " + str(cudh.get_num_devices()) + " GPUs detected.")
 
 
 def get_triclinic_box():

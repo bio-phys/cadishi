@@ -13,8 +13,11 @@
 ASCII data writer for base.Container instances, mainly designed for debugging
 purposes.  A reader is currently not implemented.
 """
+from __future__ import print_function
 
 
+from builtins import next
+from builtins import str
 import numpy as np
 import json
 
@@ -48,8 +51,8 @@ class ASCIIWriter(base.Writer):
         dict_util.write_dict(frm.data, path)
 
     def dump(self):
-        for frm in self.src.next():
+        for frm in next(self.src):
             if self.verb and (self.counter % 10 == 0):
-                print "ASCIIWriter.dump() : ", frm.i
+                print("ASCIIWriter.dump() : ", frm.i)
             self.counter += 1
             self.write_frame(frm)

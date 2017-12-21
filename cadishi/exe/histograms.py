@@ -16,8 +16,17 @@ The configuration is read from the parameter file histograms.{json,yaml}.
 This program is not intended to be invoked directly. It is launched via cli.py
 which in turn is called as the `cadishi` command via an entry_point in setup.py.
 """
+from __future__ import print_function
+from __future__ import division
 
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import next
+from builtins import str
+from builtins import range
+from past.builtins import basestring
+from past.utils import old_div
 import sys
 import os
 import math
@@ -31,7 +40,7 @@ import ctypes
 from six.moves import range
 import signal
 import cProfile
-import StringIO
+import io
 import pstats
 import argparse
 from .. import base
@@ -90,7 +99,7 @@ def check_parameters(histoparam):
         except Exception as e:
             n_cores = 1
         n_cores = n_cores - histoparam['gpu']['workers'] - 2  # 2: main task, sum task
-        n_cores = n_cores / histoparam['cpu']['workers']
+        n_cores = old_div(n_cores, histoparam['cpu']['workers'])
         if (n_cores <= 0):
             n_cores = 1
         histoparam['cpu']['threads'] = n_cores
@@ -145,13 +154,13 @@ mp_all_workers_list = []
 
 def unexpectedShutdownHandler(signum, frame):
     """Singnal handler, to catch SIGUSR1 sent by child processes, and SIGTERM."""
-    print util.SEP
-    print " %s Shutdown signal received!" % util.timeStamp(dateAndTime=True)
-    print " Killing all child processes ..."
+    print(util.SEP)
+    print(" %s Shutdown signal received!" % util.timeStamp(dateAndTime=True))
+    print(" Killing all child processes ...")
     for mp_worker in mp_all_workers_list:
         mp_worker.terminate()
-    print " Killing master process.  Goodbye."
-    print util.SEP
+    print(" Killing master process.  Goodbye.")
+    print(util.SEP)
     os.kill(os.getpid(), signal.SIGTERM)
     os.kill(os.getpid(), signal.SIGKILL)
 
@@ -160,7 +169,7 @@ def main(argparse_args):
 
     print_it = util.PrintWrapper()
 
-    print util.SEP
+    print(util.SEP)
 
     if (argparse_args.input):
         parameter_file = argparse_args.input[0]
@@ -180,7 +189,7 @@ def main(argparse_args):
     try:
         histoparam = util.load_parameter_file(parameter_file)
     except:
-        print " Error: Could not read input file '" + parameter_file + "'."
+        print(" Error: Could not read input file '" + parameter_file + "'.")
         exit(1)
 
     try:
@@ -228,20 +237,20 @@ def main(argparse_args):
         r_max = histoparam['histogram']['r_max']
 
     dr = histoparam['histogram']['dr']
-    nbins = int(math.ceil(r_max / dr))
+    nbins = int(math.ceil(old_div(r_max, dr)))
 
-    print version.get_printable_version_string()
-    print util.SEP
-    print " parameter file:       " + parameter_file
-    print " trajectory file:      " + str(histoparam['input']['file'])
-    print " output directory:     " + histoparam['output']['directory']
-    print " r_max:                " + str(r_max)
-    print " nbins:                " + str(nbins)
-    print " cpu workers:          " + str(histoparam['cpu']['workers'])
+    print(version.get_printable_version_string())
+    print(util.SEP)
+    print(" parameter file:       " + parameter_file)
+    print(" trajectory file:      " + str(histoparam['input']['file']))
+    print(" output directory:     " + histoparam['output']['directory'])
+    print(" r_max:                " + str(r_max))
+    print(" nbins:                " + str(nbins))
+    print(" cpu workers:          " + str(histoparam['cpu']['workers']))
     if (histoparam['cpu']['workers'] > 0):
-        print " cpu threads:          " + str(histoparam['cpu']['threads'])
-    print " gpu workers:          " + str(histoparam['gpu']['workers'])
-    print util.SEP
+        print(" cpu threads:          " + str(histoparam['cpu']['threads']))
+    print(" gpu workers:          " + str(histoparam['gpu']['workers']))
+    print(util.SEP)
 
     elements = ti.species
 
@@ -260,11 +269,11 @@ def main(argparse_args):
 
     # initialize a time mark for relative timing information
     t0 = time.time()
-    print " %s proceeding to distance histogram computation" % util.timeStamp(dateAndTime=True)
+    print(" %s proceeding to distance histogram computation" % util.timeStamp(dateAndTime=True))
 
     if (histoparam['general']['verbose']):
-        print util.SEP
-        print " %s spawning worker processes ..." % util.timeStamp(t0=t0)
+        print(util.SEP)
+        print(" %s spawning worker processes ..." % util.timeStamp(t0=t0))
 
     # ------ set up the multiprocessing environment ------
     # use blocking queues for job handling and synchronization
@@ -316,7 +325,7 @@ def main(argparse_args):
                            step=histoparam['input']['step'],
                            verbose=False)
     # --- fetch data from reader and put it into the task queue
-    for frm in reader.next():
+    for frm in next(reader):
         assert isinstance(frm, base.Container)
 
         # (1) --- create a list containing per-species numpy arrays with coordinate triples
@@ -383,15 +392,15 @@ def main(argparse_args):
                 n_at1 = particleNrs[i]
                 n_at2 = particleNrs[j]
                 if (i == j):
-                    bap += float((n_at1 * (n_at1 - 1)) / 2) / 1.e9
+                    bap += old_div(float(old_div((n_at1 * (n_at1 - 1)), 2)), 1.e9)
                 else:
-                    bap += float(n_at1 * n_at2) / 1.e9
+                    bap += old_div(float(n_at1 * n_at2), 1.e9)
 
         # --- write out particle numbers
         nr_part_fp.write("%d " * (nEl + 1) % tuple([frm.i] + particleNrs) + "\n")
 
         if (histoparam['general']['verbose']):
-            print " %s enqueueing frame %d ..." % (util.timeStamp(t0=t0), frm.i)
+            print(" %s enqueueing frame %d ..." % (util.timeStamp(t0=t0), frm.i))
             if (frm.i == 0):
                 sys.stdout.flush()
 
@@ -409,25 +418,25 @@ def main(argparse_args):
         task_queue.put(None, task_queue_timeout)
 
     if (histoparam['general']['verbose']):
-        print " %s waiting for worker processes ..." % util.timeStamp(t0=t0)
+        print(" %s waiting for worker processes ..." % util.timeStamp(t0=t0))
     task_queue.join()
     result_queue.join()
 
     t1 = time.time()
     wallclock = float(t1 - t0)
     ntotal = float(histoparam['input']['last'] + 1 - histoparam['input']['first'])
-    fps = ntotal / wallclock
+    fps = old_div(ntotal, wallclock)
 
     # Save preprocessor meta information (that was fetched from the HDF5 input file)
     # to a JSON text file for potential evaluation by the postprocessor.
     with open(histoparam['output']['directory'] + "preprocessor_log.json", 'w') as fp:
         json.dump(ti.pipeline_log, fp, indent=4, sort_keys=True)
 
-    print util.SEP
-    print " %s distance histogram computation finished" % util.timeStamp(dateAndTime=True)
-    print "   frames:             %d" % ntotal
-    print "   wallclock time:     %.3f" % wallclock
-    print "   frames per second:  %.3f" % fps
+    print(util.SEP)
+    print(" %s distance histogram computation finished" % util.timeStamp(dateAndTime=True))
+    print("   frames:             %d" % ntotal)
+    print("   wallclock time:     %.3f" % wallclock)
+    print("   frames per second:  %.3f" % fps)
 
     sys.stdout.flush()
 
@@ -439,5 +448,5 @@ def main(argparse_args):
     # join the process (i.e. wait until it terminates itself)!
     # Using terminate() here does cause HDF5 errors!
     sum_worker.join()
-    print util.SEP
+    print(util.SEP)
     sys.exit(0)

@@ -21,6 +21,7 @@ testcase that is included with the Cadishi package.
 This program is not intended to be invoked directly. It is launched via cli.py
 which in turn is called as the `cadishi` command via an entry_point in setup.py.
 """
+from __future__ import print_function
 
 
 import os

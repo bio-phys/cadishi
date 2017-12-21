@@ -12,6 +12,7 @@
 
 The main() function is to be called via cli.py.
 """
+from __future__ import print_function
 
 
 import os

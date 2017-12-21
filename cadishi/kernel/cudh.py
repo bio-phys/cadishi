@@ -12,8 +12,12 @@
 
 Calls the c_cudh Python module.
 """
+from __future__ import print_function
 
 
+from builtins import str
+from builtins import zip
+from builtins import range
 import numpy as np
 from six.moves import range
 from . import common
@@ -114,9 +118,9 @@ def histograms(coordinate_sets,
         el_siz = []
         for i in el_idx:
             el_siz.append(coordinate_sets[i].shape[0])
-        idx_siz = zip(el_idx, el_siz)
+        idx_siz = list(zip(el_idx, el_siz))
         idx_siz.sort(key=lambda tup: tup[1])
-        el_idx_srt, el_siz_srt = zip(*idx_siz)
+        el_idx_srt, el_siz_srt = list(zip(*idx_siz))
 
         # --- create reordered concatenated numpy arrays
         n_coord = sum(el_siz)

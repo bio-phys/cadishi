@@ -16,6 +16,7 @@ suite to compare the results of (small) problems between the kernels.
 """
 
 
+from builtins import range
 import numpy as np
 try:
     from . import c_dist

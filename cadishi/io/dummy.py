@@ -10,7 +10,11 @@
 
 """Cadishi dummy IO module, useful to test and develop Capriqorn pipelines.
 """
+from __future__ import print_function
 
+from builtins import next
+from builtins import str
+from builtins import range
 import numpy as np
 from .. import base
 from .. import util
@@ -42,8 +46,8 @@ class DummyReader(base.Reader):
         frm.i = i
         return frm
 
-    def next(self):
-        for i in xrange(self.n_frames):
+    def __next__(self):
+        for i in range(self.n_frames):
             yield self.get_frame(i)
 
 
@@ -62,7 +66,7 @@ class DummyWriter(base.Writer):
         self._conflicts.extend(super(base.Writer, self)._conflicts)
 
     def dump(self):
-        for frm in self.src.next():
+        for frm in next(self.src):
             if self.verb:
-                print "DummyWriter.dump() : ", frm.i
+                print("DummyWriter.dump() : ", frm.i)
             pass

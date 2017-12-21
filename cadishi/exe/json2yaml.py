@@ -13,6 +13,7 @@
 
 Usage: json2yaml.py input_file [output_file]
 """
+from __future__ import print_function
 
 
 def main():
@@ -28,7 +29,7 @@ def main():
     elif (len(sys.argv) == 3):
         output_file = sys.argv[2]
     else:
-        print "Usage: %s json_file [yaml_file]" % util.get_executable_name()
+        print("Usage: %s json_file [yaml_file]" % util.get_executable_name())
         sys.exit(1)
 
     data = util.load_json(sys.argv[1])

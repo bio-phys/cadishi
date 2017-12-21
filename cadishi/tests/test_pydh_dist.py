@@ -8,6 +8,7 @@
 #
 # Released under the MIT License, see the file LICENSE.txt.
 
+from builtins import range
 import os
 import sys
 import numpy as np
@@ -65,7 +66,7 @@ def random_spherical_coordinates():
     global setup_sphere
     if setup_sphere is None:
         coords = []
-        for i in xrange(n):
+        for i in range(n):
             coords.append(util.generate_random_point_in_sphere(R))
         setup_sphere = np.asarray(coords)
     return setup_sphere
@@ -79,7 +80,7 @@ def random_spherical_surface():
     global setup_spherical_surface
     if setup_spherical_surface is None:
         coords = []
-        for i in xrange(n):
+        for i in range(n):
             coords.append(util.generate_random_point_on_spherical_surface(R))
         setup_spherical_surface = np.asarray(coords)
     return setup_spherical_surface
