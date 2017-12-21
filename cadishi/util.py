@@ -31,7 +31,6 @@ import getpass
 import shutil
 import numpy as np
 from scipy import stats
-from six.moves import range
 import time
 import datetime
 import cProfile

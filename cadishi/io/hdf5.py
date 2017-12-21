@@ -24,7 +24,6 @@ import re
 import json
 import h5py
 import random
-from six.moves import range
 
 from .. import base
 from .. import util

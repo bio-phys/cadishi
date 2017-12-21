@@ -18,8 +18,8 @@ from __future__ import print_function
 from builtins import str
 from builtins import zip
 from builtins import range
+
 import numpy as np
-from six.moves import range
 from . import common
 try:
     from . import c_cudh

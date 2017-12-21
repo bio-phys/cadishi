@@ -27,7 +27,6 @@ import datetime
 import math
 import yaml
 import argparse
-from six.moves import range
 from cadishi import util
 from cadishi import version
 from collections import OrderedDict

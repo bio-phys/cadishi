@@ -14,7 +14,6 @@
 
 from builtins import range
 import numpy as np
-from six.moves import range
 
 
 # --- whitespace compatible with script_histogram_par's time stamp

@@ -403,7 +403,6 @@ setup(
               'cadishi.tests',
               'cadishi.exe'],
     install_requires=[
-        'six',
         'future',
         'numpy',
         'scipy',

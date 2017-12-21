@@ -22,7 +22,6 @@ from builtins import next
 from builtins import str
 from builtins import range
 import pickle
-from six.moves import range
 
 from .. import base
 from .. import util

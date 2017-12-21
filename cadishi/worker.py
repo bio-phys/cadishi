@@ -30,7 +30,6 @@ import datetime
 import multiprocessing
 import json
 import ctypes
-from six.moves import range
 import signal
 import cProfile
 import io

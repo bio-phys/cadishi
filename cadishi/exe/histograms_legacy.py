@@ -48,7 +48,6 @@ def main():
     import os
     import glob
     import time
-    from six.moves import range
 
     from . import molDat as md  # reading in pdb and crdbox files
 
