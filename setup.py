@@ -11,7 +11,7 @@
 """Cadishi setup.py builder and installer.
 """
 
-from __future__ import print_function
+# from __future__ import print_function
 import os
 import sys
 import glob
@@ -165,7 +165,7 @@ def get_cuda_ver(nvcc="nvcc"):
     major = -1
     minor = -1
     patch = -1
-    raw = sub.check_output(cmd).split('\n')
+    raw = sub.check_output(cmd).decode('ascii').split('\n')
     for line in raw:
         if line.startswith('Cuda'):
             tokens = line.split(',')
@@ -214,7 +214,7 @@ def locate_cuda():
         lib_dir = os.path.join(home, 'lib')
     cudaconfig['lib'] = lib_dir
 
-    for k, v in cudaconfig.iteritems():
+    for k, v in cudaconfig.items():
         if not os.path.exists(v):
             raise EnvironmentError(
                 'The CUDA %s path could not be located in %s' % (k, v))
