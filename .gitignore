@@ -1,11 +1,15 @@
 *.pyc
 *.swp
 *.so
+
+# ignore file-management and ide-related files
 .unison
 .cproject
 .project
 .pydevproject
 .settings
+
+# ignore build-related files
 build
 .cache
 *.egg-info
@@ -13,3 +17,8 @@ cadishi/githash.py
 doc/doctrees
 doc/html/.buildinfo
 doc/latex
+
+# ignore Cython-generated files
+cadishi/kernel/c_dist.c
+cadishi/kernel/c_cudh.cpp
+cadishi/kernel/c_pydh.cpp
