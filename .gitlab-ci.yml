@@ -1,9 +1,9 @@
-before_script:
-  - rm -f ~/.local/lib/python2.7/site-packages/cadishi.egg-link
-  - export BASE=`pwd`
-  - python setup.py develop --user
 
-test_job:
+test_py27:
+  before_script:
+    - rm -f ~/.local/lib/python2.7/site-packages/cadishi.egg-link
+    - export BASE=`pwd`
+    - python setup.py develop --user
   script:
     # Run the included unit test cases
     - py.test cadishi
@@ -26,8 +26,7 @@ test_job:
     # - cd conda
     # - ./conda_build.sh
     # - cd ..
-
-# Clean up remnants.
-after_script:
-  - python setup.py develop --user --uninstall || true
-  - rm -f ~/.local/lib/python2.7/site-packages/cadishi.egg-link
+  after_script:
+    # Clean up remnants.
+    - python setup.py develop --user --uninstall || true
+    - rm -f ~/.local/lib/python2.7/site-packages/cadishi.egg-link
