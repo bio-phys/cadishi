@@ -132,7 +132,7 @@ def get_gcc_flags():
             if not on_mac():
                 if CAD_OPENMP:
                     cc_flags += ['-fopenmp']
-                cc_flags += ['-fopt-info']
+                # cc_flags += ['-fopt-info']
     return cc_flags
 
 
