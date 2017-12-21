@@ -11,6 +11,7 @@
 """Miscellaneous useful and convenient functions used by Cadishi and Capriqorn,
 of potential general use.
 """
+from __future__ import print_function
 
 
 import importlib
@@ -132,10 +133,10 @@ def set_numa_domain(numa_id, numa_topology):
         pid = "%d" % os.getpid()
         cmd = ['taskset', '-pc', numa_cpus, pid]
         raw = sub.check_output(cmd).split('\n')
-        print SEP
-        print " " + raw[0]
-        print " " + raw[1]
-        print SEP
+        print(SEP)
+        print(" " + raw[0])
+        print(" " + raw[1])
+        print(SEP)
         exit_status = True
     except:
         exit_status = False
@@ -582,7 +583,7 @@ def redirectOutput(filename):
     """Redirect stdout and stderr of the present process to the file specified by filename."""
     o_flags = os.O_CREAT | os.O_TRUNC | os.O_WRONLY
     os.close(1)
-    os.open(filename, o_flags, 0664)
+    os.open(filename, o_flags, 0o664)
     os.close(2)
     os.dup(1)
 
