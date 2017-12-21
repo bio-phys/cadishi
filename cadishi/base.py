@@ -156,7 +156,7 @@ class Container:
                     keys.remove(_key)
         return keys
 
-    def has_key(self, location):
+    def contains_key(self, location):
         """Check if the current object instance has data stored at location.
         """
         return dictfs.exists(self.data, location)

@@ -354,7 +354,7 @@ def main(argparse_args):
             msg = "geometry filter detected, disabling box."
         else:
             if histoparam['input']['periodic_box'] is None:
-                if frm.has_key(base.loc_dimensions):
+                if frm.contains_key(base.loc_dimensions):
                     msg = "using box information provided by frame."
                     pass
                 else:
@@ -371,10 +371,10 @@ def main(argparse_args):
         if box_volume is not None:
             frm.put_data(base.loc_volumes, {'box': box_volume})
 
-        if not frm.has_key(base.loc_histogram_scale_factors):
+        if not frm.contains_key(base.loc_histogram_scale_factors):
             frm.put_data(base.loc_histogram_scale_factors, [])
 
-        if not frm.has_key(base.loc_histogram_mask):
+        if not frm.contains_key(base.loc_histogram_mask):
             frm.put_data(base.loc_histogram_mask, [])
 
         bap = 0.0  # billion atom pairs

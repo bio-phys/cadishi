@@ -280,18 +280,18 @@ def sum(histoparam, resultQueue, n_El, n_bins, dr, header_str, t0):
                 frm_in.del_data('tmp/histograms')
 
                 # --- sum length histograms
-                if frm_in.has_key(base.loc_len_histograms):
-                    if not frm.has_key(base.loc_len_histograms + '/radii'):
+                if frm_in.contains_key(base.loc_len_histograms):
+                    if not frm.contains_key(base.loc_len_histograms + '/radii'):
                         frm.put_data(base.loc_len_histograms + '/radii',
                                      frm_in.get_data(base.loc_len_histograms + '/radii'))
                     frm.sum_data(frm_in, base.loc_len_histograms)
 
                 # --- append particle numbers
-                if frm_in.has_key(base.loc_nr_particles):
+                if frm_in.contains_key(base.loc_nr_particles):
                     frm.append_data(frm_in, base.loc_nr_particles)
 
                 # --- append volume of the periodic box
-                if frm_in.has_key(base.loc_volumes):
+                if frm_in.contains_key(base.loc_volumes):
                     frm.append_data(frm_in, base.loc_volumes)
 
                 if (processor_type == "cpu"):

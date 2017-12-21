@@ -158,7 +158,7 @@ class H5Reader(base.Reader):
         ti = base.TrajectoryInformation()
         idx_tuple = self.frame_pool[0]
         frm = self.get_frame(idx_tuple)
-        if frm.has_key(base.loc_coordinates):
+        if frm.contains_key(base.loc_coordinates):
             ti.species = sorted(frm.get_keys(base.loc_coordinates))
         else:
             ti.species = []
