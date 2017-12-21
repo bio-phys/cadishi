@@ -12,8 +12,13 @@
 
 """Driver to measure the performance of cudh and pydh conveniently.
 """
+from __future__ import print_function
+from __future__ import division
 
 
+from builtins import str
+from builtins import range
+from past.utils import old_div
 import os
 import sys
 import numpy as np
@@ -170,10 +175,10 @@ def get_bap():
     for i in range(n_el):
         for j in range(i, n_el):
             if (i != j):
-                bap += float(n_atoms[i] * n_atoms[j]) / 1.e9
+                bap += old_div(float(n_atoms[i] * n_atoms[j]), 1.e9)
             else:
                 if not run_values['histo2']:
-                    bap += float((n_atoms[j] * (n_atoms[j] - 1)) / 2) / 1.e9
+                    bap += old_div(float(old_div((n_atoms[j] * (n_atoms[j] - 1)), 2)), 1.e9)
     return bap
 
 
@@ -232,7 +237,7 @@ else:
 t1 = time.time()
 dt = (t1 - t0)
 
-bapps = bap / dt
+bapps = old_div(bap, dt)
 
 run_values['bap'] = bap
 run_values['time'] = dt

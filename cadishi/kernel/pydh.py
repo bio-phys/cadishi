@@ -12,8 +12,11 @@
 
 Calls the c_pydh Python module.
 """
+from __future__ import print_function
 
 
+from builtins import str
+from builtins import range
 __author__ = "Klaus Reuter"
 __copyright__ = "Copyright (C) 2015-2016 Klaus Reuter"
 __license__ = "license_tba"

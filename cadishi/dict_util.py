@@ -47,7 +47,7 @@ def sum_values(X, Y, skip_keys=['radii', 'frame']):
     """
     assert isinstance(X, dict)
     assert isinstance(Y, dict)
-    for key in Y.keys():
+    for key in list(Y.keys()):
         if key in skip_keys:
             continue
         if key not in X:
@@ -81,7 +81,7 @@ def scale_values(X, C, skip_keys=['radii', 'frame']):
         and does not return anything.
     """
     assert isinstance(X, dict)
-    for key in X.keys():
+    for key in list(X.keys()):
         if key in skip_keys:
             continue
         X[key] *= C
@@ -110,7 +110,7 @@ def append_values(X, Y, skip_keys=['radii']):
     """
     assert isinstance(X, dict)
     assert isinstance(Y, dict)
-    for key in Y.keys():
+    for key in list(Y.keys()):
         if key in skip_keys:
             continue
         if key not in X:
@@ -143,7 +143,7 @@ def write_dict(dic, path, level=0):
     """
     np_keys = []
     py_keys = []
-    for key in dic.keys():
+    for key in list(dic.keys()):
         val = dic[key]
         if isinstance(val, dict):
             _path = path + '/' + key

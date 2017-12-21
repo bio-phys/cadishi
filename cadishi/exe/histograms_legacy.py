@@ -17,11 +17,16 @@ parallel version `histograms.py`.
 
 This file remains only for documentation purposes and shall not be used.
 """
+from __future__ import print_function
+from __future__ import division
 
 # Copyright 2015 Juergen Koefinger (juergen.koefinger@biophys.mpg.de),
 # MPI Biophysics, Frankfurt am Main, Germany
 
 
+from builtins import zip
+from builtins import range
+from past.utils import old_div
 def main():
 
     # --- remove the following line to revive this code ---
@@ -116,16 +121,16 @@ def main():
     opath = "./R%d/" % R
 
     if os.path.exists(opath):
-        print " \"%s\" exists." % opath
+        print(" \"%s\" exists." % opath)
     else:
-        print " Making \"%s\"." % opath
+        print(" Making \"%s\"." % opath)
         os.mkdir(opath)
 
     V = 4. * math.pi * R ** 3 / 3.
     rmax = 2 * R
 
-    print " rmax =", rmax
-    nbins = int(math.ceil(rmax / dr))
+    print(" rmax =", rmax)
+    nbins = int(math.ceil(old_div(rmax, dr)))
 
     aliasDict = dict([line.rstrip('\n').split()
                       for line in open(aliasName, 'r').readlines()])
@@ -138,10 +143,10 @@ def main():
         elList.append(aliasDict[pdbData[i]['AtName'].strip()])
     elements = sorted(list(set(elList)))
     # print elList
-    print " elements =", elements
+    print(" elements =", elements)
     nEl = len(elements)
 
-    el2idx = dict(zip(elements, range(1, nEl + 1)))
+    el2idx = dict(list(zip(elements, list(range(1, nEl + 1)))))
     # print " el2idx =", el2idx
 
     speciesList = np.array([el2idx[nam] for nam in elList], dtype=np.int32)
@@ -151,7 +156,7 @@ def main():
     # print "nrPart =", nrPart
 
     opath = opath[:-1] + "/"
-    print " opath =", opath
+    print(" opath =", opath)
 
     nHij = nEl * (nEl + 1) / 2
 
@@ -190,8 +195,8 @@ def main():
     tot_time = 0.
     for nframe in range(first, last + 1):
         # for nframe in range(first, first+1):
-        print
-        print " nrFrame = ", nframe
+        print()
+        print(" nrFrame = ", nframe)
         coords = md.readMDCRDFrame(fp, nrPart, box)
 
         ######################
@@ -209,7 +214,7 @@ def main():
         write_xyzFile(sphereCrds, names, opath + "volume.fr%d.xyz" % nframe)
 
         N = sphereCrds.shape[0]
-        print " N =", N
+        print(" N =", N)
         # split coordinates in according to species
         speciesCrds = []
         for si in range(1, nEl + 1):
@@ -271,7 +276,7 @@ def main():
             np.save(opath + oname + ".npy", histo)
             histo[:, 1:] = 0.
 
-    print "total time of histogram calculation = %3.2f sec." % tot_time
+    print("total time of histogram calculation = %3.2f sec." % tot_time)
     fp.close()
     ofp.close()
 

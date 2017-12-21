@@ -18,6 +18,7 @@ locations for various data in dictfs and, consequently, in HDF5 files.
 """
 
 
+from builtins import object
 import copy
 
 from . import util
@@ -50,7 +51,7 @@ id_radii = 'radii'
 loc_parallel = 'parallel.tmp'
 
 
-class Container:
+class Container(object):
     """Central container to hold/accumulate data while it is proparaged through
     Cadishi's workers or Capriqorn's pipelines.
     """
@@ -156,13 +157,13 @@ class Container:
                     keys.remove(_key)
         return keys
 
-    def has_key(self, location):
+    def contains_key(self, location):
         """Check if the current object instance has data stored at location.
         """
         return dictfs.exists(self.data, location)
 
 
-class TrajectoryInformation:
+class TrajectoryInformation(object):
     """Handle trajectory meta data."""
 
     def __init__(self):
@@ -178,7 +179,7 @@ class TrajectoryInformation:
         for entry in reversed(self.pipeline_log):
             _label = ""
             parameters = {}
-            for (_label, parameters) in entry.iteritems():
+            for (_label, parameters) in entry.items():
                 break
             if _id in parameters:
                 value = parameters[_id]

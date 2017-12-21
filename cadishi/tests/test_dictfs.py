@@ -66,13 +66,13 @@ def test_dictfs_replace_dict():
     # pprint.pprint(data)
 
 
-def test_dictfs_has_key():
+def test_dictfs_contains_key():
     global data
     path = "foo"
     assert dictfs.exists(data, path)
 
 
-def test_dictfs_has_key2():
+def test_dictfs_contains_key2():
     global data
     path = "foo2"
     assert not dictfs.exists(data, path)

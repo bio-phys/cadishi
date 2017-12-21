@@ -15,8 +15,12 @@ The name was chosen deliberately to read 'pickel' to avoid name conflicts.
 May be used as a fallback in case HDF5 is not available.  It is, however,
 significantly slower than HDF5.
 """
+from __future__ import print_function
 
 
+from builtins import next
+from builtins import str
+from builtins import range
 import pickle
 from six.moves import range
 
@@ -64,13 +68,13 @@ class PickleReader(base.Reader):
         # ---
         return frm
 
-    def next(self):
+    def __next__(self):
         """Iterate through all the frames and yield frame by frame."""
         for idx in range(self.first, self.last, self.step):
             frm = self.get_frame(idx)
             frm.put_meta(self.get_meta())
             if self.verb:
-                print "PickleReader.next() : ", frm.i
+                print("PickleReader.next() : ", frm.i)
             yield frm
 
 
@@ -111,8 +115,8 @@ class PickleWriter(base.Writer):
         from the writer's data source to individual pickle
         files.
         """
-        for frm in self.src.next():
+        for frm in next(self.src):
             if self.verb:
-                print "PickleWriter.dump() : ", frm.i
+                print("PickleWriter.dump() : ", frm.i)
             frm.put_meta(self.get_meta())
             self.put_frame(frm)

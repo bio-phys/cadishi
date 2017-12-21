@@ -15,6 +15,7 @@ strings similar to a UNIX file system. Can be used in tandem with HDF5 IO.
 """
 
 
+from past.builtins import basestring
 import copy
 from . import util
 
@@ -32,7 +33,7 @@ def _store_obj(node, subnodes, obj):
             # replace the dict at node itself
             assert isinstance(obj, dict)
             node.clear()
-            for key in obj.keys():
+            for key in list(obj.keys()):
                 node[key] = copy.deepcopy(obj[key])
         else:
             node[subnodes[0]] = copy.deepcopy(obj)

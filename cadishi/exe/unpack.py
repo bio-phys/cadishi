@@ -15,6 +15,7 @@ writes the HDF5 datasets to text files located in the correct directories.
 
 The main() function is to be called via cli.py.
 """
+from __future__ import print_function
 
 
 import os

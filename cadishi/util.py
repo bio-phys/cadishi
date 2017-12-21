@@ -11,8 +11,15 @@
 """Miscellaneous useful and convenient functions used by Cadishi and Capriqorn,
 of potential general use.
 """
+from __future__ import print_function
+from __future__ import division
 
 
+from builtins import str
+from builtins import range
+from past.builtins import basestring
+from builtins import object
+from past.utils import old_div
 import importlib
 import os
 import sys
@@ -132,10 +139,10 @@ def set_numa_domain(numa_id, numa_topology):
         pid = "%d" % os.getpid()
         cmd = ['taskset', '-pc', numa_cpus, pid]
         raw = sub.check_output(cmd).split('\n')
-        print SEP
-        print " " + raw[0]
-        print " " + raw[1]
-        print SEP
+        print(SEP)
+        print(" " + raw[0])
+        print(" " + raw[1])
+        print(SEP)
         exit_status = True
     except:
         exit_status = False
@@ -304,7 +311,7 @@ def search_pipeline(label, pipeline):
     # ---
     for entry in reversed(pipeline):
         parameters = {}
-        for (key, parameters) in entry.iteritems():
+        for (key, parameters) in entry.items():
             if (key == label):
                 assert isinstance(parameters, dict)
                 return parameters
@@ -466,7 +473,7 @@ def compare_approximately(histo1, histo2, ks_stat_max=0.01, p_value_min=0.99):
 
 def dump_histograms(filename, histograms, r_max, n_bins):
     """Save histograms into a NumPy text file.  Legacy routine."""
-    dr = float(r_max) / float(n_bins)
+    dr = old_div(float(r_max), float(n_bins))
     histos = histograms.astype(dtype=np.float64)
     radii = [dr * (float(i) + 0.5) for i in range(n_bins)]
     histos[:, 0] = np.asarray(radii)
@@ -496,7 +503,7 @@ def generate_random_coordinate_set(n_atoms=[512, 1024, 2048],
 def generate_random_point_in_sphere(R):
     """Return a coordinate triple of a randomly located point inside a sphere of radius R."""
     costheta = 2. * (np.random.rand() - 0.5)  # random(-1, 1)
-    u = np.power(np.random.rand(), 1. / 3.)
+    u = np.power(np.random.rand(), old_div(1., 3.))
     # random point in spherical coordinates
     r = R * u
     t = np.arccos(costheta)
@@ -582,7 +589,7 @@ def redirectOutput(filename):
     """Redirect stdout and stderr of the present process to the file specified by filename."""
     o_flags = os.O_CREAT | os.O_TRUNC | os.O_WRONLY
     os.close(1)
-    os.open(filename, o_flags, 0664)
+    os.open(filename, o_flags, 0o664)
     os.close(2)
     os.dup(1)
 
@@ -597,7 +604,7 @@ def timeStamp(dateAndTime=False, t0=0.0):
     return "[" + timestr + "]"
 
 
-class PrintWrapper():
+class PrintWrapper(object):
     """Wrapper to implement infrequent message printing."""
 
     def __init__(self):

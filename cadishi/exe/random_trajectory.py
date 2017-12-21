@@ -14,6 +14,7 @@ histograms calculation.
 This program is not intended to be invoked directly. It is launched via cli.py
 which in turn is called as the `cadishi` command via an entry_point in setup.py.
 """
+from __future__ import print_function
 
 
 import os
@@ -39,7 +40,7 @@ def configure_cli(subparsers):
 
 def main(pargs):
     if (pargs.size):
-        print pargs.size
+        print(pargs.size)
         size = [int(x) for x in (pargs.size).split(',')]
     else:
         size = [512, 768, 1024]

@@ -22,6 +22,7 @@ Python's native Pickle.
 """
 
 
+from past.builtins import basestring
 import h5py
 import numpy as np
 
@@ -35,7 +36,7 @@ def save(h5_grp, key, data, compression=None):
     if isinstance(data, dict):
         # --- save dictionary content into a subgroup
         sub_group = h5_grp.create_group(key)
-        for key2 in data.keys():
+        for key2 in list(data.keys()):
             save(sub_group, key2, data[key2], compression)
     elif isinstance(data, np.ndarray):
         # --- save NumPy arrays as HDF5 datasets
@@ -52,7 +53,7 @@ def load(h5_grp):
     and return the dictionary.
     """
     data = {}
-    for key in h5_grp.keys():
+    for key in list(h5_grp.keys()):
         h5py_class = h5_grp.get(key, getclass=True)
         if h5py_class is h5py._hl.group.Group:
             # print h5py_class, "Group"
