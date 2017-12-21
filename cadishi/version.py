@@ -13,6 +13,7 @@
 
 # The 'ver' tuple is read by the setup.py, conf.py of the Sphinx documentation
 # system and __init__.py of the package.
+from builtins import map
 ver = (1, 0, 0)
 
 

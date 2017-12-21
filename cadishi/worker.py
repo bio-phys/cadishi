@@ -12,8 +12,14 @@
 executable.
 """
 from __future__ import print_function
+from __future__ import division
 
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import str
+from builtins import range
+from past.utils import old_div
 import sys
 import os
 import math
@@ -27,7 +33,7 @@ import ctypes
 from six.moves import range
 import signal
 import cProfile
-import StringIO
+import io
 import pstats
 import argparse
 from . import base
@@ -41,7 +47,7 @@ def _cProfile_Exit(signum, stack):
     """Signal handler to dump profile data when a child process receives SIGTERM."""
     global cProfile_handle
     cProfile_handle.disable()
-    s = StringIO.StringIO()
+    s = io.StringIO()
     # sortby = 'cumulative'
     sortby = 'tottime'
     ps = pstats.Stats(cProfile_handle, stream=s).sort_stats(sortby)
@@ -351,10 +357,10 @@ def sum(histoparam, resultQueue, n_El, n_bins, dr, header_str, t0):
                     # ---
                     if (n_cpu > 0):
                         print("   CPU: %d frames, %.3f (%.3f) avg comp (io) time [s], %.3f bapps"\
-                            % (n_cpu, time_cpu / float(n_cpu), wait_cpu / float(n_cpu), bap_cpu / time_cpu))
+                            % (n_cpu, old_div(time_cpu, float(n_cpu)), old_div(wait_cpu, float(n_cpu)), old_div(bap_cpu, time_cpu)))
                     if (n_gpu > 0):
                         print("   GPU: %d frames, %.3f (%.3f) avg comp (io) time [s], %.3f bapps"\
-                            % (n_gpu, time_gpu / float(n_gpu), wait_gpu / float(n_gpu), bap_gpu / time_gpu))
+                            % (n_gpu, old_div(time_gpu, float(n_gpu)), old_div(wait_gpu, float(n_gpu)), old_div(bap_gpu, time_gpu)))
                     print(util.SEP)
                 #
                 if (icount % histoparam['output']['flush_interval'] == 0):

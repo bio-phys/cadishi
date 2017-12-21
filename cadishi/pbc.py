@@ -13,6 +13,8 @@
 from __future__ import print_function
 
 
+from builtins import str
+from builtins import range
 import numpy as np
 
 
@@ -70,7 +72,7 @@ def get_standard_box(box_in, force_triclinic=False, verbose=False):
     if (box.shape == (3,)) and (box[0] * box[1] * box[2] != 0.0):
         box_type = "orthorhombic"
         box_matrix = np.zeros((3, 3))
-        for i in xrange(3):
+        for i in range(3):
             box_matrix[i, i] = box[i]
     # length-and-angles representation
     elif (box.shape == (6,)):
@@ -80,7 +82,7 @@ def get_standard_box(box_in, force_triclinic=False, verbose=False):
             if (not force_triclinic) and np.all(box[3:] == 90.):
                 box_type = "orthorhombic"
                 box_matrix = np.zeros((3, 3))
-                for i in xrange(3):
+                for i in range(3):
                     box_matrix[i, i] = box[i]
             else:
                 box_type = "triclinic"
