@@ -33,6 +33,7 @@ def histograms(coordinate_sets,
                n_bins,
                precision="single",
                pydh_threads=1,
+               pydh_blocksize=-1,
                check_input=True,
                scale_factors=[],
                mask_array=[],
@@ -85,7 +86,7 @@ def histograms(coordinate_sets,
     # --- run the CUDH distance histogram kernel
     exit_status = c_pydh.histograms(np_coord, np_nelem, np_histos, r_max, np_mask,
                                     np_box, box_type_id,  # optional arguments follow
-                                    precision, check_input, verbose, pydh_threads)
+                                    precision, check_input, verbose, pydh_threads, pydh_blocksize)
 
     if (exit_status == 1):
         raise ValueError(common.overflow_error_msg)

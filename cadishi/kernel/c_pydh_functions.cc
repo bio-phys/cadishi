@@ -276,6 +276,96 @@ void hist_2(TUPLE3_T * __restrict__ p1,
 
 
 /**
+ * Function: hist_2_blocked
+ *
+ * Two-species distance histogram kernel.
+ */
+template <typename TUPLE3_T, typename FLOAT_T, bool check_input, int box_type_id>
+void hist_2_blocked(TUPLE3_T * __restrict__ p1,
+            const int nelem1,
+            TUPLE3_T * __restrict__ p2,
+            const int nelem2,
+            uint64_t *histo,
+            const int nbins,
+            const FLOAT_T scal,
+            const TUPLE3_T * const box,
+            const TUPLE3_T &box_ortho,
+            const TUPLE3_T &box_inv) {
+    CHECKPOINT("hist_2_blocked()");
+    bool idx_error = false;
+    bool mem_error = false;
+    memset(histo, 0, nbins*sizeof(uint64_t));
+    #pragma omp parallel default(shared) reduction(|| : idx_error, mem_error)
+    {
+        uint32_t * histo_thread = (uint32_t*) malloc(nbins*sizeof(uint32_t));
+        memset(histo_thread, 0, nbins*sizeof(uint32_t));
+        int *d = NULL;
+        mem_error = (posix_memalign((void**)&d, alignment, nelem2*sizeof(int)) != 0);
+        if (! mem_error) {
+            uint32_t count = 0;
+            #pragma omp for OMP_SCHEDULE
+            for (int j=0; j<nelem1; ++j) {
+                if ( (count + (uint32_t)nelem2) < count /*use wrap-around feature at overflow*/) {
+                    thread_histo_flush(histo, histo_thread, nbins, true);
+                    count = 0;
+                }
+                count += (uint32_t)nelem2;
+                // loop vectorizes well (gcc >=4.9, checked using Intel VTUNE & Advisor)
+                #pragma omp simd
+                for (int i=0; i<nelem2; ++i) {
+                    d[i] = (int)(scal * dist<TUPLE3_T, FLOAT_T, box_type_id>
+                                 (p2[i], p1[j], box, box_ortho, box_inv));
+                }
+                /**
+                 * Checks of the previously calculated integer-converted distances.
+                 *
+                 * In case we do not use a periodic box, a distance greater than the maximum allowed one
+                 * translates to an error condition.  The user has to take care about the input data set.
+                 *
+                 * In case we have a periodic box it may be desired to discard such values and proceed.
+                 */
+                switch (box_type_id) {
+                case none:
+                    if (check_input) {
+                        if (idx_error) {
+                            // --- error condition is already there, do nothing ---
+                        } else if (thread_dist_trim(d, nelem2, nbins) > 0) {
+                            #pragma omp atomic write
+                            idx_error = true;
+                        } else {
+                            thread_histo_increment(histo_thread, d, nelem2);
+                        }
+                    } else {
+                        thread_histo_increment(histo_thread, d, nelem2);
+                    }
+                    break;
+                case orthorhombic:
+                case triclinic:
+                    if (check_input) {
+                        int n_out = thread_dist_trim(d, nelem2, nbins);
+                        thread_histo_increment(histo_thread, d, nelem2, n_out);
+                    } else {
+                        thread_histo_increment(histo_thread, d, nelem2);
+                    }
+                    break;
+                }
+            }
+            thread_histo_flush(histo, histo_thread, nbins, false);
+            free(d);
+            free(histo_thread);
+        }
+    }
+    if (mem_error) {
+        RT_ERROR("memory allocation")
+    }
+    if (check_input) {
+        if (idx_error)
+            OVERFLOW_ERROR(overflow_error_msg);
+    }
+}
+
+
+/**
  * Function: histo_cpu
  *
  * Driver of the actual kernels 'hist_1' and 'hist_2'.
@@ -285,7 +375,7 @@ void hist_2(TUPLE3_T * __restrict__ p1,
 template <typename TUPLE3_T, typename FLOAT_T, bool check_input, int box_type_id>
 void histo_cpu(TUPLE3_T *coords, int n_tot, int *n_per_el, int n_el,
                uint64_t *histos, int n_bins, FLOAT_T r_max, int *mask,
-               const TUPLE3_T * const box) {
+               const TUPLE3_T * const box, const int blocksize) {
     const FLOAT_T scal = ((FLOAT_T)n_bins)/r_max;
 
     // --- box-related values, to be passed as constant references
@@ -321,11 +411,19 @@ void histo_cpu(TUPLE3_T *coords, int n_tot, int *n_per_el, int n_el,
             // ---
             if (mask[histogramIdx - 1] > 0) {
                 if (j != i) {
-                    hist_2 <TUPLE3_T, FLOAT_T, check_input, box_type_id>
-                        (&coords[iOffset], n_per_el[i],
-                         &coords[jOffset], n_per_el[j],
-                         &histos[histoOffset], n_bins, scal,
-                         box, box_ortho, box_inv);
+                    if (blocksize > 0) {
+                        hist_2_blocked <TUPLE3_T, FLOAT_T, check_input, box_type_id>
+                            (&coords[iOffset], n_per_el[i],
+                             &coords[jOffset], n_per_el[j],
+                             &histos[histoOffset], n_bins, scal,
+                             box, box_ortho, box_inv);
+                    } else {
+                        hist_2 <TUPLE3_T, FLOAT_T, check_input, box_type_id>
+                            (&coords[iOffset], n_per_el[i],
+                             &coords[jOffset], n_per_el[j],
+                             &histos[histoOffset], n_bins, scal,
+                             box, box_ortho, box_inv);
+                    }
                 } else {
                     hist_1 <TUPLE3_T, FLOAT_T, check_input, box_type_id>
                         (&coords[iOffset], n_per_el[i],
@@ -357,8 +455,8 @@ void histograms_template_dispatcher(NP_TUPLE3_T *r_ptr,
                                     double r_max,
                                     int *mask_ptr,
                                     double *box_ptr,
-                                    bool check_input,
-                                    int box_type_id) {
+                                    int box_type_id,
+                                    const config & cfg) {
     TUPLE3_T* r_copy = NULL;
     if (posix_memalign((void**)&r_copy, alignment, n_tot*sizeof(TUPLE3_T)) != 0) {
         RT_ERROR("memory allocation");
@@ -384,22 +482,22 @@ void histograms_template_dispatcher(NP_TUPLE3_T *r_ptr,
 
     // --- expand all relevant template parameter combinations
     //     to avoid branching inside loops at runtime
-    if (check_input) {
+    if (cfg.check_input) {
         switch (box_type_id) {
         case none:
             histo_cpu <TUPLE3_T, FLOAT_T, true, none>
             (r_copy, n_tot, nel_ptr, n_El, histo_ptr, n_bins, FLOAT_T(r_max),
-             mask_ptr, box_copy);
+             mask_ptr, box_copy, cfg.cpu_blocksize);
             break;
         case orthorhombic:
             histo_cpu <TUPLE3_T, FLOAT_T, true, orthorhombic>
             (r_copy, n_tot, nel_ptr, n_El, histo_ptr, n_bins, FLOAT_T(r_max),
-             mask_ptr, box_copy);
+             mask_ptr, box_copy, cfg.cpu_blocksize);
             break;
         case triclinic:
             histo_cpu <TUPLE3_T, FLOAT_T, true, triclinic>
             (r_copy, n_tot, nel_ptr, n_El, histo_ptr, n_bins, FLOAT_T(r_max),
-             mask_ptr, box_copy);
+             mask_ptr, box_copy, cfg.cpu_blocksize);
             break;
         }
     } else {
@@ -407,17 +505,17 @@ void histograms_template_dispatcher(NP_TUPLE3_T *r_ptr,
         case none:
             histo_cpu <TUPLE3_T, FLOAT_T, false, none>
             (r_copy, n_tot, nel_ptr, n_El, histo_ptr, n_bins, FLOAT_T(r_max),
-             mask_ptr, box_copy);
+             mask_ptr, box_copy, cfg.cpu_blocksize);
             break;
         case orthorhombic:
             histo_cpu <TUPLE3_T, FLOAT_T, false, orthorhombic>
             (r_copy, n_tot, nel_ptr, n_El, histo_ptr, n_bins, FLOAT_T(r_max),
-             mask_ptr, box_copy);
+             mask_ptr, box_copy, cfg.cpu_blocksize);
             break;
         case triclinic:
             histo_cpu <TUPLE3_T, FLOAT_T, false, triclinic>
             (r_copy, n_tot, nel_ptr, n_El, histo_ptr, n_bins, FLOAT_T(r_max),
-             mask_ptr, box_copy);
+             mask_ptr, box_copy, cfg.cpu_blocksize);
             break;
         }
     }
@@ -530,10 +628,10 @@ int histograms_cpu(np_tuple3d_t *r_ptr,
         if (cfg.precision == single_precision) {
             // NOTE: histograms_template_dispatcher() does the conversion to single precision internally
             histograms_template_dispatcher <np_tuple3d_t, tuple3s_t, float>
-                (r_ptr, n_tot, nel_ptr, n_El, histo_ptr, n_bins, r_max, mask_ptr, box_ptr, cfg.check_input, box_type_id);
+                (r_ptr, n_tot, nel_ptr, n_El, histo_ptr, n_bins, r_max, mask_ptr, box_ptr, box_type_id, cfg);
         } else {
             histograms_template_dispatcher <np_tuple3d_t, tuple3d_t, double>
-                (r_ptr, n_tot, nel_ptr, n_El, histo_ptr, n_bins, r_max, mask_ptr, box_ptr, cfg.check_input, box_type_id);
+                (r_ptr, n_tot, nel_ptr, n_El, histo_ptr, n_bins, r_max, mask_ptr, box_ptr, box_type_id, cfg);
         }
     } catch (std::overflow_error & err) {
         const std::string msg = std::string(err.what());

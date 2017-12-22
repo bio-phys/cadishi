@@ -41,6 +41,7 @@ parser.add_argument('--check-input', help='activate input check in kernels', act
 parser.add_argument('--double-precision', help='use double precision coordinates', action="store_true")
 parser.add_argument('--cpu', help='run pydh CPU kernel (default)', action="store_true")
 parser.add_argument('--threads', help='number of CPU threads', type=int, metavar='N')
+parser.add_argument('--blocksize', help='cache blocking size for CPU kernel', type=int, metavar='N')
 parser.add_argument('--numa', help='use numa process pinning', action="store_true")
 parser.add_argument('--gpu', help='run cudh GPU kernel (optionally on GPU N, default 0)', nargs='?',
                     const=0, type=int, metavar='N')
@@ -82,6 +83,11 @@ if p_args.threads:
     run_values['threads'] = p_args.threads
 else:
     run_values['threads'] = 1
+
+if p_args.blocksize:
+    run_values['blocksize'] = p_args.blocksize
+else:
+    run_values['blocksize'] = -1
 
 if (p_args.gpu_algorithm >= 0):
     run_values['gpu_algorithm'] = p_args.gpu_algorithm
@@ -130,6 +136,7 @@ output_keys['kernel'] = 'text'
 output_keys['version'] = 'text'
 output_keys['timestamp'] = 'text'
 output_keys['threads'] = 'integer'
+output_keys['blocksize'] = 'integer'
 output_keys['precision'] = 'text'
 output_keys['size'] = 'text'
 output_keys['bins'] = 'integer'
@@ -231,6 +238,7 @@ else:
                            check_input=run_values['check_input'],
                            do_histo2_only=run_values['histo2'],
                            pydh_threads=run_values['threads'],
+                           pydh_blocksize=run_values['blocksize'],
                            box=box,
                            verbose=True)
 t1 = time.time()
