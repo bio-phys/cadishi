@@ -31,7 +31,7 @@
 // #define USE_BLOCKING
 #undef USE_BLOCKING
 #ifdef USE_BLOCKING
-const int inner_loop_blocksize = 131072;
+// const int inner_loop_blocksize = 131072;
 #endif
 
 // alignment passed to posix_memalign()
@@ -120,11 +120,7 @@ void hist_1(TUPLE3_T * __restrict__ p,
         memset(histo_thread, 0, nbins*sizeof(uint32_t));
 
         int *d = NULL;
-#ifdef USE_BLOCKING
-        posix_memalign((void**)&d, alignment, inner_loop_blocksize*sizeof(int));
-#else
         posix_memalign((void**)&d, alignment, nelem*sizeof(int));
-#endif
 
         uint32_t count = 0;
         #pragma omp for OMP_SCHEDULE
@@ -134,53 +130,6 @@ void hist_1(TUPLE3_T * __restrict__ p,
                 count = 0;
             }
             count += (uint32_t)j;
-#ifdef USE_BLOCKING
-            int block_n_elem;
-            for (int i=0; i<j; i+=inner_loop_blocksize) {
-                if ((j-i) < inner_loop_blocksize) {
-                    block_n_elem = j-i;
-                } else {
-                    block_n_elem = inner_loop_blocksize;
-                }
-                for (int k=0; k<block_n_elem; ++k) {
-                    d[k] = (int)(scal * dist<TUPLE3_T, FLOAT_T, box_type_id>
-                                 (p[i+k], p[j], box, box_ortho, box_inv));
-                }
-                /**
-                 * Checks of the previously calculated integer-converted distances.
-                 *
-                 * In case we do not use a periodic box, a distance greater than the maximum allowed one
-                 * translates to an error condition.  The user has to take care about the input data set.
-                 *
-                 * In case we have a periodic box it may be desired to discard such values and proceed.
-                 */
-                switch (box_type_id) {
-                case none:
-                    if (check_input) {
-                        if (idx_error) {
-                            // --- error condition is already there, do nothing ---
-                        } else if (thread_dist_trim(d, block_n_elem, nbins) > 0) {
-                            #pragma omp atomic write
-                            idx_error = true;
-                        } else {
-                            thread_histo_increment(histo_thread, d, block_n_elem);
-                        }
-                    } else {
-                        thread_histo_increment(histo_thread, d, block_n_elem);
-                    }
-                    break;
-                case orthorhombic:
-                case triclinic:
-                    if (check_input) {
-                        int n_out = thread_dist_trim(d, block_n_elem, nbins);
-                        thread_histo_increment(histo_thread, d, block_n_elem, n_out);
-                    } else {
-                        thread_histo_increment(histo_thread, d, block_n_elem);
-                    }
-                    break;
-                }
-            }
-#else
             // loop vectorizes well (GCC >=4.9, checked using Intel VTUNE & Advisor)
             #pragma omp simd
             for (int i=0; i<j; ++i) {
@@ -220,7 +169,6 @@ void hist_1(TUPLE3_T * __restrict__ p,
                 }
                 break;
             }
-#endif
         }
         thread_histo_flush(histo, histo_thread, nbins, false);
         free(d);
@@ -259,11 +207,7 @@ void hist_2(TUPLE3_T * __restrict__ p1,
         memset(histo_thread, 0, nbins*sizeof(uint32_t));
 
         int *d = NULL;
-#ifdef USE_BLOCKING
-        posix_memalign((void**)&d, alignment, inner_loop_blocksize*sizeof(int));
-#else
         posix_memalign((void**)&d, alignment, nelem2*sizeof(int));
-#endif
 
         uint32_t count = 0;
         #pragma omp for OMP_SCHEDULE
@@ -273,53 +217,6 @@ void hist_2(TUPLE3_T * __restrict__ p1,
                 count = 0;
             }
             count += (uint32_t)nelem2;
-#ifdef USE_BLOCKING
-            int block_n_elem;
-            for (int i=0; i<nelem2; i+=inner_loop_blocksize) {
-                if ((nelem2-i) < inner_loop_blocksize) {
-                    block_n_elem = nelem2-i;
-                } else {
-                    block_n_elem = inner_loop_blocksize;
-                }
-                for (int k=0; k<block_n_elem; ++k) {
-                    d[k] = (int)(scal * dist<TUPLE3_T, FLOAT_T, box_type_id>
-                                 (p2[i+k], p1[j], box, box_ortho, box_inv));
-                }
-                /**
-                 * Checks of the previously calculated integer-converted distances.
-                 *
-                 * In case we do not use a periodic box, a distance greater than the maximum allowed one
-                 * translates to an error condition.  The user has to take care about the input data set.
-                 *
-                 * In case we have a periodic box it may be desired to discard such values and proceed.
-                 */
-                switch (box_type_id) {
-                case none:
-                    if (check_input) {
-                        if (idx_error) {
-                            // --- error condition is already there, do nothing ---
-                        } else if (thread_dist_trim(d, block_n_elem, nbins) > 0) {
-                            #pragma omp atomic write
-                            idx_error = true;
-                        } else {
-                            thread_histo_increment(histo_thread, d, block_n_elem);
-                        }
-                    } else {
-                        thread_histo_increment(histo_thread, d, block_n_elem);
-                    }
-                    break;
-                case orthorhombic:
-                case triclinic:
-                    if (check_input) {
-                        int n_out = thread_dist_trim(d, block_n_elem, nbins);
-                        thread_histo_increment(histo_thread, d, block_n_elem, n_out);
-                    } else {
-                        thread_histo_increment(histo_thread, d, block_n_elem);
-                    }
-                    break;
-                }
-            }
-#else
             // loop vectorizes well (gcc >=4.9, checked using Intel VTUNE & Advisor)
             #pragma omp simd
             for (int i=0; i<nelem2; ++i) {
@@ -359,7 +256,6 @@ void hist_2(TUPLE3_T * __restrict__ p1,
                 }
                 break;
             }
-#endif
         }
         thread_histo_flush(histo, histo_thread, nbins, false);
         free(d);
