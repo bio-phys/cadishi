@@ -15,9 +15,28 @@
 #define _COMMON_HPP_
 
 #include <cmath>
+#include <cstdio>
+#include <string>
+#include <sstream>
 #include <stdint.h>
 #include <float.h>
 #include "common.h"
+
+
+#define CHECKPOINT( MSG ) \
+{ \
+  std::string msg; \
+  msg += "CHECKPOINT: "; \
+  msg += std::string(__FILE__); \
+  msg += ":"; \
+  std::stringstream ss; \
+  ss << __LINE__; \
+  msg += ss.str(); \
+  msg += ": "; \
+  msg += std::string(MSG); \
+  printf("%s\n", msg.c_str()); \
+}
+
 
 #if defined(__CUDACC__) // NVCC
 #define ALIGN(n) __align__(n)
