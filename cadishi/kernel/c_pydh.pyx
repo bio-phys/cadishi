@@ -64,7 +64,6 @@ def histograms(np.ndarray r_ptr,
                # ---
                int precision,    # single or double precision
                int check_input,  # perform distance check before binning
-               int histo2_only,  # only compute the histograms between two sets of points
                int verbose,      # verbose output
                int n_threads):   # number of OpenMP threads to be used
 
@@ -84,7 +83,6 @@ def histograms(np.ndarray r_ptr,
     cdef config cfg
     cfg.set_precision(precision)
     cfg.set_check_input(check_input)
-    cfg.set_histo2_only(histo2_only)
     cfg.set_verbose(verbose)
     cfg.set_cpu_threads(n_threads)
 

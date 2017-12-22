@@ -21,6 +21,7 @@ indent = "                       "
 
 
 overflow_error_msg = "at least one pair distance exceeded r_max; please check n_bins, r_max, and the coordinates"
+histo2_error_msg = "exactly two coordinate sets have to be given to perform the histo2 calculation only"
 general_error_msg = "general error occurred during kernel execution"
 import_pydh_error_msg = "could not import compiled PYDH kernel (c_pydh.so)"
 import_cudh_error_msg = "could not import compiled CUDH kernel (c_cudh.so)"

@@ -54,7 +54,7 @@ def histograms(coordinate_sets,
     n_Hij = n_El * (n_El + 1) / 2
 
     if do_histo2_only and (n_El != 2):
-        raise ValueError(common.overflow_error_msg)
+        raise ValueError(common.histo2_error_msg)
 
     # --- concatenate list of numpy arrays into a single numpy array
     np_coord = np.concatenate(coordinate_sets, axis=0)
@@ -65,10 +65,14 @@ def histograms(coordinate_sets,
     # --- To see the bins contiguously in memory from C, we use the following layout:
     np_histos = np.zeros((n_bins, n_Hij + 1), dtype=np.uint64, order='F')
 
-    if (n_Hij == len(mask_array)):
-        np_mask = np.asarray(mask_array, dtype=np.int32)
+    if do_histo2_only:
+        np_mask = np.zeros(3, dtype=np.int32)
+        np_mask[1] = 1
     else:
-        np_mask = np.ones(n_Hij, dtype=np.int32)
+        if (n_Hij == len(mask_array)):
+            np_mask = np.asarray(mask_array, dtype=np.int32)
+        else:
+            np_mask = np.ones(n_Hij, dtype=np.int32)
 
     np_box, box_type_id, box_type = pbc.get_standard_box(box,
                                                          force_triclinic=force_triclinic, verbose=False)
@@ -81,7 +85,7 @@ def histograms(coordinate_sets,
     # --- run the CUDH distance histogram kernel
     exit_status = c_pydh.histograms(np_coord, np_nelem, np_histos, r_max, np_mask,
                                     np_box, box_type_id,  # optional arguments follow
-                                    precision, check_input, do_histo2_only, verbose, pydh_threads)
+                                    precision, check_input, verbose, pydh_threads)
 
     if (exit_status == 1):
         raise ValueError(common.overflow_error_msg)

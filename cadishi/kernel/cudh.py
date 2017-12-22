@@ -97,8 +97,8 @@ def histograms(coordinate_sets,
     n_El = len(coordinate_sets)
     n_Hij = n_El * (n_El + 1) / 2
 
-#     if (len(box) > 0):
-#         raise NotImplementedError("CUDH periodicx box handling")
+    if do_histo2_only and (n_El != 2):
+        raise ValueError(common.histo2_error_msg)
 
     # Reorder coordinate sets by size to maximize the performance of the CUDA
     # smem kernels, this is most advantageous when small and large sets are mixed.
