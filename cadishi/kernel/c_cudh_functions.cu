@@ -413,7 +413,6 @@ void histo_gpu(TUPLE3_T *coords, int n_tot,
                int dev,
                /* --- optional arguments with defaults below --- */
                int histo_block_x_inp = 0,  // use specified grid block size if >0
-               bool do_histo2_only = false,  // call only histo2
                bool verbose = false,
                int algorithm = -1) { // '-1': use internal default heuristics
     CU_CHECK( cudaSetDevice(dev) );
@@ -463,7 +462,7 @@ void histo_gpu(TUPLE3_T *coords, int n_tot,
     }
 
     int algorithm_id;
-    if (algorithm >= 0) {
+    if ((algorithm >= 1) && (algorithm <= 2)) {
         algorithm_id = algorithm;
         printf("%s\n", SEP);
         printf("GPU %d: algorithm %d selected\n", dev, algorithm_id);
@@ -556,17 +555,7 @@ void histo_gpu(TUPLE3_T *coords, int n_tot,
                 );
                 int jOffset = iOffset_0;
                 histogramIdx = histogramIdx_0;
-                // --- allow histo2 to be timed
-                int j;
-                if (do_histo2_only) {
-                    if (n_el != 2) {
-                        RT_ERROR("Error: To time the histo2_*() routine, exactly two species must be used!");
-                    }
-                    j=i+1;
-                    jOffset += n_per_el[i];
-                } else {
-                    j=i;
-                }
+                int j=i;
                 // ---
                 for (/*int j=i*/; j<n_el; ++j) {
                     ++histogramIdx;
@@ -574,6 +563,7 @@ void histo_gpu(TUPLE3_T *coords, int n_tot,
                         const int histoOffset = histogramIdx*n_bins;
                         grid.x  = (unsigned)ceil(double(n_per_el[j])/double(block.x));
                         if (i != j) {
+                            CHECKPOINT("histo2_advanced_knl()");
                             histo2_advanced_knl <TUPLE3_T,COUNTER_T,FLOAT_T,check_input, box_type_id>
                             <<<grid,block,smem_bytes>>>
                             (&coord_d[jOffset], n_per_el[j],
@@ -584,6 +574,7 @@ void histo_gpu(TUPLE3_T *coords, int n_tot,
                              &histo_d[idx_error_flag],
                              box_d);
                         } else {
+                            CHECKPOINT("histo1_advanced_knl()");
                             histo1_advanced_knl <TUPLE3_T,COUNTER_T,FLOAT_T,check_input, box_type_id>
                             <<<grid,block,smem_bytes>>>
                             (&coord_d[jOffset], n_per_el[j],
@@ -649,17 +640,7 @@ void histo_gpu(TUPLE3_T *coords, int n_tot,
                 );
                 int jOffset = iOffset_0;
                 histogramIdx = histogramIdx_0;
-                // --- allow histo2 to be timed
-                int j;
-                if (do_histo2_only) {
-                    if (n_el != 2) {
-                        RT_ERROR("Error: To time the histo2_*() routine, exactly two species must be used!");
-                    }
-                    j=i+1;
-                    jOffset += n_per_el[i];
-                } else {
-                    j=i;
-                }
+                int j=i;
                 // ---
                 for (/*int j=i*/; j<n_el; ++j) {
                     ++histogramIdx;
@@ -667,6 +648,7 @@ void histo_gpu(TUPLE3_T *coords, int n_tot,
                         const int histoOffset = histogramIdx*n_bins;
                         grid.x  = (unsigned)ceil(double(n_per_el[j])/double(block.x));
                         if (i != j) {
+                            CHECKPOINT("histo2_global_knl()");
                             histo2_global_knl <TUPLE3_T,COUNTER_T,FLOAT_T,check_input,box_type_id>
                             <<<grid,block>>>
                             (&coord_d[jOffset], n_per_el[j],
@@ -676,6 +658,7 @@ void histo_gpu(TUPLE3_T *coords, int n_tot,
                              &histo_d[idx_error_flag],
                              box_d);
                         } else {
+                            CHECKPOINT("histo1_global_knl()");
                             histo1_global_knl <TUPLE3_T,COUNTER_T,FLOAT_T,check_input,box_type_id>
                             <<<grid,block>>>
                             (&coord_d[jOffset], n_per_el[j],
@@ -700,23 +683,14 @@ void histo_gpu(TUPLE3_T *coords, int n_tot,
         int iOffset = 0;
         for (int i=0; i<n_el; ++i) {
             int jOffset = iOffset;
-            // --- allow histo2 to be timed
-            int j;
-            if (do_histo2_only) {
-                if (n_el != 2) {
-                    RT_ERROR("Error: To time the histo2_*() routine, exactly two species must be used!");
-                }
-                j=i+1;
-                jOffset += n_per_el[i];
-            } else {
-                j=i;
-            }
+            int j=i;
             // ---
             for (/*int j=i*/; j<n_el; ++j) {
                 ++histogramIdx;
                 // ---
                 if (mask[histogramIdx - 1] > 0) {
                     int histoOffset = histogramIdx*n_bins;
+                    CHECKPOINT("histo_simple_launch_knl()");
                     histo_simple_launch_knl <TUPLE3_T, COUNTER_T, FLOAT_T, check_input, box_type_id>
                     (&coord_d[iOffset], n_per_el[i],
                      &coord_d[jOffset], n_per_el[j],
@@ -767,7 +741,6 @@ void histograms_template_dispatcher(NP_TUPLE3_T *r_ptr,   // coordinate tuples
                                     int check_input,      // switch if distance should be checked before binning
                                     int gpu_id,           // id of the GPU to be used
                                     int thread_block_x,   // CUDA thread block size
-                                    int do_histo2_only,
                                     int verbose,
                                     int algorithm = -1) {
     TUPLE3_T * r_copy;
@@ -823,21 +796,21 @@ void histograms_template_dispatcher(NP_TUPLE3_T *r_ptr,   // coordinate tuples
             histo_gpu <TUPLE3_T, uint64_t, FLOAT_T, true, none>
             (r_copy, n_tot, nel_ptr, n_El, histo_loc, n_bins, n_Hij,
              FLOAT_T(r_max), mask_ptr,
-             gpu_id, thread_block_x, do_histo2_only, (verbose != 0),
+             gpu_id, thread_block_x, (verbose != 0),
              algorithm);
             break;
         case orthorhombic:
             histo_gpu <TUPLE3_T, uint64_t, FLOAT_T, true, orthorhombic>
             (r_copy, n_tot, nel_ptr, n_El, histo_loc, n_bins, n_Hij,
              FLOAT_T(r_max), mask_ptr,
-             gpu_id, thread_block_x, do_histo2_only, (verbose != 0),
+             gpu_id, thread_block_x, (verbose != 0),
              algorithm);
             break;
         case triclinic:
             histo_gpu <TUPLE3_T, uint64_t, FLOAT_T, true, triclinic>
             (r_copy, n_tot, nel_ptr, n_El, histo_loc, n_bins, n_Hij,
              FLOAT_T(r_max), mask_ptr,
-             gpu_id, thread_block_x, do_histo2_only, (verbose != 0),
+             gpu_id, thread_block_x, (verbose != 0),
              algorithm);
             break;
         }
@@ -847,21 +820,21 @@ void histograms_template_dispatcher(NP_TUPLE3_T *r_ptr,   // coordinate tuples
             histo_gpu <TUPLE3_T, uint64_t, FLOAT_T, false, none>
             (r_copy, n_tot, nel_ptr, n_El, histo_loc, n_bins, n_Hij,
              FLOAT_T(r_max), mask_ptr,
-             gpu_id, thread_block_x, do_histo2_only, (verbose != 0),
+             gpu_id, thread_block_x, (verbose != 0),
              algorithm);
             break;
         case orthorhombic:
             histo_gpu <TUPLE3_T, uint64_t, FLOAT_T, false, orthorhombic>
             (r_copy, n_tot, nel_ptr, n_El, histo_loc, n_bins, n_Hij,
              FLOAT_T(r_max), mask_ptr,
-             gpu_id, thread_block_x, do_histo2_only, (verbose != 0),
+             gpu_id, thread_block_x, (verbose != 0),
              algorithm);
             break;
         case triclinic:
             histo_gpu <TUPLE3_T, uint64_t, FLOAT_T, false, triclinic>
             (r_copy, n_tot, nel_ptr, n_El, histo_loc, n_bins, n_Hij,
              FLOAT_T(r_max), mask_ptr,
-             gpu_id, thread_block_x, do_histo2_only, (verbose != 0),
+             gpu_id, thread_block_x, (verbose != 0),
              algorithm);
             break;
         }
@@ -904,11 +877,11 @@ int histograms_gpu(np_tuple3d_t *r_ptr,
             // NOTE: histograms_template_dispatcher() does the conversion to single precision internally
             histograms_template_dispatcher <np_tuple3d_t, tuple3s_t, float>
                 (r_ptr, n_tot, nel_ptr, n_El, histo_ptr, n_bins, n_Hij, r_max, mask_ptr, box_ptr, box_type_id,
-                cfg.check_input, cfg.gpu_id, cfg.gpu_thread_block_x, cfg.histo2_only, cfg.verbose, cfg.gpu_algorithm);
+                cfg.check_input, cfg.gpu_id, cfg.gpu_thread_block_x, cfg.verbose, cfg.gpu_algorithm);
         } else {
             histograms_template_dispatcher <np_tuple3d_t, tuple3d_t, double>
                 (r_ptr, n_tot, nel_ptr, n_El, histo_ptr, n_bins, n_Hij, r_max, mask_ptr, box_ptr, box_type_id,
-                cfg.check_input, cfg.gpu_id, cfg.gpu_thread_block_x, cfg.histo2_only, cfg.verbose, cfg.gpu_algorithm);
+                cfg.check_input, cfg.gpu_id, cfg.gpu_thread_block_x, cfg.verbose, cfg.gpu_algorithm);
         }
     } catch (std::overflow_error & err) {
         const std::string msg = std::string(err.what());

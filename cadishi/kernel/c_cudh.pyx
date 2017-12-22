@@ -16,7 +16,6 @@ cdef extern from "config.h":
         config()
         void set_precision(int)
         void set_check_input(bool)
-        void set_histo2_only(bool)
         void set_verbose(bool)
         void set_cpu_threads(int)
         void set_cpu_blocksize(int)
@@ -65,7 +64,6 @@ def histograms(np.ndarray r_ptr,
                # ---
                int precision,       # single or double precision
                int check_input,     # perform distance check before binning
-               int histo2_only,     #  only compute the histograms between two sets of points
                int verbose,         #  verbose output
                int gpu_id,          #  id of the GPU to be used
                int thread_block_x,  #  CUDA thread block size
@@ -89,7 +87,6 @@ def histograms(np.ndarray r_ptr,
     cdef config cfg
     cfg.set_precision(precision)
     cfg.set_check_input(check_input)
-    cfg.set_histo2_only(histo2_only)
     cfg.set_verbose(verbose)
     cfg.set_gpu_id(gpu_id)
     cfg.set_gpu_thread_block_x(thread_block_x)

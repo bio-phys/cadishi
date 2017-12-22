@@ -111,7 +111,7 @@ void hist_1(TUPLE3_T * __restrict__ p,
             const TUPLE3_T * const box,
             const TUPLE3_T &box_ortho,
             const TUPLE3_T &box_inv) {
-    CHECKPOINT("begin");
+    CHECKPOINT("hist_1()");
     bool idx_error = false;
     bool mem_error = false;
     memset(histo, 0, nbins*sizeof(uint64_t));
@@ -201,7 +201,7 @@ void hist_2(TUPLE3_T * __restrict__ p1,
             const TUPLE3_T * const box,
             const TUPLE3_T &box_ortho,
             const TUPLE3_T &box_inv) {
-    CHECKPOINT("begin");
+    CHECKPOINT("hist_2()");
     bool idx_error = false;
     bool mem_error = false;
     memset(histo, 0, nbins*sizeof(uint64_t));

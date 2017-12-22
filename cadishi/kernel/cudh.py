@@ -103,14 +103,18 @@ def histograms(coordinate_sets,
     # Reorder coordinate sets by size to maximize the performance of the CUDA
     # smem kernels, this is most advantageous when small and large sets are mixed.
     do_reorder = True
-
-    if (n_Hij == len(mask_array)):
-        np_mask = np.asarray(mask_array, dtype=np.int32)
-        # TODO : implement reordering of mask_array for the general case
-        if (np.sum(np.where(np_mask <= 0)) > 0):
-            do_reorder = False
+    if do_histo2_only:
+        np_mask = np.zeros(3, dtype=np.int32)
+        np_mask[1] = 1
+        do_reorder = False
     else:
-        np_mask = np.ones(n_Hij, dtype=np.int32)
+        if (n_Hij == len(mask_array)):
+            np_mask = np.asarray(mask_array, dtype=np.int32)
+            # TODO : implement reordering of mask_array for the general case
+            if (np.sum(np.where(np_mask <= 0)) > 0):
+                do_reorder = False
+        else:
+            np_mask = np.ones(n_Hij, dtype=np.int32)
 
     if do_reorder:
         # --- create lists containing (indices,sizes) sorted by size
@@ -168,7 +172,7 @@ def histograms(coordinate_sets,
 
     # --- run the CUDH distance histogram kernel
     exit_status = c_cudh.histograms(np_coord, np_nelem, histos, r_max, np_mask, np_box, box_type_id,
-                                    precision, check_input, do_histo2_only, verbose, gpu_id, thread_block_x, algorithm)
+                                    precision, check_input, verbose, gpu_id, thread_block_x, algorithm)
 
     if (exit_status == 1):
         #c_cudh.free()
