@@ -360,7 +360,9 @@ void histograms_template_dispatcher(NP_TUPLE3_T *r_ptr,
                                     bool check_input,
                                     int box_type_id) {
     TUPLE3_T* r_copy = NULL;
-    posix_memalign((void**)&r_copy, alignment, n_tot*sizeof(TUPLE3_T));
+    if (posix_memalign((void**)&r_copy, alignment, n_tot*sizeof(TUPLE3_T)) != 0) {
+        RT_ERROR("memory allocation");
+    }
 
     for (int i=0; i<n_tot; ++i) {
         r_copy[i].x = FLOAT_T(r_ptr[i].x);
@@ -432,7 +434,9 @@ void distances_template_dispatcher(NP_TUPLE3_T *r_ptr,
                                      double *box_ptr,
                                      int box_type_id) {
     TUPLE3_T* r_copy = NULL;
-    posix_memalign((void**)&r_copy, alignment, n_tot*sizeof(TUPLE3_T));
+    if (posix_memalign((void**)&r_copy, alignment, n_tot*sizeof(TUPLE3_T)) != 0) {
+        RT_ERROR("memory allocation");
+    }
 
     for (int i=0; i<n_tot; ++i) {
         r_copy[i].x = FLOAT_T(r_ptr[i].x);
