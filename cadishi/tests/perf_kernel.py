@@ -29,8 +29,10 @@ import yaml
 import argparse
 from cadishi import util
 from cadishi import version
-from collections import OrderedDict
+from cadishi.kernel import cudh
+from cadishi.kernel import pydh
 
+from collections import OrderedDict
 
 # --- set up and parse command line arguments
 parser = argparse.ArgumentParser()
@@ -167,10 +169,10 @@ if p_args.sqlite:
 # ---
 
 
-if run_values['kernel'] == "cudh":
-    from cadishi.kernel import cudh
-else:
-    from cadishi.kernel import pydh
+# if run_values['kernel'] == "cudh":
+#     from cadishi.kernel import cudh
+# else:
+#     from cadishi.kernel import pydh
 
 
 def get_bap():
@@ -219,7 +221,7 @@ bap = get_bap()
 
 t0 = time.time()
 if run_values['kernel'] == "cudh":
-    cudh = cudh.histograms(coords,
+    xxxx = cudh.histograms(coords,
                            r_max,
                            run_values['bins'],
                            run_values['precision'],
@@ -231,7 +233,7 @@ if run_values['kernel'] == "cudh":
                            algorithm=run_values['gpu_algorithm'],
                            verbose=True)
 else:
-    pydh = pydh.histograms(coords,
+    xxxx = pydh.histograms(coords,
                            r_max,
                            run_values['bins'],
                            run_values['precision'],
