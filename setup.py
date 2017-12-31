@@ -112,9 +112,33 @@ print("###")
 ####################
 # Common functions #
 ####################
+def get_gcc_ver(gcc="gcc"):
+    cmd = [gcc, '-v']
+    major = -1
+    minor = -1
+    patch = -1
+    raw = sub.check_output(cmd, stderr=sub.STDOUT).decode('ascii').lower().split('\n')
+    for line in raw:
+        if line.startswith('gcc version'):
+            tokens = line.split()
+            # we obtain a version string such as "5.4.0"
+            verstr = tokens[2].strip()
+            vertup = verstr.split('.')
+            major = int(vertup[0])
+            minor = int(vertup[1])
+            patch = int(vertup[2])
+    ver = major, minor, patch
+    return ver
+
+
 def get_gcc_flags():
+    gcc_ver = get_gcc_ver()
     # set up compiler flags for the C extensions
-    cc_flags = ['-g', '-D_GLIBCXX_USE_CXX11_ABI=0']
+    cc_flags = ['-g']
+    cc_flags += ['-D_GLIBCXX_USE_CXX11_ABI=0']
+    # avoid the error "undefined symbol: _ZdlPvm" with newer GCCs
+    if ((gcc_ver[0] == 4) and (gcc_ver[1] == 9)) or (gcc_ver[0] >= 5):
+        cc_flags += ['-std=c++11']
     if CAD_DEBUG:
         cc_flags += ['-O0']
     else:
@@ -167,7 +191,7 @@ def get_cuda_ver(nvcc="nvcc"):
     major = -1
     minor = -1
     patch = -1
-    raw = sub.check_output(cmd).decode('ascii').split('\n')
+    raw = sub.check_output(cmd, stderr=sub.STDOUT).decode('ascii').lower().split('\n')
     for line in raw:
         if line.startswith('Cuda'):
             tokens = line.split(',')
