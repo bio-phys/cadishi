@@ -19,12 +19,18 @@ from builtins import range
 
 import numpy as np
 from . import common
-try:
-    from . import c_pydh
-except:
-    have_c_pydh = False
-else:
-    have_c_pydh = True
+
+# try:
+#     # from . import c_pydh
+#     from cadishi.kernel import c_pydh
+# except:
+#     have_c_pydh = False
+# else:
+#     have_c_pydh = True
+
+from cadishi.kernel import c_pydh
+have_c_pydh = True
+
 from .. import pbc
 
 

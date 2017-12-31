@@ -1,3 +1,6 @@
+# distutils: language = c++
+# distutils: sources = c_pydh_functions.cc
+
 import numpy as np
 cimport numpy as np
 from libcpp cimport bool

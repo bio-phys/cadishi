@@ -291,10 +291,11 @@ void hist_2_blocked(TUPLE3_T * __restrict__ p1,
             const FLOAT_T scal,
             const TUPLE3_T * const box,
             const TUPLE3_T &box_ortho,
-            const TUPLE3_T &box_inv) {
+            const TUPLE3_T &box_inv,
+            const int blocksize) {
     CHECKPOINT("hist_2_blocked()");
 
-    const int bs = 1024;  // blocksize
+    const int bs = 512;  //blocksize;
     const int nb = bs*bs;  // number of elements/distances per block
 
     bool idx_error = false;
@@ -332,20 +333,23 @@ void hist_2_blocked(TUPLE3_T * __restrict__ p1,
             //     }
             // }
 
-    // for (int j=0; j<n1; j+=bs) {
-    //     int jj_max = std::min(n1-j, bs);
-    //     for (int i=0; i<n2; i+=bs) {
-    //         int ii_max = std::min(n2-i, bs);
-    //
-    //         for (int jj=0; jj<jj_max; ++jj) {
-    //             #pragma omp simd
-    //             for (int ii=0; ii<ii_max; ++ii) {
-    //                 d[jj*bs+ii] = (int)(scal * dist<TUPLE3_T, FLOAT_T, box_type_id>(p2[i+ii], p1[j+jj], box, box_ortho, box_inv));
-    //                 // int k = (int)(scal * dist<TUPLE3_T, FLOAT_T, box_type_id>(p2[i+ii], p1[j+jj], box, box_ortho, box_inv));
-    //                 // histo_thread[k] += 1;
-    //             }
-    //         }
+/*
+    for (int j=0; j<n1; j+=bs) {
+        int jj_max = std::min(n1-j, bs);
+        for (int i=0; i<n2; i+=bs) {
+            int ii_max = std::min(n2-i, bs);
+            // does not vectorize
+            for (int jj=0; jj<jj_max; ++jj) {
+                #pragma omp simd
+                for (int ii=0; ii<ii_max; ++ii) {
+                    d[jj*bs+ii] = (int)(scal * dist<TUPLE3_T, FLOAT_T, box_type_id>(p2[i+ii], p1[j+jj], box, box_ortho, box_inv));
+                    // int k = (int)(scal * dist<TUPLE3_T, FLOAT_T, box_type_id>(p2[i+ii], p1[j+jj], box, box_ortho, box_inv));
+                    // histo_thread[k] += 1;
+                }
+            }
+*/
 
+    // does vectorize
     for (int j=0; j<n1; j+=bs) {
         int jj_max = std::min(n1-j, bs);
         memmove(p1_stripe, &p1[j], jj_max*sizeof(TUPLE3_T));
@@ -358,11 +362,9 @@ void hist_2_blocked(TUPLE3_T * __restrict__ p1,
             for (int jj=0; jj<jj_max; ++jj) {
                 #pragma omp simd
                 for (int ii=0; ii<ii_max; ++ii) {
-                    //d[jj*bs+ii] = (int)(scal * dist<TUPLE3_T, FLOAT_T, box_type_id>(p2[i+ii], p1[j+jj], box, box_ortho, box_inv));
                     d[jj*bs+ii] = (int)(scal * dist<TUPLE3_T, FLOAT_T, box_type_id>(p2_stripe[ii], p1_stripe[jj], box, box_ortho, box_inv));
                 }
             }
-
 
             //int c = ii_max * jj_max;
             int c = bs;
@@ -522,7 +524,8 @@ void histo_cpu(TUPLE3_T *coords, int n_tot, int *n_per_el, int n_el,
                                             (&coords[iOffset], n_per_el[i],
                                              &coords[jOffset], n_per_el[j],
                                              &histos[histoOffset], n_bins, scal,
-                                             box, box_ortho, box_inv);
+                                             box, box_ortho, box_inv,
+                                             blocksize);
                     } else {
                         hist_2 <TUPLE3_T, FLOAT_T, check_input, box_type_id>
                             (&coords[iOffset], n_per_el[i],
