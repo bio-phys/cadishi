@@ -157,8 +157,8 @@ def get_gcc_flags():
                 if CAD_OPENMP:
                     cc_flags += ['-fopenmp']
                 cc_flags += ['-fopt-info']
-                # cc_flags += ['-ftree-vectorize']
-                # cc_flags += ['-fopt-info-vec-missed']
+                cc_flags += ['-ftree-vectorize']
+                cc_flags += ['-fopt-info-vec-missed']
     return cc_flags
 
 

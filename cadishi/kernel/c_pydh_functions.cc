@@ -276,6 +276,28 @@ void hist_2(TUPLE3_T * __restrict__ p1,
 }
 
 
+template <typename TUPLE3_T, typename FLOAT_T, int box_type_id>
+inline void block_dist_knl(
+            TUPLE3_T * __restrict__ p1_stripe_arg, const int jj_max,
+            TUPLE3_T * __restrict__ p2_stripe_arg, const int ii_max,
+            const FLOAT_T scal,
+            int * __restrict__ d_arg,
+            const int bs,
+            const TUPLE3_T * const box,
+            const TUPLE3_T &box_ortho,
+            const TUPLE3_T &box_inv) {
+    TUPLE3_T * p1_stripe = (TUPLE3_T *) __builtin_assume_aligned(p1_stripe_arg, alignment);
+    TUPLE3_T * p2_stripe = (TUPLE3_T *) __builtin_assume_aligned(p2_stripe_arg, alignment);
+    int * d = (int *) __builtin_assume_aligned(d_arg, alignment);
+    for (int jj=0; jj<jj_max; ++jj) {
+        #pragma omp simd
+        for (int ii=0; ii<ii_max; ++ii) {
+            d[jj*bs+ii] = int(scal * dist<TUPLE3_T, FLOAT_T, box_type_id>(p2_stripe[ii], p1_stripe[jj], box, box_ortho, box_inv));
+        }
+    }
+}
+
+
 /**
  * Function: hist_2_blocked
  *
@@ -295,173 +317,94 @@ void hist_2_blocked(TUPLE3_T * __restrict__ p1,
             const int blocksize) {
     CHECKPOINT("hist_2_blocked()");
 
-    const int bs = 512;  //blocksize;
+    const int bs = 128;  //blocksize;
     const int nb = bs*bs;  // number of elements/distances per block
 
     bool idx_error = false;
     bool mem_error = false;
     memset(histo, 0, nbins*sizeof(uint64_t));
 
-    uint32_t * histo_thread = (uint32_t*) malloc(nbins*sizeof(uint32_t));
-    memset(histo_thread, 0, nbins*sizeof(uint32_t));
-    int *d = NULL;
-    mem_error = (posix_memalign((void**)&d, alignment, nb*sizeof(int)) != 0);
-
-    TUPLE3_T * p1_stripe = NULL;
-    mem_error = (posix_memalign((void**)&p1_stripe, alignment, bs*sizeof(TUPLE3_T)) != 0);
-
-    TUPLE3_T * p2_stripe = NULL;
-    mem_error = (posix_memalign((void**)&p2_stripe, alignment, bs*sizeof(TUPLE3_T)) != 0);
-
-    // // unblocked loop structure
-    // for (int j=0; j<n1; ++j) {
-    //     for (int i=0; i<n2; ++i) {
-    //     }
-    // }
-
-    // for (int j=0; j<n1; j+=bs) {
-    //     int jj_max = std::min(n1, j+bs);
-    //     for (int i=0; i<n2; i+=bs) {
-    //         int ii_max = std::min(n2, i+bs);
-
-            // int c=0;
-            // for (int jj=j; jj<jj_max; ++jj) {
-            //     for (int ii=i; ii<ii_max; ++ii) {
-            //         d[c] = (int)(scal * dist<TUPLE3_T, FLOAT_T, box_type_id>
-            //                      (p2[ii], p1[jj], box, box_ortho, box_inv));
-            //         c++;
-            //     }
-            // }
-
-/*
-    for (int j=0; j<n1; j+=bs) {
-        int jj_max = std::min(n1-j, bs);
-        for (int i=0; i<n2; i+=bs) {
-            int ii_max = std::min(n2-i, bs);
-            // does not vectorize
-            for (int jj=0; jj<jj_max; ++jj) {
-                #pragma omp simd
-                for (int ii=0; ii<ii_max; ++ii) {
-                    d[jj*bs+ii] = (int)(scal * dist<TUPLE3_T, FLOAT_T, box_type_id>(p2[i+ii], p1[j+jj], box, box_ortho, box_inv));
-                    // int k = (int)(scal * dist<TUPLE3_T, FLOAT_T, box_type_id>(p2[i+ii], p1[j+jj], box, box_ortho, box_inv));
-                    // histo_thread[k] += 1;
-                }
-            }
-*/
-
-    // does vectorize
-    for (int j=0; j<n1; j+=bs) {
-        int jj_max = std::min(n1-j, bs);
-        memmove(p1_stripe, &p1[j], jj_max*sizeof(TUPLE3_T));
-
-        for (int i=0; i<n2; i+=bs) {
-            int ii_max = std::min(n2-i, bs);
-            memmove(p2_stripe, &p2[i], ii_max*sizeof(TUPLE3_T));
-            memset(d, 0, bs*sizeof(int));
-
-            for (int jj=0; jj<jj_max; ++jj) {
-                #pragma omp simd
-                for (int ii=0; ii<ii_max; ++ii) {
-                    d[jj*bs+ii] = (int)(scal * dist<TUPLE3_T, FLOAT_T, box_type_id>(p2_stripe[ii], p1_stripe[jj], box, box_ortho, box_inv));
-                }
-            }
-
-            //int c = ii_max * jj_max;
-            int c = bs;
-
-            switch (box_type_id) {
-            case none:
-                if (check_input) {
-                    if (idx_error) {
-                        // --- error condition is already there, do nothing ---
-                    } else if (thread_dist_trim(d, c, nbins) > 0) {
-                        #pragma omp atomic write
-                        idx_error = true;
-                    } else {
-                        thread_histo_increment(histo_thread, d, c);
-                    }
-                } else {
-                    thread_histo_increment(histo_thread, d, c);
-                }
-                break;
-            case orthorhombic:
-            case triclinic:
-                if (check_input) {
-                    int n_out = thread_dist_trim(d, c, nbins);
-                    thread_histo_increment(histo_thread, d, c, n_out);
-                } else {
-                    thread_histo_increment(histo_thread, d, c);
-                }
-                break;
-            }
-
-        }
-    }
-    thread_histo_flush(histo, histo_thread, nbins, false);
-    free(d);
-    free(histo_thread);
-    free(p1_stripe);
-    free(p2_stripe);
-
-    // skeleton of parallel version below
-    if (false) {
-        uint32_t * histo_thread = (uint32_t*) malloc(nbins*sizeof(uint32_t));
+    #pragma omp parallel default(shared) reduction(|| : idx_error, mem_error)
+    {
+        // uint32_t * histo_thread = (uint32_t*) malloc(nbins*sizeof(uint32_t));
+        uint32_t *histo_thread = NULL;
+        mem_error = mem_error || (posix_memalign((void**)&histo_thread, alignment, nbins*sizeof(uint32_t)) != 0);
         memset(histo_thread, 0, nbins*sizeof(uint32_t));
-        int *d = NULL;
-        mem_error = (posix_memalign((void**)&d, alignment, n2*sizeof(int)) != 0);
-        if (! mem_error) {
-            uint32_t count = 0;
 
-            for (int j=0; j<n1; ++j) {
-                if ( (count + (uint32_t)n2) < count /*use wrap-around feature at overflow*/) {
-                    thread_histo_flush(histo, histo_thread, nbins, true);
-                    count = 0;
+        int *d = NULL;
+        mem_error = mem_error || (posix_memalign((void**)&d, alignment, nb*sizeof(int)) != 0);
+
+        TUPLE3_T * p1_stripe = NULL;
+        mem_error = mem_error || (posix_memalign((void**)&p1_stripe, alignment, bs*sizeof(TUPLE3_T)) != 0);
+
+        TUPLE3_T * p2_stripe = NULL;
+        mem_error = mem_error || (posix_memalign((void**)&p2_stripe, alignment, bs*sizeof(TUPLE3_T)) != 0);
+
+        int j0 = -1;
+        int jj_max;
+
+        // does vectorize
+        #pragma omp for schedule(auto) collapse(2)
+        for (int j=0; j<n1; j+=bs) {
+            for (int i=0; i<n2; i+=bs) {
+                int ii_max = std::min(n2-i, bs);
+                memmove(p2_stripe, &p2[i], ii_max*sizeof(TUPLE3_T));
+
+                if (j != j0) {
+                    j0 = j;
+                    jj_max = std::min(n1-j, bs);
+                    memmove(p1_stripe, &p1[j], jj_max*sizeof(TUPLE3_T));
                 }
-                count += (uint32_t)n2;
-                for (int i=0; i<n2; ++i) {
-                    d[i] = (int)(scal * dist<TUPLE3_T, FLOAT_T, box_type_id>
-                                 (p2[i], p1[j], box, box_ortho, box_inv));
-                }
-                // /**
-                //  * Checks of the previously calculated integer-converted distances.
-                //  *
-                //  * In case we do not use a periodic box, a distance greater than the maximum allowed one
-                //  * translates to an error condition.  The user has to take care about the input data set.
-                //  *
-                //  * In case we have a periodic box it may be desired to discard such values and proceed.
-                //  */
+
+                memset(d, 0, nb*sizeof(int));
+
+                // for (int jj=0; jj<jj_max; ++jj) {
+                //     #pragma omp simd
+                //     for (int ii=0; ii<ii_max; ++ii) {
+                //         d[jj*bs+ii] = int(scal * dist<TUPLE3_T, FLOAT_T, box_type_id>(p2_stripe[ii], p1_stripe[jj], box, box_ortho, box_inv));
+                //     }
+                // }
+
+                block_dist_knl <TUPLE3_T, FLOAT_T, box_type_id>
+                    (p1_stripe, jj_max, p2_stripe, ii_max, scal, d, bs, box, box_ortho, box_inv);
+
+
+                //int c = ii_max * jj_max;
+                const int c = nb;
+
                 switch (box_type_id) {
                 case none:
                     if (check_input) {
                         if (idx_error) {
                             // --- error condition is already there, do nothing ---
-                        } else if (thread_dist_trim(d, n2, nbins) > 0) {
+                        } else if (thread_dist_trim(d, c, nbins) > 0) {
                             #pragma omp atomic write
                             idx_error = true;
                         } else {
-                            thread_histo_increment(histo_thread, d, n2);
+                            thread_histo_increment(histo_thread, d, c);
                         }
                     } else {
-                        thread_histo_increment(histo_thread, d, n2);
+                        thread_histo_increment(histo_thread, d, c);
                     }
                     break;
                 case orthorhombic:
                 case triclinic:
                     if (check_input) {
-                        int n_out = thread_dist_trim(d, n2, nbins);
-                        thread_histo_increment(histo_thread, d, n2, n_out);
+                        int n_out = thread_dist_trim(d, c, nbins);
+                        thread_histo_increment(histo_thread, d, c, n_out);
                     } else {
-                        thread_histo_increment(histo_thread, d, n2);
+                        thread_histo_increment(histo_thread, d, c);
                     }
                     break;
                 }
             }
-            thread_histo_flush(histo, histo_thread, nbins, false);
-            free(d);
-            free(histo_thread);
         }
+        thread_histo_flush(histo, histo_thread, nbins, false);
+        free(d);
+        free(histo_thread);
+        free(p1_stripe);
+        free(p2_stripe);
     }
-
 
     if (mem_error) {
         RT_ERROR("memory allocation")
