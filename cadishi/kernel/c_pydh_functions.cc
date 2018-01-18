@@ -109,7 +109,7 @@ template <typename TUPLE3_T, typename FLOAT_T, bool check_input, int box_type_id
 void hist_1(TUPLE3_T * __restrict__ p,
             const int nelem,
             uint64_t *histo,
-            const int nbins,
+            const int n_bins,
             const FLOAT_T scal,
             const TUPLE3_T * const box,
             const TUPLE3_T &box_ortho,
@@ -117,11 +117,11 @@ void hist_1(TUPLE3_T * __restrict__ p,
     CHECKPOINT("hist_1()");
     bool idx_error = false;
     bool mem_error = false;
-    memset(histo, 0, nbins*sizeof(uint64_t));
+    memset(histo, 0, n_bins*sizeof(uint64_t));
     #pragma omp parallel default(shared) reduction(|| : idx_error, mem_error)
     {
-        uint32_t * histo_thread = (uint32_t*) malloc(nbins*sizeof(uint32_t));
-        memset(histo_thread, 0, nbins*sizeof(uint32_t));
+        uint32_t * histo_thread = (uint32_t*) malloc(n_bins*sizeof(uint32_t));
+        memset(histo_thread, 0, n_bins*sizeof(uint32_t));
         int *d = NULL;
         mem_error = (posix_memalign((void**)&d, alignment, nelem*sizeof(int)) != 0);
         if (! mem_error) {
@@ -129,7 +129,7 @@ void hist_1(TUPLE3_T * __restrict__ p,
             #pragma omp for OMP_SCHEDULE
             for (int j=0; j<nelem; ++j) {
                 if ( (count + (uint32_t)j) < count /*use wrap-around feature at overflow*/) {
-                    thread_histo_flush(histo, histo_thread, nbins, true);
+                    thread_histo_flush(histo, histo_thread, n_bins, true);
                     count = 0;
                 }
                 count += (uint32_t)j;
@@ -152,7 +152,7 @@ void hist_1(TUPLE3_T * __restrict__ p,
                     if (check_input) {
                         if (idx_error) {
                             // --- error condition is already there, do nothing ---
-                        } else if (thread_dist_trim(d, j, nbins) > 0) {
+                        } else if (thread_dist_trim(d, j, n_bins) > 0) {
                             #pragma omp atomic write
                             idx_error = true;
                         } else {
@@ -165,7 +165,7 @@ void hist_1(TUPLE3_T * __restrict__ p,
                 case orthorhombic:
                 case triclinic:
                     if (check_input) {
-                        int n_out = thread_dist_trim(d, j, nbins);
+                        int n_out = thread_dist_trim(d, j, n_bins);
                         thread_histo_increment(histo_thread, d, j, n_out);
                     } else {
                         thread_histo_increment(histo_thread, d, j);
@@ -173,7 +173,7 @@ void hist_1(TUPLE3_T * __restrict__ p,
                     break;
                 }
             }
-            thread_histo_flush(histo, histo_thread, nbins, false);
+            thread_histo_flush(histo, histo_thread, n_bins, false);
             free(d);
             free(histo_thread);
         }
@@ -199,7 +199,7 @@ void hist_2(TUPLE3_T * __restrict__ p1,
             TUPLE3_T * __restrict__ p2,
             const int nelem2,
             uint64_t *histo,
-            const int nbins,
+            const int n_bins,
             const FLOAT_T scal,
             const TUPLE3_T * const box,
             const TUPLE3_T &box_ortho,
@@ -207,11 +207,11 @@ void hist_2(TUPLE3_T * __restrict__ p1,
     CHECKPOINT("hist_2()");
     bool idx_error = false;
     bool mem_error = false;
-    memset(histo, 0, nbins*sizeof(uint64_t));
+    memset(histo, 0, n_bins*sizeof(uint64_t));
     #pragma omp parallel default(shared) reduction(|| : idx_error, mem_error)
     {
-        uint32_t * histo_thread = (uint32_t*) malloc(nbins*sizeof(uint32_t));
-        memset(histo_thread, 0, nbins*sizeof(uint32_t));
+        uint32_t * histo_thread = (uint32_t*) malloc(n_bins*sizeof(uint32_t));
+        memset(histo_thread, 0, n_bins*sizeof(uint32_t));
         int *d = NULL;
         mem_error = (posix_memalign((void**)&d, alignment, nelem2*sizeof(int)) != 0);
         if (! mem_error) {
@@ -219,7 +219,7 @@ void hist_2(TUPLE3_T * __restrict__ p1,
             #pragma omp for OMP_SCHEDULE
             for (int j=0; j<nelem1; ++j) {
                 if ( (count + (uint32_t)nelem2) < count /*use wrap-around feature at overflow*/) {
-                    thread_histo_flush(histo, histo_thread, nbins, true);
+                    thread_histo_flush(histo, histo_thread, n_bins, true);
                     count = 0;
                 }
                 count += (uint32_t)nelem2;
@@ -242,7 +242,7 @@ void hist_2(TUPLE3_T * __restrict__ p1,
                     if (check_input) {
                         if (idx_error) {
                             // --- error condition is already there, do nothing ---
-                        } else if (thread_dist_trim(d, nelem2, nbins) > 0) {
+                        } else if (thread_dist_trim(d, nelem2, n_bins) > 0) {
                             #pragma omp atomic write
                             idx_error = true;
                         } else {
@@ -255,7 +255,7 @@ void hist_2(TUPLE3_T * __restrict__ p1,
                 case orthorhombic:
                 case triclinic:
                     if (check_input) {
-                        int n_out = thread_dist_trim(d, nelem2, nbins);
+                        int n_out = thread_dist_trim(d, nelem2, n_bins);
                         thread_histo_increment(histo_thread, d, nelem2, n_out);
                     } else {
                         thread_histo_increment(histo_thread, d, nelem2);
@@ -263,7 +263,7 @@ void hist_2(TUPLE3_T * __restrict__ p1,
                     break;
                 }
             }
-            thread_histo_flush(histo, histo_thread, nbins, false);
+            thread_histo_flush(histo, histo_thread, n_bins, false);
             free(d);
             free(histo_thread);
         }
@@ -275,6 +275,32 @@ void hist_2(TUPLE3_T * __restrict__ p1,
         if (idx_error)
             OVERFLOW_ERROR(overflow_error_msg);
     }
+}
+
+
+/**
+ * Function calculate_blocksize()
+ *
+ * Calculates the block size in elements assuming a 256 kB L2 cache size
+ * such that block_dist_knl() and the thread local histogram do fit into L2.
+ */
+template <typename TUPLE3_T, typename FLOAT_T>
+int calculate_blocksize(const int n_bins,
+                        const int n_bytes_l2=1<<18,         // 256 kB
+                        const int n_bytes_reserve=1<<14)    //  16 kB
+{
+    const float n_bytes_cache = n_bytes_l2 - n_bytes_reserve;
+    const float n_bytes_tuple = sizeof(TUPLE3_T);
+    const float b_bytes_word = sizeof(FLOAT_T);
+    const float n_bytes_int = sizeof(int);
+    // solve quadratic formula: y = a * x**2 + b * x + c
+    const float y = n_bytes_cache;
+    const float a = n_bytes_int;
+    const float b = 2 * n_bytes_tuple;
+    const float c = n_bins * n_bytes_int;
+    const float cy = c-y;
+    const float n_block = (-b + std::sqrt(b*b - 4.*a*cy))/(2.*a);
+    return int(std::floor(n_block));
 }
 
 
@@ -311,26 +337,27 @@ void hist_2_blocked(TUPLE3_T * __restrict__ p1,
             TUPLE3_T * __restrict__ p2,
             const int n2,
             uint64_t *histo,
-            const int nbins,
+            const int n_bins,
             const FLOAT_T scal,
             const TUPLE3_T * const box,
             const TUPLE3_T &box_ortho,
-            const TUPLE3_T &box_inv,
-            const int blocksize) {
+            const TUPLE3_T &box_inv) {
     CHECKPOINT("hist_2_blocked()");
 
-    const int& bs = blocksize;
+    const int bs = calculate_blocksize<TUPLE3_T, FLOAT_T>(n_bins);
     const int nb = bs*bs;  // number of elements/distances per block
+
+    printf("### calculated blocksize :: %d ###\n", bs);
 
     bool idx_error = false;
     bool mem_error = false;
-    memset(histo, 0, nbins*sizeof(uint64_t));
+    memset(histo, 0, n_bins*sizeof(uint64_t));
 
     #pragma omp parallel default(shared) reduction(|| : idx_error, mem_error)
     {
         uint32_t *histo_thread = NULL;
-        mem_error = mem_error || (posix_memalign((void**)&histo_thread, alignment, nbins*sizeof(uint32_t)) != 0);
-        memset(histo_thread, 0, nbins*sizeof(uint32_t));
+        mem_error = mem_error || (posix_memalign((void**)&histo_thread, alignment, n_bins*sizeof(uint32_t)) != 0);
+        memset(histo_thread, 0, n_bins*sizeof(uint32_t));
 
         int *d = NULL;
         mem_error = mem_error || (posix_memalign((void**)&d, alignment, nb*sizeof(int)) != 0);
@@ -365,7 +392,7 @@ void hist_2_blocked(TUPLE3_T * __restrict__ p1,
                     if (check_input) {
                         if (idx_error) {
                             // --- error condition is already there, do nothing ---
-                        } else if (thread_dist_trim(d, c, nbins) > 0) {
+                        } else if (thread_dist_trim(d, c, n_bins) > 0) {
                             #pragma omp atomic write
                             idx_error = true;
                         } else {
@@ -378,7 +405,7 @@ void hist_2_blocked(TUPLE3_T * __restrict__ p1,
                 case orthorhombic:
                 case triclinic:
                     if (check_input) {
-                        int n_out = thread_dist_trim(d, c, nbins);
+                        int n_out = thread_dist_trim(d, c, n_bins);
                         thread_histo_increment(histo_thread, d, c, n_out);
                     } else {
                         thread_histo_increment(histo_thread, d, c);
@@ -387,7 +414,7 @@ void hist_2_blocked(TUPLE3_T * __restrict__ p1,
                 }
             }
         }
-        thread_histo_flush(histo, histo_thread, nbins, false);
+        thread_histo_flush(histo, histo_thread, n_bins, false);
         free(d);
         free(histo_thread);
         free(p1_stripe);
@@ -663,7 +690,6 @@ int histograms_cpu(np_tuple3d_t *r_ptr,
         cfg.print_config();
     }
     int exit_status = 0;
-    // TODO: move the cfg data structure further in
     try {
         if (cfg.precision == single_precision) {
             // NOTE: histograms_template_dispatcher() does the conversion to single precision internally
