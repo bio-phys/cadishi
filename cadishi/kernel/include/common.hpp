@@ -37,8 +37,8 @@
   printf("%s\n", msg.c_str()); \
 }
 // --- silence the CHECKPOINT macro by default ---
-// #undef CHECKPOINT
-// #define CHECKPOINT( MSG )
+#undef CHECKPOINT
+#define CHECKPOINT( MSG )
 
 
 #if defined(__CUDACC__) // NVCC

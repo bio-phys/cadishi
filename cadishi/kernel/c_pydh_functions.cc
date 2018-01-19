@@ -27,16 +27,9 @@
 #include "common.hpp"
 #include "exceptions.hpp"
 
-// Attempt to make the distance array in the inner loop fit into the CPU cache,
-// this does not seem to be beneficial in most use cases, so we disable it for the moment.
-// #define USE_BLOCKING
-#undef USE_BLOCKING
-#ifdef USE_BLOCKING
-// const int inner_loop_blocksize = 131072;
-#endif
-
 // alignment parameter passed to posix_memalign()
 const size_t alignment = 64;
+
 
 /**
  * Function: thread_histo_increment
@@ -293,7 +286,7 @@ int calculate_blocksize(const int n_bins,
     const float n_bytes_tuple = sizeof(TUPLE3_T);
     const float b_bytes_word = sizeof(FLOAT_T);
     const float n_bytes_int = sizeof(int);
-    // solve quadratic formula: y = a * x**2 + b * x + c
+    // solve quadratic equation y = a * x**2 + b * x + c
     const float y = n_bytes_cache;
     const float a = n_bytes_int;
     const float b = 2 * n_bytes_tuple;
@@ -306,8 +299,8 @@ int calculate_blocksize(const int n_bins,
 
 template <typename TUPLE3_T, typename FLOAT_T, int box_type_id>
 inline void block_dist_knl(
-            TUPLE3_T * __restrict__ p1_stripe, const int jj_max,
-            TUPLE3_T * __restrict__ p2_stripe, const int ii_max,
+            const TUPLE3_T * __restrict__ const p1_stripe, const int jj_max,
+            const TUPLE3_T * __restrict__ const p2_stripe, const int ii_max,
             const FLOAT_T scal,
             int * __restrict__ d,
             const int bs,
@@ -320,21 +313,22 @@ inline void block_dist_knl(
         memset(d_stripe, -1, bs*sizeof(int));
         #pragma omp simd
         for (int ii=0; ii<ii_max; ++ii) {
-            d_stripe[ii] = int(scal * dist<TUPLE3_T, FLOAT_T, box_type_id>(p2_stripe[ii], p1_stripe[jj], box, box_ortho, box_inv));
+            d_stripe[ii] = int(scal * dist <TUPLE3_T, FLOAT_T, box_type_id>
+                        (p2_stripe[ii], p1_stripe[jj], box, box_ortho, box_inv));
         }
     }
 }
 
 
 /**
- * Function: hist_2_blocked
+ * Function: hist_blocked
  *
  * Two-species distance histogram kernel.
  */
 template <typename TUPLE3_T, typename FLOAT_T, bool check_input, int box_type_id>
-void hist_2_blocked(TUPLE3_T * __restrict__ p1,
+void hist_blocked(const TUPLE3_T * const p1,
             const int n1,
-            TUPLE3_T * __restrict__ p2,
+            const TUPLE3_T * const p2,
             const int n2,
             uint64_t *histo,
             const int n_bins,
@@ -342,12 +336,16 @@ void hist_2_blocked(TUPLE3_T * __restrict__ p1,
             const TUPLE3_T * const box,
             const TUPLE3_T &box_ortho,
             const TUPLE3_T &box_inv) {
-    CHECKPOINT("hist_2_blocked()");
+    CHECKPOINT("hist_blocked()");
+
+    // detect if an intra- or inter-species calculation is performed
+    const bool q_intra_species = (p1 == p2);
 
     const int bs = calculate_blocksize<TUPLE3_T, FLOAT_T>(n_bins);
     const int nb = bs*bs;  // number of elements/distances per block
 
-    printf("### calculated blocksize :: %d ###\n", bs);
+    // printf("### calculated blocksize :: %d ###\n", bs);
+    // printf("### q_intra_species      :: %d ###\n", q_intra_species);
 
     bool idx_error = false;
     bool mem_error = false;
@@ -369,12 +367,18 @@ void hist_2_blocked(TUPLE3_T * __restrict__ p1,
         mem_error = mem_error || (posix_memalign((void**)&p2_stripe, alignment, bs*sizeof(TUPLE3_T)) != 0);
 
         int j0 = -1;
-        int jj_max;
+        int jj_max = -1;
 
-        #pragma omp for OMP_SCHEDULE collapse(2)
+        uint32_t count = 0;
+
+        // Note: omp collapse cannot be used here due to the non-static inner loop limit
+        #pragma omp for OMP_SCHEDULE
         for (int j=0; j<n1; j+=bs) {
-            for (int i=0; i<n2; i+=bs) {
-                int ii_max = std::min(n2-i, bs);
+            // set the upper limit for the inner loop depending on if we run an
+            // intra-species or inter-species calculation
+            int nn2 = (q_intra_species) ? j : n2;
+            for (int i=0; i<nn2; i+=bs) {
+                int ii_max = std::min(nn2-i, bs);
                 memmove(p2_stripe, &p2[i], ii_max*sizeof(TUPLE3_T));
 
                 if (j != j0) {
@@ -383,7 +387,15 @@ void hist_2_blocked(TUPLE3_T * __restrict__ p1,
                     memmove(p1_stripe, &p1[j], jj_max*sizeof(TUPLE3_T));
                 }
 
-                block_dist_knl <TUPLE3_T, FLOAT_T, box_type_id> (p1_stripe, jj_max, p2_stripe, ii_max, scal, d, bs, box, box_ortho, box_inv);
+                // flush per-thread histogram in case a bin might approach the 32 bit integer limit
+                if ( (count + (uint32_t)nb) < count /*use wrap-around feature at overflow*/) {
+                    thread_histo_flush(histo, histo_thread, n_bins, true);
+                    count = 0;
+                }
+                count += (uint32_t)nb;
+
+                block_dist_knl <TUPLE3_T, FLOAT_T, box_type_id>
+                    (p1_stripe, jj_max, p2_stripe, ii_max, scal, d, bs, box, box_ortho, box_inv);
 
                 const int c = nb;
 
@@ -478,12 +490,11 @@ void histo_cpu(TUPLE3_T *coords, int n_tot, int *n_per_el, int n_el,
             if (mask[histogramIdx - 1] > 0) {
                 if (j != i) {
                     if (blocksize > 0) {
-                        hist_2_blocked <TUPLE3_T, FLOAT_T, check_input, box_type_id>
+                        hist_blocked <TUPLE3_T, FLOAT_T, check_input, box_type_id>
                                             (&coords[iOffset], n_per_el[i],
                                              &coords[jOffset], n_per_el[j],
                                              &histos[histoOffset], n_bins, scal,
-                                             box, box_ortho, box_inv,
-                                             blocksize);
+                                             box, box_ortho, box_inv);
                     } else {
                         hist_2 <TUPLE3_T, FLOAT_T, check_input, box_type_id>
                             (&coords[iOffset], n_per_el[i],
@@ -492,10 +503,18 @@ void histo_cpu(TUPLE3_T *coords, int n_tot, int *n_per_el, int n_el,
                              box, box_ortho, box_inv);
                     }
                 } else {
-                    hist_1 <TUPLE3_T, FLOAT_T, check_input, box_type_id>
-                        (&coords[iOffset], n_per_el[i],
-                         &histos[histoOffset], n_bins, scal,
-                         box, box_ortho, box_inv);
+                    if (blocksize > 0) {
+                        hist_blocked <TUPLE3_T, FLOAT_T, check_input, box_type_id>
+                                            (&coords[iOffset], n_per_el[i],
+                                             &coords[jOffset], n_per_el[j],
+                                             &histos[histoOffset], n_bins, scal,
+                                             box, box_ortho, box_inv);
+                    } else {
+                        hist_1 <TUPLE3_T, FLOAT_T, check_input, box_type_id>
+                            (&coords[iOffset], n_per_el[i],
+                             &histos[histoOffset], n_bins, scal,
+                             box, box_ortho, box_inv);
+                    }
                 }
             }
             // ---
