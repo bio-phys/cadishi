@@ -103,8 +103,8 @@ def fixture_small():
         # n_bins = 2048
 
         n_el = 1
-        n_atoms = [2]
-        n_bins = 16
+        n_atoms = [240]
+        n_bins = 32
 
         coords = util.generate_random_coordinate_set(n_atoms)
         histo = dist.histograms(coords, r_max, n_bins)
@@ -162,11 +162,13 @@ if TEST_PYDH:
         n_el, n_atoms, n_bins, coords, histo_ref = fixture_small
         histo = pydh.histograms(coords, r_max, n_bins, precision="double",
                                 pydh_threads=1, pydh_blocksize=0, check_input=False)
+        print(np.sum(histo[:,1]))
         if DUMP_DATA:
             file_name = sys._getframe().f_code.co_name + "_noblock.dat"
             util.dump_histograms(file_name, histo, r_max, n_bins)
         histo = pydh.histograms(coords, r_max, n_bins, precision="double",
                                 pydh_threads=1, pydh_blocksize=1, check_input=False)
+        print(np.sum(histo[:,1]))
         if DUMP_DATA:
             file_name = sys._getframe().f_code.co_name + "_doblock.dat"
             util.dump_histograms(file_name, histo, r_max, n_bins)

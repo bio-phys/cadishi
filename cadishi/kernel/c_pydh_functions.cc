@@ -296,7 +296,7 @@ void hist_2(TUPLE3_T * __restrict__ p1,
  * Function calculate_blocksize()
  *
  * Calculates the block size in elements (assuming a 256 kB L2 cache size
- * such that block_dist_knl() and the thread local histogram do fit into L2.
+ * such that block_dist_rectangle() and the thread local histogram do fit into L2.
  */
 template <typename TUPLE3_T, typename FLOAT_T>
 int calculate_blocksize(const int n_bins,
@@ -319,7 +319,7 @@ int calculate_blocksize(const int n_bins,
 
 
 template <typename TUPLE3_T, typename FLOAT_T, int box_type_id>
-inline void block_dist_knl(
+inline void block_dist_rectangle(
             const TUPLE3_T * const p1_stripe, const int jj_max,
             const TUPLE3_T * const p2_stripe, const int ii_max,
             const FLOAT_T scal,
@@ -334,6 +334,30 @@ inline void block_dist_knl(
         memset_value(d_stripe, -1, bs);
         #pragma omp simd
         for (int ii=0; ii<ii_max; ++ii) {
+            d_stripe[ii] = int(scal * dist <TUPLE3_T, FLOAT_T, box_type_id>
+                        (p2_stripe[ii], p1_stripe[jj], box, box_ortho, box_inv));
+            printf("--> %d\n", d_stripe[ii]);
+        }
+    }
+}
+
+
+template <typename TUPLE3_T, typename FLOAT_T, int box_type_id>
+inline void block_dist_bevel(
+            const TUPLE3_T * const p1_stripe, const int jj_max,
+            const TUPLE3_T * const p2_stripe, const int ii_max,
+            const FLOAT_T scal,
+            int * d,
+            const int bs,
+            const TUPLE3_T * const box,
+            const TUPLE3_T &box_ortho,
+            const TUPLE3_T &box_inv) {
+    for (int jj=0; jj<jj_max; ++jj) {
+        // Note: nested loop structure vectorizes thanks to 'd_stripe'
+        int * d_stripe = &d[jj*bs];
+        memset_value(d_stripe, -1, bs);
+        #pragma omp simd
+        for (int ii=0; ii<jj; ++ii) {
             d_stripe[ii] = int(scal * dist <TUPLE3_T, FLOAT_T, box_type_id>
                         (p2_stripe[ii], p1_stripe[jj], box, box_ortho, box_inv));
             printf("--> %d\n", d_stripe[ii]);
@@ -396,11 +420,8 @@ void hist_blocked(const TUPLE3_T * const p1,
         for (int j=0; j<n1; j+=bs) {
             int jj_max = std::min(n1-j, bs);
             memmove(p1_stripe, &p1[j], jj_max*sizeof(TUPLE3_T));
-            // set the upper limit for the inner loop depending on if we run an
-            // intra-species or inter-species calculation
-            int nn2 = (q_intra_species) ? j : n2;
-            for (int i=0; i<=nn2; i+=bs) {
-                int ii_max = std::min(nn2-i, bs);
+            for (int i=0; i<n2; i+=bs) {
+                int ii_max = std::min(n2-i, bs);
                 memmove(p2_stripe, &p2[i], ii_max*sizeof(TUPLE3_T));
 
                 // flush per-thread histogram in case a bin might approach the 32 bit integer limit
@@ -412,8 +433,22 @@ void hist_blocked(const TUPLE3_T * const p1,
 
                 printf("==> %d %d %d %d\n", i, j, ii_max, jj_max);
 
-                block_dist_knl <TUPLE3_T, FLOAT_T, box_type_id>
-                    (p1_stripe, jj_max, p2_stripe, ii_max, scal, d, bs, box, box_ortho, box_inv);
+                if (q_intra_species) {
+                    if (i+bs < j+1) {
+                        printf("inner block\n");
+                        // inner block
+                        block_dist_rectangle <TUPLE3_T, FLOAT_T, box_type_id>
+                            (p1_stripe, jj_max, p2_stripe, ii_max, scal, d, bs, box, box_ortho, box_inv);
+                    } else {
+                        printf("edge block\n");
+                        // edge/beveled block
+                        block_dist_bevel <TUPLE3_T, FLOAT_T, box_type_id>
+                            (p1_stripe, jj_max, p2_stripe, ii_max, scal, d, bs, box, box_ortho, box_inv);
+                    }
+                } else {
+                    block_dist_rectangle <TUPLE3_T, FLOAT_T, box_type_id>
+                        (p1_stripe, jj_max, p2_stripe, ii_max, scal, d, bs, box, box_ortho, box_inv);
+                }
 
                 print_histo(d, nb);
                 const int c = nb;
