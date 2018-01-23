@@ -89,7 +89,7 @@ else:
 if p_args.blocksize:
     run_values['blocksize'] = p_args.blocksize
 else:
-    run_values['blocksize'] = -1
+    run_values['blocksize'] = 0
 
 if (p_args.gpu_algorithm >= 0):
     run_values['gpu_algorithm'] = p_args.gpu_algorithm

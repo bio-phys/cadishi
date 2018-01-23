@@ -380,13 +380,21 @@ void hist_blocked(const TUPLE3_T * const p1,
             const FLOAT_T scal,
             const TUPLE3_T * const box,
             const TUPLE3_T &box_ortho,
-            const TUPLE3_T &box_inv) {
+            const TUPLE3_T &box_inv,
+            const int blocksize)
+{
     CHECKPOINT("hist_blocked()");
 
     // detect if an intra- or inter-species calculation is performed
     const bool q_intra_species = (p1 == p2);
 
-    const int bs = 4;  //calculate_blocksize<TUPLE3_T, FLOAT_T>(n_bins);
+    int bs;
+    if (blocksize <= 0) {
+        bs = calculate_blocksize<TUPLE3_T, FLOAT_T>(n_bins);
+    } else {
+        bs = blocksize;
+    }
+
     const int nb = bs*bs;  // number of elements/distances per block
 
     // printf("### calculated blocksize :: %d ###\n", bs);
@@ -507,8 +515,13 @@ void hist_blocked(const TUPLE3_T * const p1,
 template <typename TUPLE3_T, typename FLOAT_T, bool check_input, int box_type_id>
 void histo_cpu(TUPLE3_T *coords, int n_tot, int *n_per_el, int n_el,
                uint64_t *histos, int n_bins, FLOAT_T r_max, int *mask,
-               const TUPLE3_T * const box, const int blocksize) {
+               const TUPLE3_T * const box, int blocksize) {
     const FLOAT_T scal = ((FLOAT_T)n_bins)/r_max;
+
+    // disable blocking for large histograms
+    if (n_bins > 48000) {
+        blocksize = -1;
+    }
 
     // --- box-related values, to be passed as constant references
     TUPLE3_T box_ortho = {0.0};
@@ -543,12 +556,13 @@ void histo_cpu(TUPLE3_T *coords, int n_tot, int *n_per_el, int n_el,
             // ---
             if (mask[histogramIdx - 1] > 0) {
                 if (j != i) {
-                    if (blocksize > 0) {
+                    if (blocksize >= 0) {
                         hist_blocked <TUPLE3_T, FLOAT_T, check_input, box_type_id>
                                             (&coords[iOffset], n_per_el[i],
                                              &coords[jOffset], n_per_el[j],
                                              &histos[histoOffset], n_bins, scal,
-                                             box, box_ortho, box_inv);
+                                             box, box_ortho, box_inv,
+                                             blocksize);
                     } else {
                         hist_2 <TUPLE3_T, FLOAT_T, check_input, box_type_id>
                             (&coords[iOffset], n_per_el[i],
@@ -557,12 +571,13 @@ void histo_cpu(TUPLE3_T *coords, int n_tot, int *n_per_el, int n_el,
                              box, box_ortho, box_inv);
                     }
                 } else {
-                    if (blocksize > 0) {
+                    if (blocksize >= 0) {
                         hist_blocked <TUPLE3_T, FLOAT_T, check_input, box_type_id>
                                             (&coords[iOffset], n_per_el[i],
                                              &coords[jOffset], n_per_el[j],
                                              &histos[histoOffset], n_bins, scal,
-                                             box, box_ortho, box_inv);
+                                             box, box_ortho, box_inv,
+                                             blocksize);
                     } else {
                         hist_1 <TUPLE3_T, FLOAT_T, check_input, box_type_id>
                             (&coords[iOffset], n_per_el[i],
