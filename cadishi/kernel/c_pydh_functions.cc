@@ -148,6 +148,7 @@ void hist_1(TUPLE3_T * __restrict__ p,
                 // loop vectorizes well (GCC >=4.9, checked using Intel VTUNE & Advisor)
                 #pragma omp simd
                 for (int j=0; j<i; ++j) {
+                    printf("hist1, took: i=%d j=%d\n", i, j);
                     d[j] = (int) (scal * dist<TUPLE3_T, FLOAT_T, box_type_id>
                                   (p[j], p[i], box, box_ortho, box_inv));
                 }
@@ -328,15 +329,15 @@ inline void block_dist_rectangle(
             const TUPLE3_T * const box,
             const TUPLE3_T &box_ortho,
             const TUPLE3_T &box_inv) {
+    memset_value(d, -1, bs*bs);
     for (int ii=0; ii<ii_max; ++ii) {
         // Note: nested loop structure vectorizes thanks to 'd_stripe'
         int * d_stripe = &d[ii*bs];
-        memset_value(d_stripe, -1, bs);
         #pragma omp simd
         for (int jj=0; jj<jj_max; ++jj) {
+            printf("rect, took: ii=%d jj=%d\n", ii, jj);
             d_stripe[jj] = int(scal * dist <TUPLE3_T, FLOAT_T, box_type_id>
                         (p2_stripe[jj], p1_stripe[ii], box, box_ortho, box_inv));
-            // printf("--> %d\n", d_stripe[jj]);
         }
     }
 }
@@ -353,17 +354,19 @@ inline void block_dist_bevel(
             const TUPLE3_T * const box,
             const TUPLE3_T &box_ortho,
             const TUPLE3_T &box_inv) {
+    memset_value(d, -1, bs*bs);
     for (int ii=0; ii<ii_max; ++ii) {
         // Note: nested loop structure vectorizes thanks to 'd_stripe'
         int * d_stripe = &d[ii*bs];
-        memset_value(d_stripe, -1, bs);
         #pragma omp simd
         for (int jj=0; jj<jj_max; ++jj) {
-            if (jj <= ii + jj_offset) {
+            if (jj < ii + jj_offset) {
+                printf("bevel, took: ii=%d jj=%d\n", ii, jj);
                 d_stripe[jj] = int(scal * dist <TUPLE3_T, FLOAT_T, box_type_id>
                                 (p2_stripe[jj], p1_stripe[ii], box, box_ortho, box_inv));
+            } else {
+                printf("bevel, skip: ii=%d jj=%d\n", ii, jj);
             }
-            // printf("--> %d\n", d_stripe[jj]);
         }
     }
 }
@@ -390,11 +393,11 @@ void hist_blocked(const TUPLE3_T * const p1,
     // detect if an intra- or inter-species calculation is performed
     const bool q_intra_species = (p1 == p2);
 
-    const int bs = calculate_blocksize<TUPLE3_T, FLOAT_T>(n_bins);
+    const int bs = 4;  //calculate_blocksize<TUPLE3_T, FLOAT_T>(n_bins);
     const int nb = bs*bs;  // number of elements/distances per block
 
-    printf("### calculated blocksize :: %d ###\n", bs);
-    printf("### q_intra_species      :: %d ###\n", q_intra_species);
+    // printf("### calculated blocksize :: %d ###\n", bs);
+    // printf("### q_intra_species      :: %d ###\n", q_intra_species);
 
     bool idx_error = false;
     bool mem_error = false;
@@ -425,7 +428,40 @@ void hist_blocked(const TUPLE3_T * const p1,
             memmove(p1_stripe, &p1[i], ii_max*sizeof(TUPLE3_T));
             for (int j=0; j<n2; j+=bs) {
                 int jj_max = std::min(n2-j, bs);
-                memmove(p2_stripe, &p2[j], jj_max*sizeof(TUPLE3_T));
+
+                if (q_intra_species) {
+                    int i_block = i/bs;
+                    int j_block = j/bs;
+                    if (j_block <= i_block) {
+                        memmove(p2_stripe, &p2[j], jj_max*sizeof(TUPLE3_T));
+                        if (j_block < i_block - 1) {
+                            printf("rectangular block: i=%d j=%d, ii_max=%d jj_max=%d\n", i, j, ii_max, jj_max);
+                            block_dist_rectangle <TUPLE3_T, FLOAT_T, box_type_id>
+                                (p1_stripe, ii_max, p2_stripe, jj_max, scal, d, bs, box, box_ortho, box_inv);
+                        } else if (j_block == i_block - 1) {
+                            printf("sub-diagonal block: i=%d j=%d, ii_max=%d jj_max=%d\n", i, j, ii_max, jj_max);
+                            // int jj_offset = bs-1;
+                            // block_dist_bevel <TUPLE3_T, FLOAT_T, box_type_id>
+                                // (p1_stripe, ii_max, p2_stripe, jj_max, jj_offset, scal, d, bs, box, box_ortho, box_inv);
+                            block_dist_rectangle <TUPLE3_T, FLOAT_T, box_type_id>
+                                (p1_stripe, ii_max, p2_stripe, jj_max, scal, d, bs, box, box_ortho, box_inv);
+                        } else if (j_block == i_block) {
+                            printf("diagonal block: i=%d j=%d, ii_max=%d jj_max=%d\n", i, j, ii_max, jj_max);
+                            int jj_offset = 0;
+                            block_dist_bevel <TUPLE3_T, FLOAT_T, box_type_id>
+                                (p1_stripe, ii_max, p2_stripe, jj_max, jj_offset, scal, d, bs, box, box_ortho, box_inv);
+                        } else {
+                            // FAIL
+                        }
+                    } else {
+                        // upper triangle, nothing to do
+                        continue;
+                    }
+                } else {
+                    memmove(p2_stripe, &p2[j], jj_max*sizeof(TUPLE3_T));
+                    block_dist_rectangle <TUPLE3_T, FLOAT_T, box_type_id>
+                        (p1_stripe, ii_max, p2_stripe, jj_max, scal, d, bs, box, box_ortho, box_inv);
+                }
 
                 // flush per-thread histogram in case a bin might approach the 32 bit integer limit
                 if ( (count + (uint32_t)nb) < count /*use wrap-around feature at overflow*/) {
@@ -434,56 +470,28 @@ void hist_blocked(const TUPLE3_T * const p1,
                 }
                 count += (uint32_t)nb;
 
-                // printf("==> %d %d %d %d\n", j, i, jj_max, ii_max);
-
-                if (q_intra_species) {
-                    int i_block = i/bs;
-                    int j_block = j/bs;
-                    if (i_block <= j_block - 2) {
-                        printf("inner block\n");
-                        printf("==> %d %d %d %d\n", i, j, ii_max, jj_max);
-                        // inner block
-                        block_dist_rectangle <TUPLE3_T, FLOAT_T, box_type_id>
-                            (p1_stripe, ii_max, p2_stripe, jj_max, scal, d, bs, box, box_ortho, box_inv);
-                    } else {
-                        printf("edge block\n");
-                        // edge/beveled block
-                        int jj_offset = (i_block - j_block)*bs - 1;
-                        printf("==> %d %d %d %d %d\n", i, j, ii_max, jj_max, jj_offset);
-                        block_dist_bevel <TUPLE3_T, FLOAT_T, box_type_id>
-                            (p1_stripe, ii_max, p2_stripe, jj_max, jj_offset, scal, d, bs, box, box_ortho, box_inv);
-                    }
-                } else {
-                    printf("==> %d %d %d %d\n", i, j, ii_max, jj_max);
-                    block_dist_rectangle <TUPLE3_T, FLOAT_T, box_type_id>
-                        (p1_stripe, ii_max, p2_stripe, jj_max, scal, d, bs, box, box_ortho, box_inv);
-                }
-
-                // print_histo(d, nb);
-                const int c = nb;
-
                 switch (box_type_id) {
                 case none:
                     if (check_input) {
                         if (idx_error) {
                             // --- error condition is already there, do nothing ---
-                        } else if (thread_dist_trim(d, c, n_bins) > 0) {
+                        } else if (thread_dist_trim(d, nb, n_bins) > 0) {
                             #pragma omp atomic write
                             idx_error = true;
                         } else {
-                            thread_histo_increment(histo_thread, d, c);
+                            thread_histo_increment(histo_thread, d, nb);
                         }
                     } else {
-                        thread_histo_increment(histo_thread, d, c);
+                        thread_histo_increment(histo_thread, d, nb);
                     }
                     break;
                 case orthorhombic:
                 case triclinic:
                     if (check_input) {
-                        int n_out = thread_dist_trim(d, c, n_bins);
-                        thread_histo_increment(histo_thread, d, c, n_out);
+                        int n_out = thread_dist_trim(d, nb, n_bins);
+                        thread_histo_increment(histo_thread, d, nb, n_out);
                     } else {
-                        thread_histo_increment(histo_thread, d, c);
+                        thread_histo_increment(histo_thread, d, nb);
                     }
                     break;
                 }
