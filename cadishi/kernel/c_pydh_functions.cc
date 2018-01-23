@@ -139,17 +139,17 @@ void hist_1(TUPLE3_T * __restrict__ p,
         if (! mem_error) {
             uint32_t count = 0;
             #pragma omp for OMP_SCHEDULE
-            for (int j=0; j<n; ++j) {
-                if ( (count + (uint32_t)j) < count /*use wrap-around feature at overflow*/) {
+            for (int i=0; i<n; ++i) {
+                if ( (count + (uint32_t)i) < count /*use wrap-around feature at overflow*/) {
                     thread_histo_flush(histo, histo_thread, n_bins, true);
                     count = 0;
                 }
-                count += (uint32_t)j;
+                count += (uint32_t)i;
                 // loop vectorizes well (GCC >=4.9, checked using Intel VTUNE & Advisor)
                 #pragma omp simd
-                for (int i=0; i<j; ++i) {
-                    d[i] = (int) (scal * dist<TUPLE3_T, FLOAT_T, box_type_id>
-                                  (p[i], p[j], box, box_ortho, box_inv));
+                for (int j=0; j<i; ++j) {
+                    d[j] = (int) (scal * dist<TUPLE3_T, FLOAT_T, box_type_id>
+                                  (p[j], p[i], box, box_ortho, box_inv));
                 }
                 /**
                  * Checks of the previously calculated integer-converted distances.
@@ -164,23 +164,23 @@ void hist_1(TUPLE3_T * __restrict__ p,
                     if (check_input) {
                         if (idx_error) {
                             // --- error condition is already there, do nothing ---
-                        } else if (thread_dist_trim(d, j, n_bins) > 0) {
+                        } else if (thread_dist_trim(d, i, n_bins) > 0) {
                             #pragma omp atomic write
                             idx_error = true;
                         } else {
-                            thread_histo_increment(histo_thread, d, j);
+                            thread_histo_increment(histo_thread, d, i);
                         }
                     } else {
-                        thread_histo_increment(histo_thread, d, j);
+                        thread_histo_increment(histo_thread, d, i);
                     }
                     break;
                 case orthorhombic:
                 case triclinic:
                     if (check_input) {
-                        int n_out = thread_dist_trim(d, j, n_bins);
-                        thread_histo_increment(histo_thread, d, j, n_out);
+                        int n_out = thread_dist_trim(d, i, n_bins);
+                        thread_histo_increment(histo_thread, d, i, n_out);
                     } else {
-                        thread_histo_increment(histo_thread, d, j);
+                        thread_histo_increment(histo_thread, d, i);
                     }
                     break;
                 }
@@ -190,7 +190,7 @@ void hist_1(TUPLE3_T * __restrict__ p,
             free(histo_thread);
         }
     }
-    print_histo(histo, n_bins);
+    // print_histo(histo, n_bins);
     if (mem_error) {
         RT_ERROR("memory allocation")
     }
@@ -230,7 +230,7 @@ void hist_2(TUPLE3_T * __restrict__ p1,
         if (! mem_error) {
             uint32_t count = 0;
             #pragma omp for OMP_SCHEDULE
-            for (int j=0; j<n1; ++j) {
+            for (int i=0; i<n1; ++i) {
                 if ( (count + (uint32_t)n2) < count /*use wrap-around feature at overflow*/) {
                     thread_histo_flush(histo, histo_thread, n_bins, true);
                     count = 0;
@@ -238,9 +238,9 @@ void hist_2(TUPLE3_T * __restrict__ p1,
                 count += (uint32_t)n2;
                 // loop vectorizes well (gcc >=4.9, checked using Intel VTUNE & Advisor)
                 #pragma omp simd
-                for (int i=0; i<n2; ++i) {
-                    d[i] = (int)(scal * dist<TUPLE3_T, FLOAT_T, box_type_id>
-                                 (p2[i], p1[j], box, box_ortho, box_inv));
+                for (int j=0; j<n2; ++j) {
+                    d[j] = (int)(scal * dist<TUPLE3_T, FLOAT_T, box_type_id>
+                                 (p2[j], p1[i], box, box_ortho, box_inv));
                 }
                 /**
                  * Checks of the previously calculated integer-converted distances.
@@ -281,7 +281,7 @@ void hist_2(TUPLE3_T * __restrict__ p1,
             free(histo_thread);
         }
     }
-    print_histo(histo, n_bins);
+    // print_histo(histo, n_bins);
     if (mem_error) {
         RT_ERROR("memory allocation")
     }
@@ -320,23 +320,23 @@ int calculate_blocksize(const int n_bins,
 
 template <typename TUPLE3_T, typename FLOAT_T, int box_type_id>
 inline void block_dist_rectangle(
-            const TUPLE3_T * const p1_stripe, const int jj_max,
-            const TUPLE3_T * const p2_stripe, const int ii_max,
+            const TUPLE3_T * const p1_stripe, const int ii_max,
+            const TUPLE3_T * const p2_stripe, const int jj_max,
             const FLOAT_T scal,
             int * d,
             const int bs,
             const TUPLE3_T * const box,
             const TUPLE3_T &box_ortho,
             const TUPLE3_T &box_inv) {
-    for (int jj=0; jj<jj_max; ++jj) {
+    for (int ii=0; ii<ii_max; ++ii) {
         // Note: nested loop structure vectorizes thanks to 'd_stripe'
-        int * d_stripe = &d[jj*bs];
+        int * d_stripe = &d[ii*bs];
         memset_value(d_stripe, -1, bs);
         #pragma omp simd
-        for (int ii=0; ii<ii_max; ++ii) {
-            d_stripe[ii] = int(scal * dist <TUPLE3_T, FLOAT_T, box_type_id>
-                        (p2_stripe[ii], p1_stripe[jj], box, box_ortho, box_inv));
-            printf("--> %d\n", d_stripe[ii]);
+        for (int jj=0; jj<jj_max; ++jj) {
+            d_stripe[jj] = int(scal * dist <TUPLE3_T, FLOAT_T, box_type_id>
+                        (p2_stripe[jj], p1_stripe[ii], box, box_ortho, box_inv));
+            // printf("--> %d\n", d_stripe[jj]);
         }
     }
 }
@@ -344,23 +344,26 @@ inline void block_dist_rectangle(
 
 template <typename TUPLE3_T, typename FLOAT_T, int box_type_id>
 inline void block_dist_bevel(
-            const TUPLE3_T * const p1_stripe, const int jj_max,
-            const TUPLE3_T * const p2_stripe, const int ii_max,
+            const TUPLE3_T * const p1_stripe, const int ii_max,
+            const TUPLE3_T * const p2_stripe, const int jj_max,
+            const int jj_offset,
             const FLOAT_T scal,
             int * d,
             const int bs,
             const TUPLE3_T * const box,
             const TUPLE3_T &box_ortho,
             const TUPLE3_T &box_inv) {
-    for (int jj=0; jj<jj_max; ++jj) {
+    for (int ii=0; ii<ii_max; ++ii) {
         // Note: nested loop structure vectorizes thanks to 'd_stripe'
-        int * d_stripe = &d[jj*bs];
+        int * d_stripe = &d[ii*bs];
         memset_value(d_stripe, -1, bs);
         #pragma omp simd
-        for (int ii=0; ii<jj; ++ii) {
-            d_stripe[ii] = int(scal * dist <TUPLE3_T, FLOAT_T, box_type_id>
-                        (p2_stripe[ii], p1_stripe[jj], box, box_ortho, box_inv));
-            printf("--> %d\n", d_stripe[ii]);
+        for (int jj=0; jj<jj_max; ++jj) {
+            if (jj <= ii + jj_offset) {
+                d_stripe[jj] = int(scal * dist <TUPLE3_T, FLOAT_T, box_type_id>
+                                (p2_stripe[jj], p1_stripe[ii], box, box_ortho, box_inv));
+            }
+            // printf("--> %d\n", d_stripe[jj]);
         }
     }
 }
@@ -369,7 +372,7 @@ inline void block_dist_bevel(
 /**
  * Function: hist_blocked
  *
- * Two-species distance histogram kernel.
+ * Blocked distance histogram kernel, supporting inter and intra species calculations.
  */
 template <typename TUPLE3_T, typename FLOAT_T, bool check_input, int box_type_id>
 void hist_blocked(const TUPLE3_T * const p1,
@@ -417,12 +420,12 @@ void hist_blocked(const TUPLE3_T * const p1,
 
         // Note: omp collapse cannot be used here due to the non-static inner loop limit
         #pragma omp for OMP_SCHEDULE
-        for (int j=0; j<n1; j+=bs) {
-            int jj_max = std::min(n1-j, bs);
-            memmove(p1_stripe, &p1[j], jj_max*sizeof(TUPLE3_T));
-            for (int i=0; i<n2; i+=bs) {
-                int ii_max = std::min(n2-i, bs);
-                memmove(p2_stripe, &p2[i], ii_max*sizeof(TUPLE3_T));
+        for (int i=0; i<n1; i+=bs) {
+            int ii_max = std::min(n1-i, bs);
+            memmove(p1_stripe, &p1[i], ii_max*sizeof(TUPLE3_T));
+            for (int j=0; j<n2; j+=bs) {
+                int jj_max = std::min(n2-j, bs);
+                memmove(p2_stripe, &p2[j], jj_max*sizeof(TUPLE3_T));
 
                 // flush per-thread histogram in case a bin might approach the 32 bit integer limit
                 if ( (count + (uint32_t)nb) < count /*use wrap-around feature at overflow*/) {
@@ -431,26 +434,32 @@ void hist_blocked(const TUPLE3_T * const p1,
                 }
                 count += (uint32_t)nb;
 
-                printf("==> %d %d %d %d\n", i, j, ii_max, jj_max);
+                // printf("==> %d %d %d %d\n", j, i, jj_max, ii_max);
 
                 if (q_intra_species) {
-                    if (i+bs < j+1) {
+                    int i_block = i/bs;
+                    int j_block = j/bs;
+                    if (i_block <= j_block - 2) {
                         printf("inner block\n");
+                        printf("==> %d %d %d %d\n", i, j, ii_max, jj_max);
                         // inner block
                         block_dist_rectangle <TUPLE3_T, FLOAT_T, box_type_id>
-                            (p1_stripe, jj_max, p2_stripe, ii_max, scal, d, bs, box, box_ortho, box_inv);
+                            (p1_stripe, ii_max, p2_stripe, jj_max, scal, d, bs, box, box_ortho, box_inv);
                     } else {
                         printf("edge block\n");
                         // edge/beveled block
+                        int jj_offset = (i_block - j_block)*bs - 1;
+                        printf("==> %d %d %d %d %d\n", i, j, ii_max, jj_max, jj_offset);
                         block_dist_bevel <TUPLE3_T, FLOAT_T, box_type_id>
-                            (p1_stripe, jj_max, p2_stripe, ii_max, scal, d, bs, box, box_ortho, box_inv);
+                            (p1_stripe, ii_max, p2_stripe, jj_max, jj_offset, scal, d, bs, box, box_ortho, box_inv);
                     }
                 } else {
+                    printf("==> %d %d %d %d\n", i, j, ii_max, jj_max);
                     block_dist_rectangle <TUPLE3_T, FLOAT_T, box_type_id>
-                        (p1_stripe, jj_max, p2_stripe, ii_max, scal, d, bs, box, box_ortho, box_inv);
+                        (p1_stripe, ii_max, p2_stripe, jj_max, scal, d, bs, box, box_ortho, box_inv);
                 }
 
-                print_histo(d, nb);
+                // print_histo(d, nb);
                 const int c = nb;
 
                 switch (box_type_id) {
@@ -486,7 +495,7 @@ void hist_blocked(const TUPLE3_T * const p1,
         free(p2_stripe);
         free(histo_thread);
     }
-    print_histo(histo, n_bins);
+    // print_histo(histo, n_bins);
     if (mem_error) {
         RT_ERROR("memory allocation")
     }
