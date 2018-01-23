@@ -148,7 +148,6 @@ void hist_1(TUPLE3_T * __restrict__ p,
                 // loop vectorizes well (GCC >=4.9, checked using Intel VTUNE & Advisor)
                 #pragma omp simd
                 for (int j=0; j<i; ++j) {
-                    printf("hist1, took: i=%d j=%d\n", i, j);
                     d[j] = (int) (scal * dist<TUPLE3_T, FLOAT_T, box_type_id>
                                   (p[j], p[i], box, box_ortho, box_inv));
                 }
@@ -335,19 +334,18 @@ inline void block_dist_rectangle(
         int * d_stripe = &d[ii*bs];
         #pragma omp simd
         for (int jj=0; jj<jj_max; ++jj) {
-            printf("rect, took: ii=%d jj=%d\n", ii, jj);
+            // printf("rect, took: ii=%d jj=%d\n", ii, jj);
             d_stripe[jj] = int(scal * dist <TUPLE3_T, FLOAT_T, box_type_id>
-                        (p2_stripe[jj], p1_stripe[ii], box, box_ortho, box_inv));
+                                        (p2_stripe[jj], p1_stripe[ii], box, box_ortho, box_inv));
         }
     }
 }
 
 
 template <typename TUPLE3_T, typename FLOAT_T, int box_type_id>
-inline void block_dist_bevel(
+inline void block_dist_triangle(
             const TUPLE3_T * const p1_stripe, const int ii_max,
             const TUPLE3_T * const p2_stripe, const int jj_max,
-            const int jj_offset,
             const FLOAT_T scal,
             int * d,
             const int bs,
@@ -359,14 +357,9 @@ inline void block_dist_bevel(
         // Note: nested loop structure vectorizes thanks to 'd_stripe'
         int * d_stripe = &d[ii*bs];
         #pragma omp simd
-        for (int jj=0; jj<jj_max; ++jj) {
-            if (jj < ii + jj_offset) {
-                printf("bevel, took: ii=%d jj=%d\n", ii, jj);
-                d_stripe[jj] = int(scal * dist <TUPLE3_T, FLOAT_T, box_type_id>
-                                (p2_stripe[jj], p1_stripe[ii], box, box_ortho, box_inv));
-            } else {
-                printf("bevel, skip: ii=%d jj=%d\n", ii, jj);
-            }
+        for (int jj=0; jj<ii; ++jj) {
+            d_stripe[jj] = int(scal * dist <TUPLE3_T, FLOAT_T, box_type_id>
+                                        (p2_stripe[jj], p1_stripe[ii], box, box_ortho, box_inv));
         }
     }
 }
@@ -434,24 +427,14 @@ void hist_blocked(const TUPLE3_T * const p1,
                     int j_block = j/bs;
                     if (j_block <= i_block) {
                         memmove(p2_stripe, &p2[j], jj_max*sizeof(TUPLE3_T));
-                        if (j_block < i_block - 1) {
-                            printf("rectangular block: i=%d j=%d, ii_max=%d jj_max=%d\n", i, j, ii_max, jj_max);
-                            block_dist_rectangle <TUPLE3_T, FLOAT_T, box_type_id>
+                        if (j_block == i_block) {
+                            // printf("diagonal block: i=%d j=%d, ii_max=%d jj_max=%d\n", i, j, ii_max, jj_max);
+                            block_dist_triangle <TUPLE3_T, FLOAT_T, box_type_id>
                                 (p1_stripe, ii_max, p2_stripe, jj_max, scal, d, bs, box, box_ortho, box_inv);
-                        } else if (j_block == i_block - 1) {
-                            printf("sub-diagonal block: i=%d j=%d, ii_max=%d jj_max=%d\n", i, j, ii_max, jj_max);
-                            // int jj_offset = bs-1;
-                            // block_dist_bevel <TUPLE3_T, FLOAT_T, box_type_id>
-                                // (p1_stripe, ii_max, p2_stripe, jj_max, jj_offset, scal, d, bs, box, box_ortho, box_inv);
-                            block_dist_rectangle <TUPLE3_T, FLOAT_T, box_type_id>
-                                (p1_stripe, ii_max, p2_stripe, jj_max, scal, d, bs, box, box_ortho, box_inv);
-                        } else if (j_block == i_block) {
-                            printf("diagonal block: i=%d j=%d, ii_max=%d jj_max=%d\n", i, j, ii_max, jj_max);
-                            int jj_offset = 0;
-                            block_dist_bevel <TUPLE3_T, FLOAT_T, box_type_id>
-                                (p1_stripe, ii_max, p2_stripe, jj_max, jj_offset, scal, d, bs, box, box_ortho, box_inv);
                         } else {
-                            // FAIL
+                            // printf("rectangular block: i=%d j=%d, ii_max=%d jj_max=%d\n", i, j, ii_max, jj_max);
+                            block_dist_rectangle <TUPLE3_T, FLOAT_T, box_type_id>
+                                (p1_stripe, ii_max, p2_stripe, jj_max, scal, d, bs, box, box_ortho, box_inv);
                         }
                     } else {
                         // upper triangle, nothing to do
