@@ -113,6 +113,7 @@ print("###")
 # Common functions #
 ####################
 def get_gcc_ver(gcc="gcc"):
+    """Determine the version of GCC. Returns a tuple with integers."""
     cmd = [gcc, '-v']
     major = -1
     minor = -1
@@ -132,6 +133,7 @@ def get_gcc_ver(gcc="gcc"):
 
 
 def get_gcc_flags():
+    """Set up compiler flags for the C extensions using the GCC compiler."""
     gcc_ver = get_gcc_ver()
     # set up compiler flags for the C extensions
     cc_flags = ['-g']
@@ -151,6 +153,7 @@ def get_gcc_flags():
                 if CAD_GCC_NATIVE:
                     # flag does not work e.g. on IBM Minsky systems
                     cc_flags += ['-march=native']
+                    # cc_flags += ['-march=skylake-avx512']
                 else:
                     cc_flags += ['-msse4.2']  # required for fast round() instruction
             if not on_mac():
@@ -161,6 +164,22 @@ def get_gcc_flags():
                     cc_flags += ['-fopt-info']
                 # cc_flags += ['-ftree-vectorize']
                 # cc_flags += ['-fopt-info-vec-missed']
+    return cc_flags
+
+
+def get_icc_flags():
+    """Set up compiler flags for the C extensions using the Intel compiler."""
+    cc_flags = ['-g']
+    cc_flags += ['-D_GLIBCXX_USE_CXX11_ABI=0']
+    cc_flags += ['-std=c++11']
+    if CAD_DEBUG:
+        cc_flags += ['-O0']
+    else:
+        cc_flags += ['-O3']
+        cc_flags += ['-axSSE4.2,AVX,AVX2,CORE-AVX512']
+        cc_flags += ['-qopt-zmm-usage=high']
+        if CAD_OPENMP:
+            cc_flags += ['-qopenmp']
     return cc_flags
 
 
@@ -251,6 +270,7 @@ def locate_cuda():
 
 
 def cuda_compiler_flags():
+    """Assemble compiler flags for CUDA."""
     gcc_flags = get_gcc_flags()
     gcc_flags += ['-DCUDA_DEBUG']
     gcc_flags_string = " ".join(gcc_flags)
@@ -364,7 +384,19 @@ class CleanCommand(Command):
 # Cadishi Configuration #
 #########################
 def extensions():
-    cc_flags = get_gcc_flags()
+    "Assemble the extensions array for setuptools."
+    # Experimental support for the Intel compiler.
+    # Set the following environment variables:
+    #   export CC=icc
+    #   export CXX=icpc
+    #   export LDSHARED='icc -shared'
+    # Useful for benchmarking, though recent GCCs appear to produce faster code.
+    if ('CC' in os.environ) and ('CXX' in os.environ) and ('LDSHARED' in os.environ) and \
+        (os.environ['CC'].endswith('icc')) and (os.environ['CXX'].endswith('icpc')) and \
+        (os.environ['LDSHARED'].endswith('icc -shared')):
+        cc_flags = get_icc_flags()
+    else:
+        cc_flags = get_gcc_flags()
 
     exts = []
     exts.append(
