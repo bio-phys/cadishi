@@ -11,6 +11,6 @@
 """Cadishi distance histogram kernels.
 """
 
-from . import dist
-from . import pydh
-from . import cudh
+# from . import dist
+# from . import pydh
+# from . import cudh

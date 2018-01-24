@@ -99,8 +99,13 @@ def fixture_small():
     global testcase_small
     if testcase_small is None:
         n_el = 2
-        n_atoms = [2000, 1000]
-        n_bins = 2048
+        n_atoms = [2847,3918]
+        n_bins = 128
+
+        # n_el = 1
+        # n_atoms = [240]
+        # n_bins = 50
+
         coords = util.generate_random_coordinate_set(n_atoms)
         histo = dist.histograms(coords, r_max, n_bins)
         # if DUMP_DATA:
@@ -153,13 +158,35 @@ def fixture_small_triclinic():
 
 
 if TEST_PYDH:
+    def test_pydh_small_double_blocked(fixture_small):
+        n_el, n_atoms, n_bins, coords, histo_ref = fixture_small
+        histo_noblock = pydh.histograms(coords, r_max, n_bins, precision="double",
+                                pydh_threads=1, pydh_blocksize=0, check_input=False) #, do_histo2_only=True)
+        # print(np.sum(histo_noblock[:,1]))
+        if DUMP_DATA:
+            file_name = sys._getframe().f_code.co_name + "_noblock.dat"
+            util.dump_histograms(file_name, histo_noblock, r_max, n_bins)
+        histo_blocked = pydh.histograms(coords, r_max, n_bins, precision="double",
+                                pydh_threads=1, pydh_blocksize=1, check_input=False) #, do_histo2_only=True)
+        # print(np.sum(histo_blocked[:,1]))
+        if DUMP_DATA:
+            file_name = sys._getframe().f_code.co_name + "_doblock.dat"
+            util.dump_histograms(file_name, histo_blocked, r_max, n_bins)
+        util.compare(histo_ref, histo_noblock)
+        util.compare(histo_ref, histo_blocked)
+        # util.compare(histo_noblock, histo_blocked)
+
+
     def test_pydh_small_double(fixture_small):
         """Test if pydh gives the same answer as dist()."""
         n_el, n_atoms, n_bins, coords, histo_ref = fixture_small
         for check_input in [True, False]:
-            histo_pydh = pydh.histograms(coords, r_max, n_bins, precision="double",
-                                         pydh_threads=1, check_input=check_input)
-            util.compare(histo_ref, histo_pydh)
+            histo = pydh.histograms(coords, r_max, n_bins, precision="double",
+                                    pydh_threads=1, check_input=check_input)
+            if DUMP_DATA:
+                file_name = sys._getframe().f_code.co_name + ".dat"
+                util.dump_histograms(file_name, histo, r_max, n_bins)
+            util.compare(histo_ref, histo)
 
     def test_pydh_threads_small_double(fixture_small):
         """Test if pydh gives the same answer as dist()."""

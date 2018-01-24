@@ -1,3 +1,6 @@
+# distutils: language = c++
+# distutils: sources = c_pydh_functions.cc
+
 import numpy as np
 cimport numpy as np
 from libcpp cimport bool
@@ -65,7 +68,8 @@ def histograms(np.ndarray r_ptr,
                int precision,    # single or double precision
                int check_input,  # perform distance check before binning
                int verbose,      # verbose output
-               int n_threads):   # number of OpenMP threads to be used
+               int n_threads,    # number of OpenMP threads to be used
+               int blocksize):   # cache block size
 
     # derive dimensions from NumPy data structures
     cdef int n_tot
@@ -85,6 +89,7 @@ def histograms(np.ndarray r_ptr,
     cfg.set_check_input(check_input)
     cfg.set_verbose(verbose)
     cfg.set_cpu_threads(n_threads)
+    cfg.set_cpu_blocksize(blocksize)
 
     cdef int exit_status
     exit_status = histograms_cpu(<np_tuple3d_t*> r_ptr.data,

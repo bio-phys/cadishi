@@ -29,8 +29,10 @@ import yaml
 import argparse
 from cadishi import util
 from cadishi import version
-from collections import OrderedDict
+from cadishi.kernel import cudh
+from cadishi.kernel import pydh
 
+from collections import OrderedDict
 
 # --- set up and parse command line arguments
 parser = argparse.ArgumentParser()
@@ -41,6 +43,7 @@ parser.add_argument('--check-input', help='activate input check in kernels', act
 parser.add_argument('--double-precision', help='use double precision coordinates', action="store_true")
 parser.add_argument('--cpu', help='run pydh CPU kernel (default)', action="store_true")
 parser.add_argument('--threads', help='number of CPU threads', type=int, metavar='N')
+parser.add_argument('--blocksize', help='cache blocking size for CPU kernel', type=int, metavar='N')
 parser.add_argument('--numa', help='use numa process pinning', action="store_true")
 parser.add_argument('--gpu', help='run cudh GPU kernel (optionally on GPU N, default 0)', nargs='?',
                     const=0, type=int, metavar='N')
@@ -82,6 +85,11 @@ if p_args.threads:
     run_values['threads'] = p_args.threads
 else:
     run_values['threads'] = 1
+
+if p_args.blocksize:
+    run_values['blocksize'] = p_args.blocksize
+else:
+    run_values['blocksize'] = 0
 
 if (p_args.gpu_algorithm >= 0):
     run_values['gpu_algorithm'] = p_args.gpu_algorithm
@@ -130,6 +138,7 @@ output_keys['kernel'] = 'text'
 output_keys['version'] = 'text'
 output_keys['timestamp'] = 'text'
 output_keys['threads'] = 'integer'
+output_keys['blocksize'] = 'integer'
 output_keys['precision'] = 'text'
 output_keys['size'] = 'text'
 output_keys['bins'] = 'integer'
@@ -160,10 +169,10 @@ if p_args.sqlite:
 # ---
 
 
-if run_values['kernel'] == "cudh":
-    from cadishi.kernel import cudh
-else:
-    from cadishi.kernel import pydh
+# if run_values['kernel'] == "cudh":
+#     from cadishi.kernel import cudh
+# else:
+#     from cadishi.kernel import pydh
 
 
 def get_bap():
@@ -212,7 +221,7 @@ bap = get_bap()
 
 t0 = time.time()
 if run_values['kernel'] == "cudh":
-    cudh = cudh.histograms(coords,
+    xxxx = cudh.histograms(coords,
                            r_max,
                            run_values['bins'],
                            run_values['precision'],
@@ -224,13 +233,14 @@ if run_values['kernel'] == "cudh":
                            algorithm=run_values['gpu_algorithm'],
                            verbose=True)
 else:
-    pydh = pydh.histograms(coords,
+    xxxx = pydh.histograms(coords,
                            r_max,
                            run_values['bins'],
                            run_values['precision'],
                            check_input=run_values['check_input'],
                            do_histo2_only=run_values['histo2'],
                            pydh_threads=run_values['threads'],
+                           pydh_blocksize=run_values['blocksize'],
                            box=box,
                            verbose=True)
 t1 = time.time()
