@@ -50,23 +50,19 @@ def histograms(coordinate_sets,
     This function is the entry point to run distance histogram calculations
     from Python on the CPU.
 
-
-    Parameters:
-    -----------
+    Parameters
+    ----------
     coordinate_sets : list
         list of double precision numpy arrays [N, 3] containing coordinate triples
     r_max : float
         maximum distance that should be considered for the histograms
     n_bins : int
         number of histogram bins
-
-    Optional parameters:
-    --------------------
-    precision : string
+    precision : string, optional
         String indicating the precision to be used, "single" (default) or "double"
-    pydh_threads : int
+    pydh_threads : int, optional
         Number of CPU (OpenMP) threads to be used for the computation, default 1.
-    pydh_blocksize : int
+    pydh_blocksize : int, optional
         Size of the blocks used to optimize cache usage in units of coordinate tuples.
         Values around 230 are best to optimize for a L2 cache size of 256 kb. Possible
         values are: '-1' to disable cache blocking and use naive (old) kernels,
@@ -74,28 +70,28 @@ def histograms(coordinate_sets,
         (recommended), and positive values to set the block size manually (not recommended,
         only useful for performance exploration). Note that cache blocking is disabled
         internally for bin numbers larger than 48000.
-    check_input : bool
+    check_input : bool, optional
         Check the input, i.e. check it the distances fit into the histogram window
         defined by r_max. Harms performance to some degree but avoids potential
         memory corruption in case of bogus input. Default is 'True'.
-    scale_factors : array-like
+    scale_factors : array-like, optional
         Array of floats used to rescale individual histograms after computation.
-    mask_array : array-like
+    mask_array : array-like, optional
         Array of integers to mask the computation of certain histograms, where
         '0' indicates that a histogram is skipped.  Internal default is all '1'.
-    box : array-like
+    box : array-like, optional
         Periodic box specification.  Default is none.
-    force_triclinic : bool
+    force_triclinic : bool, optional
         Use the triclinic box implementation also for simpler orthorhombic boxes.
         Default is 'False'.
-    do_histo2_only : bool
+    do_histo2_only : bool, optional
         Perform only the inter-species computation in case 2 species are given.
         Useful for debugging and performance optimization, default is 'False'.
-    verbose : bool
+    verbose : bool, optional
         Be verbose about internal states during computation.  Default is 'False'.
 
-    Returns:
-    --------
+    Returns
+    -------
     NumPy array, double precision
         Column 0 contains the radii, other columns contain the histograms.
     """
