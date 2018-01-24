@@ -156,7 +156,9 @@ def get_gcc_flags():
             if not on_mac():
                 if CAD_OPENMP:
                     cc_flags += ['-fopenmp']
-                cc_flags += ['-fopt-info']
+                # avoid flag during GitLab continuous integration to keep the log slim
+                if 'CI' not in os.environ:
+                    cc_flags += ['-fopt-info']
                 # cc_flags += ['-ftree-vectorize']
                 # cc_flags += ['-fopt-info-vec-missed']
     return cc_flags
