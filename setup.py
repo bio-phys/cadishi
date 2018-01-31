@@ -159,6 +159,7 @@ def get_gcc_flags():
             if not on_mac():
                 if CAD_OPENMP:
                     cc_flags += ['-fopenmp']
+                    cc_flags += ['-lgomp']
                 # avoid flag during GitLab continuous integration to keep the log slim
                 if 'CI' not in os.environ:
                     cc_flags += ['-fopt-info']
@@ -272,6 +273,10 @@ def locate_cuda():
 def cuda_compiler_flags():
     """Assemble compiler flags for CUDA."""
     gcc_flags = get_gcc_flags()
+    try:
+        gcc_flags.remove('-std=c++11')
+    except:
+        pass
     gcc_flags += ['-DCUDA_DEBUG']
     gcc_flags_string = " ".join(gcc_flags)
     nvcc_flags = ['-DCUDA_DEBUG']  # hardly adds overhead, recommended
