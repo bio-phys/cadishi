@@ -1,6 +1,7 @@
 test_py27:
     before_script:
         - source /opt/anaconda/anavars2.sh
+        - source /opt/cuda/cudavars.sh
         - rm -f ~/.local/lib/python2.7/site-packages/cadishi.egg-link
         - export BASE=`pwd`
         - python setup.py develop --user
@@ -34,6 +35,7 @@ test_py27:
 test_py36:
     before_script:
         - source /opt/anaconda/anavars3.sh
+        - source /opt/cuda/cudavars.sh
         - rm -f ~/.local/lib/python3.6/site-packages/cadishi.egg-link
         - export BASE=`pwd`
         - python3 setup.py develop --user
