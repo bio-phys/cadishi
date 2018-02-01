@@ -306,7 +306,7 @@ int calculate_blocksize(const int n_bins,
 {
     const float n_bytes_cache = n_bytes_l2 - n_bytes_reserve;
     const float n_bytes_tuple = sizeof(TUPLE3_T);
-    const float b_bytes_word = sizeof(FLOAT_T);
+    // const float b_bytes_word = sizeof(FLOAT_T);
     const float n_bytes_int = sizeof(int);
     // solve quadratic equation y = a * x**2 + b * x + c
     const float y = n_bytes_cache;
@@ -429,6 +429,7 @@ void hist_blocked(const TUPLE3_T * const p1,
         for (int i=0; i<n1; i+=bs) {
             for (int j=0; j<n2; j+=bs) {
                 if (i != i0) {
+                    // determination of ii_max moved one level down to enable OpenMP collapse
                     ii_max = std::min(n1-i, bs);
                     memmove(p1_stripe, &p1[i], ii_max*sizeof(TUPLE3_T));
                     i0 = i;
@@ -511,6 +512,43 @@ void hist_blocked(const TUPLE3_T * const p1,
 
 
 /**
+ * Function: blocking_heuristics
+ *
+ * Decide wether to enable cache blocking, based on the problem size and user-defined value of blocksize.
+ */
+inline bool blocking_heuristics(const int n1, const int n2, const int blocksize, const bool q_intra_species) {
+    bool val = false;
+    if (blocksize < 0) {
+        // disable cache blocking
+        val = false;
+    } else if (blocksize > 0) {
+        // enable cache blocking
+        val = true;
+    } else {
+        // heuristics branch
+        int64_t aps;  // atom-pairs, to be calculated
+        const int64_t thresh_1d = int64_t(100000);
+        const int64_t threshold = thresh_1d * thresh_1d;
+        if (q_intra_species) {
+            // intra-species
+            aps = (int64_t(n1)*int64_t(n1-1))/int64_t(2);
+        } else {
+            // inter-species
+            aps = int64_t(n1)*int64_t(n2);
+        }
+        // printf("### %ld %ld\n", aps, threshold);
+        if (aps >= threshold) {
+            val = true;
+        } else {
+            val = false;
+        }
+    }
+    // printf("### %d\n", val);
+    return val;
+}
+
+
+/**
  * Function: histo_cpu
  *
  * Driver of the actual kernels 'hist_1' and 'hist_2'.
@@ -561,7 +599,8 @@ void histo_cpu(TUPLE3_T *coords, int n_tot, int *n_per_el, int n_el,
             // ---
             if (mask[histogramIdx - 1] > 0) {
                 if (j != i) {
-                    if (blocksize >= 0) {
+                    // inter-species branch
+                    if (blocking_heuristics(n_per_el[i], n_per_el[j], blocksize, (j == i))) {
                         hist_blocked <TUPLE3_T, FLOAT_T, check_input, box_type_id>
                                             (&coords[iOffset], n_per_el[i],
                                              &coords[jOffset], n_per_el[j],
@@ -576,7 +615,8 @@ void histo_cpu(TUPLE3_T *coords, int n_tot, int *n_per_el, int n_el,
                              box, box_ortho, box_inv);
                     }
                 } else {
-                    if (blocksize >= 0) {
+                    // intra-species branch
+                    if (blocking_heuristics(n_per_el[i], n_per_el[j], blocksize, (j == i))) {
                         hist_blocked <TUPLE3_T, FLOAT_T, check_input, box_type_id>
                                             (&coords[iOffset], n_per_el[i],
                                              &coords[jOffset], n_per_el[j],
@@ -596,7 +636,6 @@ void histo_cpu(TUPLE3_T *coords, int n_tot, int *n_per_el, int n_el,
         }
         iOffset += n_per_el[i];
     }
-
 }
 
 
