@@ -22,6 +22,7 @@
 #include <omp.h>
 #endif
 #define OMP_SCHEDULE schedule(guided)
+#define OMP_COLLAPSE collapse(2)
 
 #include "config.hpp"
 #include "common.hpp"
@@ -421,13 +422,17 @@ void hist_blocked(const TUPLE3_T * const p1,
         mem_error = mem_error || (posix_memalign((void**)&p2_stripe, alignment, bs*sizeof(TUPLE3_T)) != 0);
 
         uint32_t count = 0;
+        int ii_max = -1;
+        int i0 = -1;
 
-        // Note: omp collapse cannot be used here due to the non-static inner loop limit
-        #pragma omp for OMP_SCHEDULE
+        #pragma omp for OMP_SCHEDULE OMP_COLLAPSE
         for (int i=0; i<n1; i+=bs) {
-            int ii_max = std::min(n1-i, bs);
-            memmove(p1_stripe, &p1[i], ii_max*sizeof(TUPLE3_T));
             for (int j=0; j<n2; j+=bs) {
+                if (i != i0) {
+                    ii_max = std::min(n1-i, bs);
+                    memmove(p1_stripe, &p1[i], ii_max*sizeof(TUPLE3_T));
+                    i0 = i;
+                }
                 int jj_max = std::min(n2-j, bs);
 
                 if (q_intra_species) {
