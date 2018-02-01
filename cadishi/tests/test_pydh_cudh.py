@@ -160,19 +160,20 @@ def fixture_small_triclinic():
 if TEST_PYDH:
     def test_pydh_small_double_blocked(fixture_small):
         n_el, n_atoms, n_bins, coords, histo_ref = fixture_small
-        histo_noblock = pydh.histograms(coords, r_max, n_bins, precision="double",
-                                pydh_threads=1, pydh_blocksize=-1, check_input=False)
-        # print(np.sum(histo_noblock[:,1]))
-        if DUMP_DATA:
-            file_name = sys._getframe().f_code.co_name + "_noblock.dat"
-            util.dump_histograms(file_name, histo_noblock, r_max, n_bins)
-        histo_blocked = pydh.histograms(coords, r_max, n_bins, precision="double",
-                                pydh_threads=1, pydh_blocksize=200, check_input=False)
-        if DUMP_DATA:
-            file_name = sys._getframe().f_code.co_name + "_doblock.dat"
-            util.dump_histograms(file_name, histo_blocked, r_max, n_bins)
-        util.compare(histo_ref, histo_noblock)
-        util.compare(histo_ref, histo_blocked)
+        for check_input in [True, False]:
+            for nt in pydh_threads:
+                histo_noblock = pydh.histograms(coords, r_max, n_bins, precision="double",
+                                        pydh_threads=nt, pydh_blocksize=-1, check_input=check_input)
+                if DUMP_DATA:
+                    file_name = sys._getframe().f_code.co_name + "_noblock.dat"
+                    util.dump_histograms(file_name, histo_noblock, r_max, n_bins)
+                histo_blocked = pydh.histograms(coords, r_max, n_bins, precision="double",
+                                        pydh_threads=nt, pydh_blocksize=200, check_input=check_input)
+                if DUMP_DATA:
+                    file_name = sys._getframe().f_code.co_name + "_doblock.dat"
+                    util.dump_histograms(file_name, histo_blocked, r_max, n_bins)
+                util.compare(histo_ref, histo_noblock)
+                util.compare(histo_ref, histo_blocked)
 
 
     def test_pydh_small_double(fixture_small):
