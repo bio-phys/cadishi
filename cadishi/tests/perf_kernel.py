@@ -239,8 +239,8 @@ else:
                            run_values['precision'],
                            check_input=run_values['check_input'],
                            do_histo2_only=run_values['histo2'],
-                           pydh_threads=run_values['threads'],
-                           pydh_blocksize=run_values['blocksize'],
+                           n_threads=run_values['threads'],
+                           blocksize=run_values['blocksize'],
                            box=box,
                            verbose=True)
 t1 = time.time()

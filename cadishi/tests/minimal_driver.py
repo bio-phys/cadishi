@@ -60,7 +60,7 @@ def minimal_driver():
 
     histo = pydh.histograms(coords, r_max, n_bins, box=box, precision="double",
                             force_triclinic=force_triclinic,
-                            pydh_threads=util.get_n_cpu_cores(), verbose=True)
+                            n_threads=util.get_n_cpu_cores(), verbose=True)
 
     if DUMP_DATA:
         file_name = sys._getframe().f_code.co_name + ".dat"

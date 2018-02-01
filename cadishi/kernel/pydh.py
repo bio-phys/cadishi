@@ -36,8 +36,8 @@ def histograms(coordinate_sets,
                r_max,
                n_bins,
                precision="single",
-               pydh_threads=1,
-               pydh_blocksize=0,
+               n_threads=1,
+               blocksize=0,
                check_input=True,
                scale_factors=[],
                mask_array=[],
@@ -60,9 +60,9 @@ def histograms(coordinate_sets,
         number of histogram bins
     precision : string, optional
         String indicating the precision to be used, "single" (default) or "double"
-    pydh_threads : int, optional
+    n_threads : int, optional
         Number of CPU (OpenMP) threads to be used for the computation, default 1.
-    pydh_blocksize : int, optional
+    blocksize : int, optional
         Size of the blocks used to optimize cache usage in units of coordinate tuples.
         Values around 230 are best to optimize for a L2 cache size of 256 kb. Possible
         values are: '-1' to disable cache blocking and use naive (old) kernels,
@@ -139,7 +139,7 @@ def histograms(coordinate_sets,
     # --- run the CUDH distance histogram kernel
     exit_status = c_pydh.histograms(np_coord, np_nelem, np_histos, r_max, np_mask,
                                     np_box, box_type_id,  # optional arguments follow
-                                    precision, check_input, verbose, pydh_threads, pydh_blocksize)
+                                    precision, check_input, verbose, n_threads, blocksize)
 
     if (exit_status == 1):
         raise ValueError(common.overflow_error_msg)

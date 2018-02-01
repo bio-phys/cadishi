@@ -40,7 +40,7 @@ def main():
     # precision="double"
     # - single precision
     precision = "single"
-    pydh_threads = 4
+    n_threads = 4
 
     import sys
     import numpy as np
@@ -256,12 +256,12 @@ def main():
                         # Calculate histogram of distances between particles
                         # belonging to the same species.
                         pydh.pwd(speciesCrds[i], tmpHistoUInt64,
-                                 rmax, precision, pydh_threads)
+                                 rmax, precision, n_threads)
                     else:
                         # Calculate histogram of distances between particles
                         # belonging to different species.
                         pydh.pwd2(speciesCrds[i], speciesCrds[j], tmpHistoUInt64,
-                                  rmax, precision, pydh_threads)
+                                  rmax, precision, n_threads)
                     if not useDist:
                         histo[:, speciesIndex] += tmpHistoUInt64[:]
 
