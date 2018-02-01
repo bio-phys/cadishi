@@ -41,15 +41,21 @@ DUMP_DATA = bool(int(os.environ.get("DUMP_DATA", "0")))
 r_max = math.sqrt(3.0)
 
 
+# --- set up the number of threads to be tested, depending on the machine
+n_cores = multiprocessing.cpu_count()
+n_threads = [1]
+while (n_threads[-1] < n_cores):
+    n_threads.append(2*n_threads[-1])
+if (n_threads[-1] > n_cores):
+    n_threads.pop()
+
+print("n_threads = " + str(n_threads))
+
 # --- import the dist module which serves as the reference implementation
 from cadishi.kernel import dist
 
 
 # --- import the pydh module
-n_threads = [1, 2, 3, 4]
-n_threads.append(multiprocessing.cpu_count())
-n_threads = sorted(list(set(n_threads)))
-
 from cadishi.kernel import pydh
 
 
