@@ -5,6 +5,10 @@ test_py27:
         - rm -f ~/.local/lib/python2.7/site-packages/cadishi.egg-link
         - export BASE=`pwd`
         - python setup.py develop --user
+        - export TEST_PYDH=1
+        - export TEST_CUDH=0
+        - export TEST_LARGE=1
+        - export TEST_XLARGE=1
     script:
         # Run the included unit test cases
         - py.test cadishi
@@ -39,6 +43,10 @@ test_py36:
         - rm -f ~/.local/lib/python3.6/site-packages/cadishi.egg-link
         - export BASE=`pwd`
         - python3 setup.py develop --user
+        - export TEST_PYDH=1
+        - export TEST_CUDH=0
+        - export TEST_LARGE=1
+        - export TEST_XLARGE=1
     script:
         # Run the included unit test cases
         - py.test cadishi

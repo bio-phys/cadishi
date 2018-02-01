@@ -46,7 +46,7 @@ from cadishi.kernel import dist
 
 
 # --- import the pydh module
-n_threads = [2, 3, 4]
+n_threads = [1, 2, 3, 4]
 n_threads.append(multiprocessing.cpu_count())
 n_threads = sorted(list(set(n_threads)))
 
@@ -603,8 +603,8 @@ if TEST_XLARGE:
                        500, 7500, 100, 75000, 150000, 225000]
             n_bins = 18000
             coords = util.generate_random_coordinate_set(n_atoms)
-            # --- note that we use pydh to generate the test dataset
-            histo_ref = pydh.histograms(coords, r_max, n_bins, precision="double", n_threads=n_threads[-1])
+            # --- note that we use pydh to generate the test dataset, max number of threads and no blocking
+            histo_ref = pydh.histograms(coords, r_max, n_bins, precision="double", n_threads=n_threads[-1], blocksize=-1)
             testcase_xlarge = (n_el, n_atoms, n_bins, coords, histo_ref)
         return testcase_xlarge
 
