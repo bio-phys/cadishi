@@ -165,6 +165,7 @@ def get_gcc_flags():
                     cc_flags += ['-fopt-info']
                 # cc_flags += ['-ftree-vectorize']
                 # cc_flags += ['-fopt-info-vec-missed']
+    cc_flags += ['-Wno-unknown-pragmas']
     return cc_flags
 
 
