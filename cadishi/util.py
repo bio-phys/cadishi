@@ -337,80 +337,76 @@ def get_elements(header):
     return sorted(list(el_set))
 
 
-def open_r(filename):
+def open_r(file_name):
     """Open an uncompressed or GZIP-compressed text file for reading. Return the
     file pointer."""
-    assert (os.path.exists(filename))
-    if filename.endswith('.gz'):
-        fp = gzip.open(filename, mode='rb')
+    assert (os.path.exists(file_name))
+    if file_name.endswith('.gz'):
+        fp = gzip.open(file_name, mode='rb')
     else:
-        fp = open(filename, 'r')
+        fp = open(file_name, 'r')
     return fp
 
 
-def appendLineToFile(filename, string):
-    """Append string as a line to the end of the file identified by filename."""
-    with open(filename, 'a') as fp:
+def appendLineToFile(file_name, string):
+    """Append string as a line to the end of the file identified by file_name."""
+    with open(file_name, 'a') as fp:
         if not string.endswith('\n'):
             string += '\n'
         fp.write(string)
 
 
-def savetxtHeader(name, header, array):
-    """Save data including its header.
-    Legacy routine from the initial histograms implementation."""
-    md(name)
-    fp = open(name, 'w')
-    if header[-1] is not '\n':
-        header += '\n'
-    fp.write(header)
-    fp.close()
-    fp = open(name, 'a')
-    np.savetxt(fp, array)
-    fp.close()
+def savetxtHeader(file_name, header, array):
+    """Save data including its header."""
+    md(file_name)
+    with open(file_name, 'w') as fp:
+        if header[-1] is not '\n':
+            header += '\n'
+        fp.write(header)
+    # in the following, the 'ab' flag is necessary to avoid trouble with Python3
+    with open(file_name, 'ab') as fp:
+        np.savetxt(fp, array)
 
 
-def write_xyzFile(coords, names, filename):
-    """Write coordinates in xyz format to the file labeled filename."""
-    fp = open(filename, 'w')
-    fp.write("%d \n generated with histograms.py\n" % len(coords))
-    for i in range(len(coords)):
-        fp.write("%s %8.3f %8.3f %8.3f\n" %
-                 tuple([names[i]] + list(coords[i])))
-    fp.close()
-    return
+def write_xyzFile(coords, names, file_name):
+    """Write coordinates in xyz format to the file labeled file_name."""
+    with open(file_name, 'w') as fp:
+        fp.write("%d \n generated with histograms.py\n" % len(coords))
+        for i in range(len(coords)):
+            fp.write("%s %8.3f %8.3f %8.3f\n" %
+                     tuple([names[i]] + list(coords[i])))
 
 
 if have_yaml:
-    def load_yaml(filename):
-        with open(filename, "r") as fp:
+    def load_yaml(file_name):
+        with open(file_name, "r") as fp:
             return yaml.safe_load(fp)
 
-    def save_yaml(data, filename):
-        with open(filename, "w") as fp:
+    def save_yaml(data, file_name):
+        with open(file_name, "w") as fp:
             yaml.safe_dump(data, fp, default_flow_style=False)
 
 
-def load_json(filename):
-    with open(filename, "r") as fp:
+def load_json(file_name):
+    with open(file_name, "r") as fp:
         return json.load(fp)
 
 
-def save_json(data, filename):
-    with open(filename, "w") as fp:
+def save_json(data, file_name):
+    with open(file_name, "w") as fp:
         json.dump(data, fp, indent=4, sort_keys=True)
 
 
-def load_parameter_file(filename):
+def load_parameter_file(file_name):
     """Load parameters from a JSON or YAML file and return it as a nested
     structure of dictionaries."""
-    if not os.path.exists(filename):
-        raise IOError("File '" + filename + "' does not exist")
-    if filename.endswith('.json'):
-        return load_json(filename)
+    if not os.path.exists(file_name):
+        raise IOError("File '" + file_name + "' does not exist")
+    if file_name.endswith('.json'):
+        return load_json(file_name)
     else:
         if have_yaml:
-            return load_yaml(filename)
+            return load_yaml(file_name)
         else:
             raise RuntimeError("PyYAML is not available.")
 
@@ -470,13 +466,13 @@ def compare_approximately(histo1, histo2, ks_stat_max=0.01, p_value_min=0.99):
         assert(p_value > p_value_min)
 
 
-def dump_histograms(filename, histograms, r_max, n_bins):
+def dump_histograms(file_name, histograms, r_max, n_bins):
     """Save histograms into a NumPy text file.  Legacy routine."""
     dr = old_div(float(r_max), float(n_bins))
     histos = histograms.astype(dtype=np.float64)
     radii = [dr * (float(i) + 0.5) for i in range(n_bins)]
     histos[:, 0] = np.asarray(radii)
-    np.savetxt(filename, histos)
+    np.savetxt(file_name, histos)
 
 
 def get_executable_name():
@@ -584,11 +580,11 @@ def check_parameter(parameters, label, dtype, default_value,
                              "', maximum allowed value is '" + str(max_value) + "'")
 
 
-def redirectOutput(filename):
-    """Redirect stdout and stderr of the present process to the file specified by filename."""
+def redirectOutput(file_name):
+    """Redirect stdout and stderr of the present process to the file specified by file_name."""
     o_flags = os.O_CREAT | os.O_TRUNC | os.O_WRONLY
     os.close(1)
-    os.open(filename, o_flags, 0o664)
+    os.open(file_name, o_flags, 0o664)
     os.close(2)
     os.dup(1)
 

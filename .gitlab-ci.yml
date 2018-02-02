@@ -46,7 +46,8 @@ test_py36:
         - export TEST_PYDH=1
         - export TEST_CUDH=0
         - export TEST_LARGE=1
-        - export TEST_XLARGE=1
+        # we run the XL tests with Python 2.7 only to save some CI time
+        - export TEST_XLARGE=0
     script:
         # Run the included unit test cases
         - py.test -sv cadishi
@@ -58,7 +59,7 @@ test_py36:
         - cadishi example
         - cadishi histo
         - cd histograms_output
-        # - cadishi unpack histograms.h5  # TODO: fix, fails currently with Py3
+        - cadishi unpack histograms.h5
         - cadishi merge --output foo.h5 histograms.h5
         - cd $BASE
         # Test the documentation creation.

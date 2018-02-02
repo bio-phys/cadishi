@@ -195,7 +195,7 @@ def write_dict(dic, path, level=0):
     # --- (2) for robustness, save any other Python data to JSON text files
     if (len(py_keys) > 0):
         for key in py_keys:
-            filename = path + '/' + key + '.json'
-            util.md(filename)
-            with open(filename, "w") as fp:
+            file_name = path + '/' + key + '.json'
+            util.md(file_name)
+            with open(file_name, "w") as fp:
                 json.dump(dic[key], fp, indent=4, sort_keys=True)

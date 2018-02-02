@@ -128,9 +128,6 @@ def fixture_small_orthorhombic():
         coords = util.generate_random_coordinate_set(n_atoms)
         box = get_orthorhombic_box()
         histo = pydh.histograms(coords, r_max, n_bins, box=box, precision="double", n_threads=1)
-        if DUMP_DATA:
-            file_name = sys._getframe().f_code.co_name + ".dat"
-            util.dump_histograms(file_name, histo, r_max, n_bins)
         testcase_small_orthorhombic = (n_atoms, n_bins, coords, box, histo)
     return testcase_small_orthorhombic
 
@@ -148,9 +145,6 @@ def fixture_small_triclinic():
         coords = util.generate_random_coordinate_set(n_atoms)
         box = get_triclinic_box()
         histo = pydh.histograms(coords, r_max, n_bins, box=box, precision="double", n_threads=1)
-        if DUMP_DATA:
-            file_name = sys._getframe().f_code.co_name + ".dat"
-            util.dump_histograms(file_name, histo, r_max, n_bins)
         testcase_small_triclinic = (n_atoms, n_bins, coords, box, histo)
     return testcase_small_triclinic
 
@@ -160,17 +154,8 @@ if TEST_PYDH:
         n_atoms, n_bins, coords, histo_ref = fixture_small
         for check_input in [True, False]:
             for nt in n_threads:
-                histo_noblock = pydh.histograms(coords, r_max, n_bins, precision="double",
-                                                n_threads=nt, blocksize=-1, check_input=check_input)
-                if DUMP_DATA:
-                    file_name = sys._getframe().f_code.co_name + "_noblock.dat"
-                    util.dump_histograms(file_name, histo_noblock, r_max, n_bins)
                 histo_blocked = pydh.histograms(coords, r_max, n_bins, precision="double",
                                                 n_threads=nt, blocksize=200, check_input=check_input)
-                if DUMP_DATA:
-                    file_name = sys._getframe().f_code.co_name + "_doblock.dat"
-                    util.dump_histograms(file_name, histo_blocked, r_max, n_bins)
-                util.compare(histo_ref, histo_noblock)
                 util.compare(histo_ref, histo_blocked)
 
     def test_pydh_small_double(fixture_small):
@@ -179,9 +164,6 @@ if TEST_PYDH:
         for check_input in [True, False]:
             histo = pydh.histograms(coords, r_max, n_bins, precision="double",
                                     n_threads=1, check_input=check_input)
-            if DUMP_DATA:
-                file_name = sys._getframe().f_code.co_name + ".dat"
-                util.dump_histograms(file_name, histo, r_max, n_bins)
             util.compare(histo_ref, histo)
 
     def test_n_threads_small_double(fixture_small):
@@ -217,9 +199,6 @@ if TEST_PYDH:
             histo = pydh.histograms(coords, r_max, n_bins, box=box, precision="single",
                                     n_threads=1, check_input=check_input)
             util.compare(histo_ref, histo)
-            if DUMP_DATA:
-                file_name = sys._getframe().f_code.co_name + ".dat"
-                util.dump_histograms(file_name, histo, r_max, n_bins)
 
     def test_pydh_small_triclinic_single(fixture_small_triclinic):
         """Test if the triclinic implementation gives the same answer in single precision."""
@@ -228,9 +207,6 @@ if TEST_PYDH:
             histo = pydh.histograms(coords, r_max, n_bins, box=box, precision="single",
                                     n_threads=1, check_input=check_input)
             util.compare(histo_ref, histo)
-            if DUMP_DATA:
-                file_name = sys._getframe().f_code.co_name + ".dat"
-                util.dump_histograms(file_name, histo, r_max, n_bins)
 
     def test_pydh_small_orthorhombic_triclinic(fixture_small_triclinic):
         """Test if the triclinic and orthorhombic implementations give the same answer for an orthorhombic box."""
@@ -254,9 +230,6 @@ if TEST_CUDH:
                     histo = cudh.histograms(coords, r_max, n_bins, precision="double",
                                             gpu_id=gpu_id, check_input=check_input, algorithm=algo)
                     util.compare(histo_ref, histo)
-                    if DUMP_DATA:
-                        file_name = sys._getframe().f_code.co_name + "_gpu" + str(gpu_id) + ".dat"
-                        util.dump_histograms(file_name, histo, r_max, n_bins)
 
     def test_cudh_small_single(fixture_small):
         n_atoms, n_bins, coords, histo_ref = fixture_small
@@ -266,9 +239,6 @@ if TEST_CUDH:
                     histo = cudh.histograms(coords, r_max, n_bins, precision="single",
                                             gpu_id=gpu_id, check_input=check_input, algorithm=algo)
                     util.compare(histo_ref, histo)
-                    if DUMP_DATA:
-                        file_name = sys._getframe().f_code.co_name + "_gpu" + str(gpu_id) + ".dat"
-                        util.dump_histograms(file_name, histo, r_max, n_bins)
 
     def test_cudh_small_orthorhombic(fixture_small_orthorhombic):
         """Check if pydh and cudh give the same answer with orthorhombic boxes."""
@@ -368,8 +338,6 @@ def fixture_medium():
         n_bins = 8192
         coords = util.generate_random_coordinate_set(n_atoms)
         histo_ref = dist.histograms(coords, r_max, n_bins)
-        if DUMP_DATA:
-            util.dump_histograms("histo_ref_medium.dat", histo_ref, r_max, n_bins)
         testcase_medium = (n_atoms, n_bins, coords, histo_ref)
     return testcase_medium
 
@@ -483,8 +451,6 @@ def fixture_medium_manybins():
         n_bins = 68000
         coords = util.generate_random_coordinate_set(n_atoms)
         histo_ref = dist.histograms(coords, r_max, n_bins)
-        if DUMP_DATA:
-            util.dump_histograms("histo_ref_medium.dat", histo_ref, r_max, n_bins)
         testcase_medium_manybins = (n_atoms, n_bins, coords, histo_ref)
     return testcase_medium_manybins
 
@@ -552,9 +518,6 @@ if TEST_LARGE:
             coords = util.generate_random_coordinate_set(n_atoms)
             # --- note that we use pydh to generate the test dataset
             histo_ref = pydh.histograms(coords, r_max, n_bins, precision="double", n_threads=n_threads[-1])
-            if DUMP_DATA:
-                file_name = sys._getframe().f_code.co_name + ".dat"
-                util.dump_histograms(file_name, histo_ref, r_max, n_bins)
             testcase_large = (n_atoms, n_bins, coords, histo_ref)
         return testcase_large
 
