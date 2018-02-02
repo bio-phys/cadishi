@@ -11,7 +11,7 @@ test_py27:
         - export TEST_XLARGE=1
     script:
         # Run the included unit test cases
-        - py.test -v cadishi
+        - py.test -sv cadishi
         # Call the Cadishi CLI by running the trivial included test case.
         - mkdir tmp
         - cd tmp
@@ -49,7 +49,7 @@ test_py36:
         - export TEST_XLARGE=1
     script:
         # Run the included unit test cases
-        - py.test -v cadishi
+        - py.test -sv cadishi
         # Call the Cadishi CLI by running the trivial included test case.
         - mkdir tmp
         - cd tmp
