@@ -1,5 +1,6 @@
 import numpy as np
 cimport numpy as np
+from libc cimport stdint
 from libcpp cimport bool
 
 
@@ -37,7 +38,7 @@ cdef extern from "c_cudh.h":
                         int n_tot,
                         int *nel_ptr,
                         int n_El,
-                        np.uint64_t *histo_ptr,
+                        stdint.uint64_t *histo_ptr,
                         int n_bins,
                         int n_Hij,
                         double r_max,
@@ -97,7 +98,7 @@ def histograms(np.ndarray r_ptr,
                                  <int> n_tot,
                                  <int*> nel_ptr.data,
                                  <int> n_El,
-                                 <np.uint64_t*> histo_ptr.data,
+                                 <stdint.uint64_t*> histo_ptr.data,
                                  <int> n_bins,
                                  <int> n_Hij,
                                  <double> r_max,

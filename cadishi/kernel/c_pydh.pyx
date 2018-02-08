@@ -1,8 +1,10 @@
 # distutils: language = c++
 # distutils: sources = c_pydh_functions.cc
 
+
 import numpy as np
 cimport numpy as np
+from libc cimport stdint
 from libcpp cimport bool
 
 
@@ -40,7 +42,7 @@ cdef extern from "c_pydh.h":
                         int n_tot,
                         int *nel_ptr,
                         int n_El,
-                        np.uint64_t *histo_ptr,
+                        stdint.uint64_t *histo_ptr,
                         int n_bins,
                         double r_max,
                         int *mask_ptr,
@@ -78,10 +80,6 @@ def histograms(np.ndarray r_ptr,
     n_tot = r_ptr.shape[0]
     n_El = nel_ptr.shape[0]
     n_bins = histo_ptr.shape[0]
-    # checked OK:
-    # print n_tot
-    # print n_El
-    # print n_bins
 
     # create Python instance of C++ config class
     cdef config cfg
@@ -96,7 +94,7 @@ def histograms(np.ndarray r_ptr,
                                  <int> n_tot,
                                  <int*> nel_ptr.data,
                                  <int> n_El,
-                                 <np.uint64_t*> histo_ptr.data,
+                                 <stdint.uint64_t *> histo_ptr.data,
                                  <int> n_bins,
                                  <double> r_max,
                                  <int*> mask_ptr.data,
