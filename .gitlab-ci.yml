@@ -1,4 +1,6 @@
-test_py27:
+test_py27_lnx:
+    tags:
+        - centos
     before_script:
         - source /opt/anaconda/anavars2.sh
         - source /opt/cuda/cudavars.sh
@@ -8,7 +10,7 @@ test_py27:
         - export TEST_PYDH=1
         - export TEST_CUDH=0
         - export TEST_LARGE=1
-        - export TEST_XLARGE=1
+        - export TEST_XLARGE=0
     script:
         # Run the included unit test cases
         - py.test -sv cadishi
@@ -36,7 +38,10 @@ test_py27:
         - python setup.py develop --user --uninstall || true
         - rm -f ~/.local/lib/python2.7/site-packages/cadishi.egg-link
 
-test_py36:
+
+test_py36_lnx:
+    tags:
+        - centos
     before_script:
         - source /opt/anaconda/anavars3.sh
         - source /opt/cuda/cudavars.sh
@@ -74,3 +79,43 @@ test_py36:
         - source /opt/anaconda/anavars3.sh
         - python3 setup.py develop --user --uninstall || true
         - rm -f ~/.local/lib/python3.6/site-packages/cadishi.egg-link
+
+
+test_py27_mac:
+    tags:
+        - mac
+    before_script:
+        - source /opt/anaconda/anavars2.sh
+        - rm -f ~/.local/lib/python2.7/site-packages/cadishi.egg-link
+        - export BASE=`pwd`
+        - python setup.py develop --user
+        - export TEST_PYDH=1
+        - export TEST_CUDH=0
+        - export TEST_LARGE=0
+        - export TEST_XLARGE=0
+    script:
+        # Run the included unit test cases
+        - py.test -sv cadishi
+        # Call the Cadishi CLI by running the trivial included test case.
+        - mkdir tmp
+        - cd tmp
+        - cadishi --help
+        - cadishi --version
+        - cadishi example
+        - cadishi histo
+        - cd histograms_output
+        - cadishi unpack histograms.h5
+        - cadishi merge --output foo.h5 histograms.h5
+        - cd $BASE
+        # Test the documentation creation.
+        - python setup.py build_sphinx
+        # Test the tarball creation.
+        - python setup.py sdist --formats=gztar
+        # Test conda package creation.
+        # - cd conda
+        # - ./conda_build.sh
+        # - cd ..
+    after_script:
+        - source /opt/anaconda/anavars2.sh
+        - python setup.py develop --user --uninstall || true
+        - rm -f ~/.local/lib/python2.7/site-packages/cadishi.egg-link
