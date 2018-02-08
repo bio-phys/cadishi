@@ -222,7 +222,7 @@ def sum(histoparam, resultQueue, n_El, n_bins, dr, header_str, t0):
     #
     iframe = histoparam['input']['first']
     #
-    nHij = n_El * (n_El + 1) / 2
+    nHij = int(n_El * (n_El + 1) / 2)
     histo_0 = np.zeros((n_bins, nHij + 1), order='F')
     for i in range(n_bins):
         histo_0[i, 0] = dr * (i + 0.5)
