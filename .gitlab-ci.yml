@@ -89,6 +89,7 @@ test_py27_mac:
         - rm -f ~/.local/lib/python2.7/site-packages/cadishi.egg-link
         - export BASE=`pwd`
         - python setup.py develop --user
+        - export PATH="$HOME/.local/bin:$PATH"
         - export TEST_PYDH=1
         - export TEST_CUDH=0
         - export TEST_LARGE=0
