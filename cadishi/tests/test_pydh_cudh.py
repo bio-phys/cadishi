@@ -48,6 +48,7 @@ while (n_threads[-1] < n_cores):
     n_threads.append(2 * n_threads[-1])
 if (n_threads[-1] > n_cores):
     n_threads.pop()
+n_threads.remove(1)
 
 print("n_threads = " + str(n_threads))
 
