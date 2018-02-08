@@ -216,15 +216,16 @@ def get_cuda_ver(nvcc="nvcc"):
     patch = -1
     raw = sub.check_output(cmd, stderr=sub.STDOUT).decode('ascii').lower().split('\n')
     for line in raw:
-        if line.startswith('Cuda'):
+        if line.startswith('cuda'):
             tokens = line.split(',')
             # we obtain a version string such as "7.5.17"
-            verstr = tokens[2].strip().strip('V')
+            verstr = tokens[2].strip().strip('v')
             vertup = verstr.split('.')
             major = int(vertup[0])
             minor = int(vertup[1])
             patch = int(vertup[2])
     ver = major, minor, patch
+    #print("### cuda version = " + str(ver))
     return ver
 
 
