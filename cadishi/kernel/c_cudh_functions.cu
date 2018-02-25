@@ -438,7 +438,14 @@ void histo_gpu(TUPLE3_T *coords, int n_tot,
     if (prop.major >= 7) {
         // VOLTA
         histo_block_x = 512;
+#if __CUDACC_VER_MAJOR__ >= 9
         smem_n_bins_max *= 2;  // 96 kB -- experimental
+        const int maxbytes = 98304; // 96 KB
+        cudaFuncSetAttribute(histo1_advanced_knl<TUPLE3_T,COUNTER_T,FLOAT_T,check_input, box_type_id>,
+            cudaFuncAttributeMaxDynamicSharedMemorySize, maxbytes);
+        cudaFuncSetAttribute(histo2_advanced_knl<TUPLE3_T,COUNTER_T,FLOAT_T,check_input, box_type_id>,
+            cudaFuncAttributeMaxDynamicSharedMemorySize, maxbytes);
+#endif
         histo_advanced_nbins_threshold = 4*smem_n_bins_max;
     } else if (prop.major == 6) {
         // PASCAL
