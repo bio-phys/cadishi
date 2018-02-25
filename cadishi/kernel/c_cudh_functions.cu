@@ -52,8 +52,6 @@ const int idx_box_ortho = 0;
 const int idx_box_inv = 3;
 
 // --- parameters for the global and advanced kernels
-// maximum number of bins fitting into the 48kB of shared memory available on relevant GPUs
-const int smem_n_bins_max = 12288;
 // GPU constant memory usage by global and advanced kernels
 const int histo_advanced_cmem_bytes = 64000; // max 64k
 // static GPU constant memory
@@ -430,13 +428,19 @@ void histo_gpu(TUPLE3_T *coords, int n_tot,
     // --- thread block size for the global and advanced kernels
     int histo_block_x;
 
-    // TODO: update threshold values
+    // --- maximum number of bins fitting into the 48kB of shared memory available on relevant GPUs
+    int smem_n_bins_max = 12288;  // 48 kB
     // --- threshold value *below* which the advanced kernels should be used
     int histo_advanced_nbins_threshold;
     // --- set parameters depending on the compute capability based on
     // some performance measurements.  parameters were chosen to be optimal at
     // 1**20 particles, 8k bins, two-species histogram calculation.
-    if (prop.major >= 6) {
+    if (prop.major >= 7) {
+        // VOLTA
+        histo_block_x = 512;
+        smem_n_bins_max *= 2;  // 96 kB -- experimental
+        histo_advanced_nbins_threshold = 4*smem_n_bins_max;
+    } else if (prop.major == 6) {
         // PASCAL
         histo_block_x = 512;
         histo_advanced_nbins_threshold = 4*smem_n_bins_max;
