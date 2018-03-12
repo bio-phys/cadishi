@@ -32,6 +32,19 @@
 const size_t alignment = 64;
 
 
+// Cache Blocking (as implemented in the functions below)
+//
+// The handling of the CPU cache blocking is based on the value of the
+// variable 'blocksize'.  Values and resulting logic are:
+//
+// (blocksize > 0)  : enable blocking explicitly, and set block size (for exploration & benchmarking)
+// (blocksize = 0)  : decide about blocking internally using heuristics (default & recommended)
+// (blocksize = -1) : disable blocking completely (for exploration & benchmarking)
+// (blocksize = -2) : enable blocking explicitly (may fail for large values of n_bins, for exploration & benchmarking)
+//
+// Mainly implemented in the function 'blocking_heuristics()'.
+
+
 template <typename T>
 void print_histo(T * histo, const int n) {
     printf("---\n");
@@ -516,18 +529,23 @@ void hist_blocked(const TUPLE3_T * const p1,
  *
  * Decide wether to enable cache blocking, based on the problem size and user-defined value of blocksize.
  */
-inline bool blocking_heuristics(const int n1, const int n2, const int blocksize, const bool q_intra_species) {
+inline bool blocking_heuristics(const int n1, const int n2, const int n_bins, const int blocksize, const bool q_intra_species) {
+    // threshold value up to which cache blocking is used
+    const int n_bins_blocking_threshold = 48000;
+    // threshold value above which cache blocking is used
+    const int n_atoms_blocking_threshold = 100000;
     bool val = false;
-    if (blocksize < 0) {
-        // disable cache blocking
-        val = false;
-    } else if (blocksize > 0) {
+    // --- decision logic, see description at the top ---
+    if (blocksize == -2) {
         // enable cache blocking
         val = true;
-    } else {
+    } else if (blocksize == -1) {
+        // disable cache blocking
+        val = false;
+    } else if (blocksize == 0) {
         // heuristics branch
         int64_t aps;  // atom-pairs, to be calculated
-        const int64_t thresh_1d = int64_t(100000);
+        const int64_t thresh_1d = int64_t(n_atoms_blocking_threshold);
         const int64_t threshold = thresh_1d * thresh_1d;
         if (q_intra_species) {
             // intra-species
@@ -536,14 +554,22 @@ inline bool blocking_heuristics(const int n1, const int n2, const int blocksize,
             // inter-species
             aps = int64_t(n1)*int64_t(n2);
         }
-        // printf("### %ld %ld\n", aps, threshold);
         if (aps >= threshold) {
-            val = true;
+            // we have to disable cache blocking in case the number of bins is too large
+            if (n_bins > n_bins_blocking_threshold) {
+                val = false;
+            } else {
+                val = true;
+            }
         } else {
             val = false;
         }
+    } else if (blocksize > 0) {
+        // enable cache blocking, size set explicitly
+        val = true;
+    } else {
+        // this should never happen
     }
-    // printf("### %d\n", val);
     return val;
 }
 
@@ -560,11 +586,6 @@ void histo_cpu(TUPLE3_T *coords, int n_tot, int *n_per_el, int n_el,
                uint64_t *histos, int n_bins, FLOAT_T r_max, int *mask,
                const TUPLE3_T * const box, int blocksize) {
     const FLOAT_T scal = ((FLOAT_T)n_bins)/r_max;
-
-    // disable blocking for large histograms
-    if (n_bins > 48000) {
-        blocksize = -1;
-    }
 
     // --- box-related values, to be passed as constant references
     TUPLE3_T box_ortho = {0.0};
@@ -600,7 +621,8 @@ void histo_cpu(TUPLE3_T *coords, int n_tot, int *n_per_el, int n_el,
             if (mask[histogramIdx - 1] > 0) {
                 if (j != i) {
                     // inter-species branch
-                    if (blocking_heuristics(n_per_el[i], n_per_el[j], blocksize, (j == i))) {
+                    const bool q_intra_species = false;
+                    if (blocking_heuristics(n_per_el[i], n_per_el[j], n_bins, blocksize, q_intra_species)) {
                         hist_blocked <TUPLE3_T, FLOAT_T, check_input, box_type_id>
                                             (&coords[iOffset], n_per_el[i],
                                              &coords[jOffset], n_per_el[j],
@@ -616,7 +638,8 @@ void histo_cpu(TUPLE3_T *coords, int n_tot, int *n_per_el, int n_el,
                     }
                 } else {
                     // intra-species branch
-                    if (blocking_heuristics(n_per_el[i], n_per_el[j], blocksize, (j == i))) {
+                    const bool q_intra_species = true;
+                    if (blocking_heuristics(n_per_el[i], n_per_el[j], n_bins, blocksize, q_intra_species)) {
                         hist_blocked <TUPLE3_T, FLOAT_T, check_input, box_type_id>
                                             (&coords[iOffset], n_per_el[i],
                                              &coords[jOffset], n_per_el[j],
