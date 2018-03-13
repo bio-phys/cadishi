@@ -307,22 +307,29 @@ void hist_2(TUPLE3_T * __restrict__ p1,
 
 
 /**
- * Function calculate_blocksize()
+ * Function get_blocksize()
  *
  * Calculates the block size in elements (assuming a 256 kB L2 cache size
  * such that block_dist_rectangle() and the thread local histogram do fit into L2.
  */
 template <typename TUPLE3_T, typename FLOAT_T>
-int calculate_blocksize(const int n_bins,
+int get_blocksize(const int n_bins,
                         const int n_bytes_l2=1<<18,         // 256 kB
                         const int n_bytes_reserve=1<<14)    //  16 kB
 {
-    const float n_bytes_cache = n_bytes_l2 - n_bytes_reserve;
+    // for large values of n_bins we increase the block size linearly
+    const int n_bins_increase_threshold = 56000;  // value from which the assumed cache size shall be ramped up (up to 60k is safe)
+    int n_bytes_block_extension;
+    if (n_bins > n_bins_increase_threshold) {
+        n_bytes_block_extension = (n_bins - n_bins_increase_threshold) * sizeof(int);
+    } else {
+        n_bytes_block_extension = 0;
+    }
+    const float n_bytes_block = n_bytes_l2 - n_bytes_reserve + n_bytes_block_extension;
     const float n_bytes_tuple = sizeof(TUPLE3_T);
-    // const float b_bytes_word = sizeof(FLOAT_T);
     const float n_bytes_int = sizeof(int);
     // solve quadratic equation y = a * x**2 + b * x + c
-    const float y = n_bytes_cache;
+    const float y = n_bytes_block;
     const float a = n_bytes_int;
     const float b = 2 * n_bytes_tuple;
     const float c = n_bins * n_bytes_int;
@@ -404,7 +411,7 @@ void hist_blocked(const TUPLE3_T * const p1,
 
     int bs;
     if (blocksize <= 0) {
-        bs = calculate_blocksize<TUPLE3_T, FLOAT_T>(n_bins);
+        bs = get_blocksize<TUPLE3_T, FLOAT_T>(n_bins);
     } else {
         bs = blocksize;
     }
@@ -531,7 +538,7 @@ void hist_blocked(const TUPLE3_T * const p1,
  */
 inline bool blocking_heuristics(const int n1, const int n2, const int n_bins, const int blocksize, const bool q_intra_species) {
     // threshold value up to which cache blocking is used
-    const int n_bins_blocking_threshold = 48000;
+    const int n_bins_blocking_threshold = 256000;
     // threshold value above which cache blocking is used
     const int n_atoms_blocking_threshold = 100000;
     bool val = false;
