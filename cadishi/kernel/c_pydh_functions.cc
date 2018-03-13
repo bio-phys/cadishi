@@ -318,7 +318,7 @@ int get_blocksize(const int n_bins,
                         const int n_bytes_reserve=1<<14)    //  16 kB
 {
     // for large values of n_bins we increase the block size linearly
-    const int n_bins_increase_threshold = 56000;  // value from which the assumed cache size shall be ramped up (up to 60k is safe)
+    const int n_bins_increase_threshold = 45000;  // value from which the assumed cache size shall be ramped up (up to 60k is safe)
     int n_bytes_block_extension;
     if (n_bins > n_bins_increase_threshold) {
         n_bytes_block_extension = (n_bins - n_bins_increase_threshold) * sizeof(int);
@@ -537,9 +537,9 @@ void hist_blocked(const TUPLE3_T * const p1,
  * Decide wether to enable cache blocking, based on the problem size and user-defined value of blocksize.
  */
 inline bool blocking_heuristics(const int n1, const int n2, const int n_bins, const int blocksize, const bool q_intra_species) {
-    // threshold value up to which cache blocking is used
+    // n_bins: threshold value up to which cache blocking is used (i.e. virtually always)
     const int n_bins_blocking_threshold = 256000;
-    // threshold value above which cache blocking is used
+    // n_atoms: threshold value above which cache blocking is used
     const int n_atoms_blocking_threshold = 100000;
     bool val = false;
     // --- decision logic, see description at the top ---
@@ -576,6 +576,7 @@ inline bool blocking_heuristics(const int n1, const int n2, const int n_bins, co
         val = true;
     } else {
         // this should never happen
+        val = false;
     }
     return val;
 }
