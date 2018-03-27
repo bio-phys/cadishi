@@ -302,6 +302,8 @@ def cuda_compiler_flags():
             if (CUDAVER[0] >= 8):
                 nvcc_flags += ['--generate-code', 'arch=compute_60,code=sm_60']
                 nvcc_flags += ['--generate-code', 'arch=compute_61,code=sm_61']
+            if (CUDAVER[0] >= 9):
+                nvcc_flags += ['--generate-code', 'arch=compute_70,code=sm_70']
     nvcc_flags += ['--compiler-options=' + gcc_flags_string + ' -fPIC']
     return {'gcc': gcc_flags, 'nvcc': nvcc_flags}
 
