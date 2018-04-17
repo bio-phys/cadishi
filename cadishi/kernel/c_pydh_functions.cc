@@ -307,16 +307,54 @@ void hist_2(TUPLE3_T * __restrict__ p1,
 
 
 /**
+ * Function get_l2_cache_n_bytes_linux()
+ *
+ * Return the size of the L2 cache of core 0 in bytes on Linux. The actual
+ * information is queried from the kernel only once.
+ */
+size_t get_l2_cache_n_bytes_linux() {
+    static size_t size = 0;
+    if (size == 0) {
+        const size_t base = 1024;
+        size = 256 * base;  // default is 256K
+        // assume homogeneous CPUs in the system, and simply look at the first one
+        static const char sys_file[] = "/sys/devices/system/cpu/cpu0/cache/index2/size\0";
+        FILE * fp = fopen(sys_file, "r");
+        if (fp) {
+            char * buf = NULL;
+            size_t n_max = 64;
+            size_t n_bytes = 0;
+            n_bytes = getline(&buf, &n_max, fp);
+            if (n_bytes > 0) {
+                // eliminate the newline and the 'K' unit character
+                buf[n_bytes - 2] = '\0';
+                buf[n_bytes - 1] = '\0';
+                size_t raw = 0;
+                int i = 0;
+                i = sscanf(buf, "%zu", &raw);
+                if (i > 0) {
+                    size = raw * base;
+                }
+                free(buf);
+            }
+            fclose(fp);
+        }
+        printf(" L2 cache size = %zu\n", size);
+    }
+    return size;
+}
+
+
+/**
  * Function get_blocksize()
  *
- * Calculates the block size in elements (assuming a 256 kB L2 cache size
- * such that block_dist_rectangle() and the thread local histogram do fit into L2.
+ * Calculates the block size in elements such that block_dist_rectangle() and
+ * the thread local histogram do fit into L2.
  */
 template <typename TUPLE3_T, typename FLOAT_T>
 int get_blocksize(const int n_bins,
-                        const int n_bytes_l2=1<<18,         // 256 kB
-                        const int n_bytes_reserve=1<<14)    //  16 kB
-{
+                  const int n_bytes_l2=1<<18,         // 256 kB
+                  const int n_bytes_reserve=1<<14) {  //  16 kB
     // for large values of n_bins we increase the block size linearly
     const int n_bins_increase_threshold = 45000;  // value from which the assumed cache size shall be ramped up (up to 60k is safe)
     int n_bytes_block_extension;
@@ -341,14 +379,14 @@ int get_blocksize(const int n_bins,
 
 template <typename TUPLE3_T, typename FLOAT_T, int box_type_id>
 inline void block_dist_rectangle(
-            const TUPLE3_T * const p1_stripe, const int ii_max,
-            const TUPLE3_T * const p2_stripe, const int jj_max,
-            const FLOAT_T scal,
-            int * d,
-            const int bs,
-            const TUPLE3_T * const box,
-            const TUPLE3_T &box_ortho,
-            const TUPLE3_T &box_inv) {
+    const TUPLE3_T * const p1_stripe, const int ii_max,
+    const TUPLE3_T * const p2_stripe, const int jj_max,
+    const FLOAT_T scal,
+    int * d,
+    const int bs,
+    const TUPLE3_T * const box,
+    const TUPLE3_T &box_ortho,
+    const TUPLE3_T &box_inv) {
     memset_value(d, -1, bs*bs);
     for (int ii=0; ii<ii_max; ++ii) {
         // Note: nested loop structure vectorizes thanks to 'd_stripe'
@@ -357,7 +395,7 @@ inline void block_dist_rectangle(
         for (int jj=0; jj<jj_max; ++jj) {
             // printf("rect, took: ii=%d jj=%d\n", ii, jj);
             d_stripe[jj] = int(scal * dist <TUPLE3_T, FLOAT_T, box_type_id>
-                                        (p2_stripe[jj], p1_stripe[ii], box, box_ortho, box_inv));
+                               (p2_stripe[jj], p1_stripe[ii], box, box_ortho, box_inv));
         }
     }
 }
@@ -365,14 +403,14 @@ inline void block_dist_rectangle(
 
 template <typename TUPLE3_T, typename FLOAT_T, int box_type_id>
 inline void block_dist_triangle(
-            const TUPLE3_T * const p1_stripe, const int ii_max,
-            const TUPLE3_T * const p2_stripe, const int jj_max,
-            const FLOAT_T scal,
-            int * d,
-            const int bs,
-            const TUPLE3_T * const box,
-            const TUPLE3_T &box_ortho,
-            const TUPLE3_T &box_inv) {
+    const TUPLE3_T * const p1_stripe, const int ii_max,
+    const TUPLE3_T * const p2_stripe, const int jj_max,
+    const FLOAT_T scal,
+    int * d,
+    const int bs,
+    const TUPLE3_T * const box,
+    const TUPLE3_T &box_ortho,
+    const TUPLE3_T &box_inv) {
     memset_value(d, -1, bs*bs);
     for (int ii=0; ii<ii_max; ++ii) {
         // Note: nested loop structure vectorizes thanks to 'd_stripe'
@@ -380,7 +418,7 @@ inline void block_dist_triangle(
         #pragma omp simd
         for (int jj=0; jj<ii; ++jj) {
             d_stripe[jj] = int(scal * dist <TUPLE3_T, FLOAT_T, box_type_id>
-                                        (p2_stripe[jj], p1_stripe[ii], box, box_ortho, box_inv));
+                               (p2_stripe[jj], p1_stripe[ii], box, box_ortho, box_inv));
         }
     }
 }
@@ -393,17 +431,16 @@ inline void block_dist_triangle(
  */
 template <typename TUPLE3_T, typename FLOAT_T, bool check_input, int box_type_id>
 void hist_blocked(const TUPLE3_T * const p1,
-            const int n1,
-            const TUPLE3_T * const p2,
-            const int n2,
-            uint64_t *histo,
-            const int n_bins,
-            const FLOAT_T scal,
-            const TUPLE3_T * const box,
-            const TUPLE3_T &box_ortho,
-            const TUPLE3_T &box_inv,
-            const int blocksize)
-{
+                  const int n1,
+                  const TUPLE3_T * const p2,
+                  const int n2,
+                  uint64_t *histo,
+                  const int n_bins,
+                  const FLOAT_T scal,
+                  const TUPLE3_T * const box,
+                  const TUPLE3_T &box_ortho,
+                  const TUPLE3_T &box_inv,
+                  const int blocksize) {
     CHECKPOINT("hist_blocked()");
 
     // detect if an intra- or inter-species calculation is performed
@@ -411,7 +448,8 @@ void hist_blocked(const TUPLE3_T * const p1,
 
     int bs;
     if (blocksize <= 0) {
-        bs = get_blocksize<TUPLE3_T, FLOAT_T>(n_bins);
+        int l2_n_bytes = get_l2_cache_n_bytes_linux();
+        bs = get_blocksize<TUPLE3_T, FLOAT_T>(n_bins, l2_n_bytes);
     } else {
         bs = blocksize;
     }
@@ -464,11 +502,11 @@ void hist_blocked(const TUPLE3_T * const p1,
                         if (j_block == i_block) {
                             // printf("diagonal block: i=%d j=%d, ii_max=%d jj_max=%d\n", i, j, ii_max, jj_max);
                             block_dist_triangle <TUPLE3_T, FLOAT_T, box_type_id>
-                                (p1_stripe, ii_max, p2_stripe, jj_max, scal, d, bs, box, box_ortho, box_inv);
+                            (p1_stripe, ii_max, p2_stripe, jj_max, scal, d, bs, box, box_ortho, box_inv);
                         } else {
                             // printf("rectangular block: i=%d j=%d, ii_max=%d jj_max=%d\n", i, j, ii_max, jj_max);
                             block_dist_rectangle <TUPLE3_T, FLOAT_T, box_type_id>
-                                (p1_stripe, ii_max, p2_stripe, jj_max, scal, d, bs, box, box_ortho, box_inv);
+                            (p1_stripe, ii_max, p2_stripe, jj_max, scal, d, bs, box, box_ortho, box_inv);
                         }
                     } else {
                         // upper triangle, nothing to do
@@ -477,7 +515,7 @@ void hist_blocked(const TUPLE3_T * const p1,
                 } else {
                     memmove(p2_stripe, &p2[j], jj_max*sizeof(TUPLE3_T));
                     block_dist_rectangle <TUPLE3_T, FLOAT_T, box_type_id>
-                        (p1_stripe, ii_max, p2_stripe, jj_max, scal, d, bs, box, box_ortho, box_inv);
+                    (p1_stripe, ii_max, p2_stripe, jj_max, scal, d, bs, box, box_ortho, box_inv);
                 }
 
                 // flush per-thread histogram in case a bin might approach the 32 bit integer limit
@@ -632,33 +670,33 @@ void histo_cpu(TUPLE3_T *coords, int n_tot, int *n_per_el, int n_el,
                     const bool q_intra_species = false;
                     if (blocking_heuristics(n_per_el[i], n_per_el[j], n_bins, blocksize, q_intra_species)) {
                         hist_blocked <TUPLE3_T, FLOAT_T, check_input, box_type_id>
-                                            (&coords[iOffset], n_per_el[i],
-                                             &coords[jOffset], n_per_el[j],
-                                             &histos[histoOffset], n_bins, scal,
-                                             box, box_ortho, box_inv,
-                                             blocksize);
+                        (&coords[iOffset], n_per_el[i],
+                         &coords[jOffset], n_per_el[j],
+                         &histos[histoOffset], n_bins, scal,
+                         box, box_ortho, box_inv,
+                         blocksize);
                     } else {
                         hist_2 <TUPLE3_T, FLOAT_T, check_input, box_type_id>
-                            (&coords[iOffset], n_per_el[i],
-                             &coords[jOffset], n_per_el[j],
-                             &histos[histoOffset], n_bins, scal,
-                             box, box_ortho, box_inv);
+                        (&coords[iOffset], n_per_el[i],
+                         &coords[jOffset], n_per_el[j],
+                         &histos[histoOffset], n_bins, scal,
+                         box, box_ortho, box_inv);
                     }
                 } else {
                     // intra-species branch
                     const bool q_intra_species = true;
                     if (blocking_heuristics(n_per_el[i], n_per_el[j], n_bins, blocksize, q_intra_species)) {
                         hist_blocked <TUPLE3_T, FLOAT_T, check_input, box_type_id>
-                                            (&coords[iOffset], n_per_el[i],
-                                             &coords[jOffset], n_per_el[j],
-                                             &histos[histoOffset], n_bins, scal,
-                                             box, box_ortho, box_inv,
-                                             blocksize);
+                        (&coords[iOffset], n_per_el[i],
+                         &coords[jOffset], n_per_el[j],
+                         &histos[histoOffset], n_bins, scal,
+                         box, box_ortho, box_inv,
+                         blocksize);
                     } else {
                         hist_1 <TUPLE3_T, FLOAT_T, check_input, box_type_id>
-                            (&coords[iOffset], n_per_el[i],
-                             &histos[histoOffset], n_bins, scal,
-                             box, box_ortho, box_inv);
+                        (&coords[iOffset], n_per_el[i],
+                         &histos[histoOffset], n_bins, scal,
+                         box, box_ortho, box_inv);
                     }
                 }
             }
@@ -757,10 +795,10 @@ void histograms_template_dispatcher(NP_TUPLE3_T *r_ptr,
 
 template <typename NP_TUPLE3_T, typename TUPLE3_T, typename FLOAT_T>
 void distances_template_dispatcher(NP_TUPLE3_T *r_ptr,
-                                     int n_tot,
-                                     FLOAT_T *distances_ptr,
-                                     double *box_ptr,
-                                     int box_type_id) {
+                                   int n_tot,
+                                   FLOAT_T *distances_ptr,
+                                   double *box_ptr,
+                                   int box_type_id) {
     TUPLE3_T* r_copy = NULL;
     if (posix_memalign((void**)&r_copy, alignment, n_tot*sizeof(TUPLE3_T)) != 0) {
         RT_ERROR("memory allocation");
@@ -857,10 +895,10 @@ int histograms_cpu(np_tuple3d_t *r_ptr,
         if (cfg.precision == single_precision) {
             // NOTE: histograms_template_dispatcher() does the conversion to single precision internally
             histograms_template_dispatcher <np_tuple3d_t, tuple3s_t, float>
-                (r_ptr, n_tot, nel_ptr, n_El, histo_ptr, n_bins, r_max, mask_ptr, box_ptr, box_type_id, cfg);
+            (r_ptr, n_tot, nel_ptr, n_El, histo_ptr, n_bins, r_max, mask_ptr, box_ptr, box_type_id, cfg);
         } else {
             histograms_template_dispatcher <np_tuple3d_t, tuple3d_t, double>
-                (r_ptr, n_tot, nel_ptr, n_El, histo_ptr, n_bins, r_max, mask_ptr, box_ptr, box_type_id, cfg);
+            (r_ptr, n_tot, nel_ptr, n_El, histo_ptr, n_bins, r_max, mask_ptr, box_ptr, box_type_id, cfg);
         }
     } catch (std::overflow_error & err) {
         const std::string msg = std::string(err.what());
@@ -951,7 +989,7 @@ int distances_cpu(np_tuple3d_t *r_ptr,
             throw std::runtime_error(std::string("single precision distances are currently not implemented"));
         } else {
             distances_template_dispatcher <np_tuple3d_t, tuple3d_t, double>
-                (r_ptr, n_tot, distances, box_ptr, box_type_id);
+            (r_ptr, n_tot, distances, box_ptr, box_type_id);
         }
     } catch (std::overflow_error & err) {
         const std::string msg = std::string(err.what());
