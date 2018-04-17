@@ -339,7 +339,7 @@ size_t get_l2_cache_n_bytes_linux() {
             }
             fclose(fp);
         }
-        printf(" L2 cache size = %zu\n", size);
+        // printf(" L2 cache size = %zu\n", size);
     }
     return size;
 }
