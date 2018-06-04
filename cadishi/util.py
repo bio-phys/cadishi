@@ -382,7 +382,7 @@ if have_yaml:
         try:
             with open(file_name, "r") as fp:
                 return yaml.safe_load(fp)
-        except yaml.YAMLError, exc:
+        except yaml.YAMLError as exc:
             if hasattr(exc, "problem_mark"):
                 line = exc.problem_mark.line + 1
                 column = exc.problem_mark.column + 1
