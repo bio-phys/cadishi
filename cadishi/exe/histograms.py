@@ -405,7 +405,7 @@ def main(argparse_args):
 
         if (histoparam['general']['verbose']):
             print(" %s enqueueing frame %d ..." % (util.timeStamp(t0=t0), frm.i))
-            if (frm.i == 0):
+            if (frm.i % histoparam['output']['flush_interval'] == 0):
                 sys.stdout.flush()
 
         work_package = (frm, bap)
