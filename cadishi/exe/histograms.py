@@ -48,6 +48,7 @@ from .. import pbc
 from .. import version
 from ..io import hdf5
 from .. import worker
+from ..kernel import cudh
 
 
 def configure_cli(subparsers):
@@ -76,8 +77,9 @@ def check_parameters(histoparam):
     util.check_parameter(histoparam, 'cpu:module', basestring, 'pydh', valid_values=['pydh', 'dist'])
     util.check_parameter(histoparam, 'gpu:module', basestring, 'cudh', valid_values=['cudh'])
 
-    # auto-detect the number of CPU workers
-    if not 'workers' in histoparam['cpu'] or (histoparam['cpu']['workers'] < 0):
+    # auto-detect the number of CPU workers, if not set explicitly
+    util.check_parameter(histoparam, 'cpu:workers', int, -1)
+    if (histoparam['cpu']['workers'] < 0):
         if 'threads' in histoparam['cpu']:
             del histoparam['cpu']['threads']  # autodetect below
         try:
@@ -86,7 +88,10 @@ def check_parameters(histoparam):
             n_workers = 1
         histoparam['cpu']['workers'] = n_workers
 
+    # auto-detect the number of GPU workers, if not set explicitly
     util.check_parameter(histoparam, 'gpu:workers', int, 0)
+    if (histoparam['gpu']['workers'] < 0):
+        histoparam['gpu']['workers'] = cudh.get_num_devices()
 
     if (histoparam['cpu']['workers'] == 0) and (histoparam['gpu']['workers'] == 0):
         raise ValueError("At least one worker (CPU and/or GPU) must be used")
