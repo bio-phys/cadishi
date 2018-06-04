@@ -379,8 +379,16 @@ def write_xyzFile(coords, names, file_name):
 
 if have_yaml:
     def load_yaml(file_name):
-        with open(file_name, "r") as fp:
-            return yaml.safe_load(fp)
+        try:
+            with open(file_name, "r") as fp:
+                return yaml.safe_load(fp)
+        except yaml.YAMLError, exc:
+            if hasattr(exc, "problem_mark"):
+                line = exc.problem_mark.line + 1
+                column = exc.problem_mark.column + 1
+                msg = " '{}': YAML error at line {}, column {}.".format(file_name, line, column)
+                print(msg)
+            raise
 
     def save_yaml(data, file_name):
         with open(file_name, "w") as fp:
