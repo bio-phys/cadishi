@@ -364,6 +364,8 @@ def sum(histoparam, resultQueue, n_El, n_bins, dr, header_str, t0):
                 #
                 if (icount % histoparam['output']['flush_interval'] == 0):
                     sys.stdout.flush()
+                    if histoparam['output']['write_h5']:
+                        h5writer.hard_flush()
                 if (iframe == histoparam['input']['last']):
                     finished = True
                 iframe += 1
