@@ -181,16 +181,11 @@ class H5Writer(base.Writer):
 
     def __init__(self, file="default.hdf5", source=-1,
                  compression=None, mode="w", verbose=False):
-        self.file = file
         util.md(file)
-        try:
-            self.h5fp = h5py.File(file, mode)
-        except:
-            self.file_is_open = False
-            raise
-        else:
-            self.file_is_open = True
+        self.safe_open(file, mode)
         self.src = source
+        self.file = file
+        self.mode = mode
         self.comp = compression
         self.verb = verbose
         self.info = ''
@@ -202,16 +197,31 @@ class H5Writer(base.Writer):
         return self
 
     def __del__(self):
-        self.close_file_safely()
+        self.safe_close()
 
     def __exit__(self, type, value, traceback):
-        self.close_file_safely()
+        self.safe_close()
 
-    def close_file_safely(self):
+    def safe_open(self, file, mode):
+        try:
+            self.h5fp = h5py.File(file, mode)
+        except:
+            self.file_is_open = False
+            raise
+        else:
+            self.file_is_open = True
+
+    def safe_close(self):
         if self.file_is_open:
             self.h5fp.flush()
             self.h5fp.close()
             self.file_is_open = False
+
+    def hard_flush(self):
+        file = self.file
+        mode = self.mode
+        self.safe_close()
+        self.safe_open(file, mode)
 
     def get_meta(self):
         """Return information on the HDF5 writer,
