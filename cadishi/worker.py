@@ -258,7 +258,7 @@ def sum(histoparam, resultQueue, n_El, n_bins, dr, header_str, t0):
                 except Exception as e:
                     pass
             else:
-                h5writer.close_file_safely()
+                h5writer.safe_close()
                 if (histoparam['general']['verbose']):
                     print(util.SEP)
                     print(" %s %s: shutting down" % (util.timeStamp(dateAndTime=True), worker_str))
