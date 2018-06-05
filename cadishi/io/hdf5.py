@@ -215,11 +215,12 @@ class H5Writer(base.Writer):
         if self.file_is_open:
             self.h5fp.flush()
             self.h5fp.close()
+            del self.h5fp
             self.file_is_open = False
 
     def hard_flush(self):
         file = self.file
-        mode = self.mode
+        mode = 'a'
         self.safe_close()
         self.safe_open(file, mode)
 
