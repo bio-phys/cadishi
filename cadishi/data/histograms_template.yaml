@@ -4,6 +4,11 @@ general:
   redirect_output: true
   # print detailed output during computation
   verbose: true
+  # max number of work/result packages in IPC queues: large values may [expert]
+  # lead to memory issues, small values may harm performance [expert]
+  queue_maxsize: 256  # [expert]
+  # max waiting time for IPC queues [expert]
+  queue_timeout: 3600  # [expert]
 histogram:
   # maximum distance value of the histogram, >0 sets it explicitly, <0 fetches from capriqorn pipeline
   r_max: 70

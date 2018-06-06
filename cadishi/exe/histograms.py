@@ -112,6 +112,8 @@ def check_parameters(histoparam):
     util.check_parameter(histoparam, 'general:numa_aware', bool, False)
     util.check_parameter(histoparam, 'general:redirect_output', bool, True)
     util.check_parameter(histoparam, 'general:verbose', bool, True)
+    util.check_parameter(histoparam, 'general:queue_maxsize', int, 256)
+    util.check_parameter(histoparam, 'general:queue_timeout', int, 3600)
 
     # define the maximum distance for the histograms
     # default '-1': set r_max to be set by the capriqorn preprocessor pipeline log
@@ -215,11 +217,6 @@ def main(argparse_args):
     else:
         numa_topology = []
 
-    task_queue_timeout = 3600
-    # the following is way too little
-    # task_queue_maxsize = 2 * (histoparam['cpu']['workers'] + histoparam['gpu']['workers'])
-    task_queue_maxsize = 256
-
     util.md(histoparam['output']['directory'])
 
     reader = hdf5.H5Reader(file=histoparam['input']['file'])
@@ -283,8 +280,8 @@ def main(argparse_args):
 
     # ------ set up the multiprocessing environment ------
     # use blocking queues for job handling and synchronization
-    task_queue = multiprocessing.JoinableQueue(task_queue_maxsize)
-    result_queue = multiprocessing.JoinableQueue(task_queue_maxsize)
+    task_queue = multiprocessing.JoinableQueue(histoparam['general']['queue_maxsize'])
+    result_queue = multiprocessing.JoinableQueue(histoparam['general']['queue_maxsize'])
     # set up and launch worker processes
     pool = []
     # set up processes for the calculation of the individual histograms
@@ -423,7 +420,7 @@ def main(argparse_args):
                 sys.stdout.flush()
 
         work_package = (frm, bap)
-        task_queue.put(work_package, task_queue_timeout)
+        task_queue.put(work_package, histoparam['general']['queue_timeout'])
 
         # cadishi cat be stopped by creating a file "stop" in the same directory
         if os.path.isfile("stop"):
@@ -437,7 +434,7 @@ def main(argparse_args):
 
     # Trigger the workers to shut down in a controlled way by sending "None".
     for mp_worker in pool:
-        task_queue.put(termination_msg, task_queue_timeout)
+        task_queue.put(termination_msg, histoparam['general']['queue_timeout'])
 
     if (histoparam['general']['verbose']):
         print(" %s waiting for worker processes ..." % util.timeStamp(t0=t0))
