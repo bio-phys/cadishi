@@ -33,7 +33,7 @@ gpu:
   # floating point precision
   precision: single
   # number of GPU worker processes, up to the number of physical GPUs
-  workers: 0
+  workers: -1
   # check during computation if distances lie within r_max, exit on error
   check_input: true
 input:

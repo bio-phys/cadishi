@@ -89,8 +89,8 @@ def check_parameters(histoparam):
         histoparam['cpu']['workers'] = n_workers
 
     # auto-detect the number of GPU workers, if not set explicitly
-    util.check_parameter(histoparam, 'gpu:workers', int, 0)
-    if (histoparam['gpu']['workers'] < 0):
+    util.check_parameter(histoparam, 'gpu:workers', int, -1)
+    if (histoparam['gpu']['workers'] < 0 and cudh.have_c_cudh):
         histoparam['gpu']['workers'] = cudh.get_num_devices()
 
     if (histoparam['cpu']['workers'] == 0) and (histoparam['gpu']['workers'] == 0):
