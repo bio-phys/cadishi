@@ -200,7 +200,7 @@ def _compute(histoparam, worker_id, worker_type, taskQueue, resultQueue, r_max, 
     sys.exit(0)
 
 
-def sum(histoparam, resultQueue, n_El, n_bins, dr, header_str, t0):
+def sum(histoparam, resultQueue, n_El, n_bins, dr, header_str, t0, n_frames):
     """Worker function: Fetch histograms from resultQueue, order, sum up, and
     write results out to HDF5.
 
@@ -360,6 +360,10 @@ def sum(histoparam, resultQueue, n_El, n_bins, dr, header_str, t0):
                     if (n_gpu > 0):
                         print("   GPU: %d frames, %.3f (%.3f) avg comp (io) time [s], %.3f bapps"\
                             % (n_gpu, old_div(time_gpu, float(n_gpu)), old_div(wait_gpu, float(n_gpu)), old_div(bap_gpu, time_gpu)))
+                    if (n_frames > 0):
+                        frac_done = float(icount) / float(n_frames)
+                        time_est = wallclock / frac_done
+                        print("   Progress: {:.2f} %% done, estimated total run time {:.2f} s.".format(100. * frac_done, time_est))
                     print(util.SEP)
                 #
                 if (icount % histoparam['output']['flush_interval'] == 0):

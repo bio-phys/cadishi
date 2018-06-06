@@ -87,6 +87,7 @@ class H5Reader(base.Reader):
             self.frame_pool = self.frame_pool[self.first - 1:]
         if (self.step is not None):
             self.frame_pool = self.frame_pool[::self.step]
+        self.n_elem = len(self.frame_pool)
         if self.shuffle:
             if self.shuffle_reproducible:
                 random.Random(shuffle_reproducible_seed).shuffle(self.frame_pool)
@@ -111,7 +112,7 @@ class H5Reader(base.Reader):
         """
         meta = {}
         label = 'H5Reader'
-        param = {'file': self.file_names,
+        param = {'file': self.file_names, 'n_elem': self.n_elem,
                  'first': self.first, 'last': self.last, 'step': self.step,
                  'shuffle': False, 'shuffle_reproducible': False}
         meta[label] = param
@@ -169,6 +170,9 @@ class H5Reader(base.Reader):
         ti.pipeline_log = frm.get_meta()
         ti.frame_numbers = list(range(1, len(self.frame_pool) + 1))
         return ti
+
+    def get_n_elem(self):
+        return self.n_elem
 
 
 class H5Writer(base.Writer):

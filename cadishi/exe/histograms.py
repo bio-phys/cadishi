@@ -235,6 +235,10 @@ def main(argparse_args):
     assert (histoparam['input']['last'] <= ti.frame_numbers[-1])
     assert (histoparam['input']['first'] <= histoparam['input']['last'])
 
+    n_frames = len(range(histoparam['input']['first'], \
+                         histoparam['input']['last'] + 1, \
+                         histoparam['input']['step']))
+
     if histoparam['histogram']['r_max'] < 0:
         r_max = ti.get_pipeline_parameter('r_max')
     else:
@@ -296,7 +300,7 @@ def main(argparse_args):
         pool.append(mp_worker)
     # set up process for summing-up and writing the histograms
     sum_worker = multiprocessing.Process(target=worker.sum,
-                                         args=(histoparam, result_queue, nEl, nbins, dr, header_str, t0))
+                                         args=(histoparam, result_queue, nEl, nbins, dr, header_str, t0, n_frames))
 
     # build list of all child processes to be used by the signal handler
     mp_all_workers_list = pool + [sum_worker]
