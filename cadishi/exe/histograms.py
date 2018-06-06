@@ -215,8 +215,10 @@ def main(argparse_args):
     else:
         numa_topology = []
 
-    task_queue_timeout = 360
-    task_queue_maxsize = 2 * (histoparam['cpu']['workers'] + histoparam['gpu']['workers'])
+    task_queue_timeout = 3600
+    # the following is way too little
+    # task_queue_maxsize = 2 * (histoparam['cpu']['workers'] + histoparam['gpu']['workers'])
+    task_queue_maxsize = 256
 
     util.md(histoparam['output']['directory'])
 
@@ -279,10 +281,6 @@ def main(argparse_args):
     t0 = time.time()
     print(" %s proceeding to distance histogram computation" % util.timeStamp(dateAndTime=True))
 
-    if (histoparam['general']['verbose']):
-        print(util.SEP)
-        print(" %s spawning worker processes ..." % util.timeStamp(t0=t0))
-
     # ------ set up the multiprocessing environment ------
     # use blocking queues for job handling and synchronization
     task_queue = multiprocessing.JoinableQueue(task_queue_maxsize)
@@ -298,12 +296,22 @@ def main(argparse_args):
         mp_worker = multiprocessing.Process(target=worker.compute,
                                             args=(histoparam, i, 'gpu', task_queue, result_queue, r_max, nbins, t0))
         pool.append(mp_worker)
+    n_workers = len(pool)
+
     # set up process for summing-up and writing the histograms
     sum_worker = multiprocessing.Process(target=worker.sum,
-                                         args=(histoparam, result_queue, nEl, nbins, dr, header_str, t0, n_frames))
+                                         args=(histoparam, result_queue, nEl, nbins, dr, header_str, t0, n_frames, n_workers))
 
     # build list of all child processes to be used by the signal handler
     mp_all_workers_list = pool + [sum_worker]
+
+
+    if (histoparam['general']['verbose']):
+        print(util.SEP)
+        print(" %s spawning processes: %d CPU worker, %d GPU worker, 1 writer" % \
+            (util.timeStamp(t0=t0), histoparam['cpu']['workers'], histoparam['gpu']['workers']))
+        sys.stdout.flush()
+
 
     for mp_worker in mp_all_workers_list:
         mp_worker.start()
@@ -326,6 +334,8 @@ def main(argparse_args):
                       (histoparam['input']['first'], histoparam['input']['last']), 'w')
     nr_header = "# " + "%s " * len(elements) % tuple(elements) + "\n"
     nr_part_fp.write(nr_header)
+
+    termination_msg = "done"
 
     reader = hdf5.H5Reader(file=histoparam['input']['file'],
                            first=histoparam['input']['first'],
@@ -417,18 +427,31 @@ def main(argparse_args):
 
         # cadishi cat be stopped by creating a file "stop" in the same directory
         if os.path.isfile("stop"):
+            termination_msg = "stop"
+            if (histoparam['general']['verbose']):
+                print(" %s `stop' file encountered" % util.timeStamp(t0=t0))
+                sys.stdout.flush()
             break
 
     nr_part_fp.close()
 
     # Trigger the workers to shut down in a controlled way by sending "None".
     for mp_worker in pool:
-        task_queue.put(None, task_queue_timeout)
+        task_queue.put(termination_msg, task_queue_timeout)
 
     if (histoparam['general']['verbose']):
         print(" %s waiting for worker processes ..." % util.timeStamp(t0=t0))
+        sys.stdout.flush()
+
     task_queue.join()
+    if (histoparam['general']['verbose']):
+        print(" %s joined task_queue" % util.timeStamp(t0=t0))
+        sys.stdout.flush()
+
     result_queue.join()
+    if (histoparam['general']['verbose']):
+        print(" %s joined result_queue" % util.timeStamp(t0=t0))
+        sys.stdout.flush()
 
     t1 = time.time()
     wallclock = float(t1 - t0)

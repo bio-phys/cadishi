@@ -104,14 +104,23 @@ def _compute(histoparam, worker_id, worker_type, taskQueue, resultQueue, r_max, 
     t1 = time.time()
     if (histoparam['general']['verbose']):
         print(util.SEP)
-        print(" %s %s: worker started" % (util.timeStamp(dateAndTime=True), worker_str))
+        if (worker_type == "cpu"):
+            threads_str = "(%d threads)" % histoparam['cpu']['threads']
+        else:
+            threads_str = ""
+        print(" %s %s: worker started %s" % (util.timeStamp(dateAndTime=True), worker_str, threads_str))
         print(util.SEP)
     notify_master = False
     icount = 0
+    termination_msg = ""
+
     try:
         while True:
             work_item = taskQueue.get()
-            if work_item is None:
+            if work_item in ["done", "stop"]:
+                resultQueue.put(work_item)
+                taskQueue.task_done()
+                termination_msg = "(" + work_item + ")"
                 break
             else:
                 t0 = time.time()
@@ -193,14 +202,13 @@ def _compute(histoparam, worker_id, worker_type, taskQueue, resultQueue, r_max, 
         os.kill(os.getppid(), signal.SIGUSR1)
     if (histoparam['general']['verbose']):
         print(util.SEP)
-        print(" %s %s: shutting down" % (util.timeStamp(t0=t0), worker_str))
+        print(" %s %s: shutting down %s" % (util.timeStamp(t0=t0), worker_str, termination_msg))
         print(util.SEP)
     sys.stdout.flush()
-    taskQueue.task_done()
     sys.exit(0)
 
 
-def sum(histoparam, resultQueue, n_El, n_bins, dr, header_str, t0, n_frames):
+def sum(histoparam, resultQueue, n_El, n_bins, dr, header_str, t0, n_frames, n_workers):
     """Worker function: Fetch histograms from resultQueue, order, sum up, and
     write results out to HDF5.
 
@@ -238,8 +246,10 @@ def sum(histoparam, resultQueue, n_El, n_bins, dr, header_str, t0, n_frames):
     bap_gpu = 0.0
     n_cpu = 0
     n_gpu = 0
+    n_done = 0
     # counter starting at zero, independent of the actual frame numbers
     icount = 0
+    termination_msg = ""
     #
     # --- use a hash map as a buffer to recover the original frame order
     buf = {}
@@ -251,19 +261,18 @@ def sum(histoparam, resultQueue, n_El, n_bins, dr, header_str, t0, n_frames):
             if not finished:
                 try:
                     result_item = resultQueue.get(False, 0.5)
-                    frame_number = (result_item[0]).i
-                    buf[frame_number] = result_item
-                    if (histoparam['general']['verbose']):
-                        print(" %s %s: buffering frame %d ..." % (util.timeStamp(t0=t0), worker_str, frame_number))
+                    if result_item in ["stop", "done"]:
+                        resultQueue.task_done()
+                        termination_msg = "(" + result_item + ")"
+                        n_done += 1
+                    else:
+                        frame_number = (result_item[0]).i
+                        buf[frame_number] = result_item
+                        if (histoparam['general']['verbose']):
+                            print(" %s %s: buffering frame %d ..." % (util.timeStamp(t0=t0), worker_str, frame_number))
                 except Exception as e:
                     pass
             else:
-                h5writer.safe_close()
-                if (histoparam['general']['verbose']):
-                    print(util.SEP)
-                    print(" %s %s: shutting down" % (util.timeStamp(dateAndTime=True), worker_str))
-                    print(util.SEP)
-                    sys.stdout.flush()
                 break  # will implicitly close h5writer
             #
             if (iframe in buf):
@@ -370,12 +379,19 @@ def sum(histoparam, resultQueue, n_El, n_bins, dr, header_str, t0, n_frames):
                     sys.stdout.flush()
                     if histoparam['output']['write_h5']:
                         h5writer.hard_flush()
-                if (iframe == histoparam['input']['last']):
-                    finished = True
+                # if (iframe == histoparam['input']['last']):
+                    # finished = True
                 iframe += 1
                 resultQueue.task_done()
-            # end if
+            elif (n_done == n_workers):
+                finished = True
         # end while
+        if (histoparam['general']['verbose']):
+            print(util.SEP)
+            print(" %s %s: shutting down %s" % (util.timeStamp(dateAndTime=True), worker_str, termination_msg))
+            util.rm("stop")
+            print(util.SEP)
+            sys.stdout.flush()
     # end with ... h5writer
     del h5writer
     sys.exit(0)
