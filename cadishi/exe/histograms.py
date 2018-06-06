@@ -465,6 +465,7 @@ def main(argparse_args):
     print("   frames:             %d" % ntotal)
     print("   wallclock time:     %.3f" % wallclock)
     print("   frames per second:  %.3f" % fps)
+    print("   output directory:   " + histoparam['output']['directory'])
 
     sys.stdout.flush()
 
