@@ -862,6 +862,9 @@ int get_num_cuda_devices() {
     if (cudaGetDeviceCount(&n) != cudaSuccess) {
         n = 0;
     }
+    // if (n > 0) {
+    //     CU_CHECK( cudaDeviceReset() );
+    // }
     return n;
 }
 

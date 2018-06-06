@@ -14,6 +14,7 @@ Calls the c_cudh Python module.
 """
 from __future__ import print_function
 
+import subprocess as sub
 
 from builtins import str
 from builtins import zip
@@ -31,12 +32,21 @@ from .. import pbc
 
 
 def get_num_devices():
-    """Get the number of available CUDA devices (i.e. GPUs)."""
-    if have_c_cudh:
-        nd = c_cudh.get_num_devices()
-    else:
-        nd = 0
-    return nd
+    """Get the number of available CUDA devices (i.e. GPUs).
+
+    We do not use the function "c_cudh.get_num_devices()" because it is
+    not allowed to fork and use CUDA in processes after a first CUDA call,
+    which would be the case in <histograms.py> (and was hard to figure out).
+    """
+    n = 0
+    cmd = "nvidia-smi -L".split()
+    try:
+        raw = sub.check_output(cmd).lower().split('\n')
+        gpus = [x for x in raw if x.startswith("gpu")]
+        n = len(gpus)
+    except:
+        pass
+    return n
 
 
 def histograms(coordinate_sets,

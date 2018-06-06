@@ -363,7 +363,7 @@ def sum(histoparam, resultQueue, n_El, n_bins, dr, header_str, t0, n_frames):
                     if (n_frames > 0):
                         frac_done = float(icount) / float(n_frames)
                         time_est = wallclock / frac_done
-                        print("   Progress: {:.2f} %% done, estimated total run time {:.2f} s.".format(100. * frac_done, time_est))
+                        print("   RUN: {:.2f} % done, estimated total run time {:.2f} s.".format(100. * frac_done, time_est))
                     print(util.SEP)
                 #
                 if (icount % histoparam['output']['flush_interval'] == 0):
