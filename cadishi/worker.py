@@ -109,7 +109,6 @@ def _compute(histoparam, worker_id, worker_type, taskQueue, resultQueue, r_max, 
         raise RuntimeError("unsupported worker type requested: " + str(worker_type))
 
     worker_str = "%s worker %02d" % (worker_type, worker_id)
-    t1 = time.time()
     if (histoparam['general']['verbose']):
         print(util.SEP)
         if (worker_type == "cpu"):
@@ -121,6 +120,7 @@ def _compute(histoparam, worker_id, worker_type, taskQueue, resultQueue, r_max, 
     notify_master = False
     icount = 0
     termination_msg = ""
+    t1 = time.time()
 
     try:
         while True:
@@ -131,8 +131,8 @@ def _compute(histoparam, worker_id, worker_type, taskQueue, resultQueue, r_max, 
                 termination_msg = "(" + work_item + ")"
                 break
             else:
-                t0 = time.time()
-                wait_time = t0 - t1
+                t2 = time.time()
+                wait_time = t2 - t1
                 #
                 frm = work_item[0]
                 species_Crds = []
@@ -187,7 +187,7 @@ def _compute(histoparam, worker_id, worker_type, taskQueue, resultQueue, r_max, 
                     break
                 #
                 t1 = time.time()
-                comp_time = t1 - t0
+                comp_time = t1 - t2
                 #
                 # --- temporarily pack the 2D histograms array into the Container instance
                 frm.put_data('tmp/histograms', histograms)
