@@ -59,18 +59,13 @@ def _cProfile_Exit(signum, stack):
 
 
 def compute(histoparam, worker_id, worker_type, taskQueue, resultQueue, r_max, n_bins, t0):
-    """Compute-worker wrapper to handle output redirection, numa pinning, and profiling.
+    """Compute-worker wrapper to handle output redirection and profiling.
 
     To be used as the entry function for a multiprocessing subprocess.
 
     Calls the _compute() function which does the real work."""
     if (histoparam['general']['redirect_output']):
         util.redirectOutput("%shisto_%s_worker_%02d.log" % (histoparam['output']['directory'], worker_type, worker_id))
-    if (histoparam['general']['numa_aware']):
-        n_numa_domains = len(numa_topology)
-        if (n_numa_domains > 0):
-            numa_id = worker_id % n_numa_domains
-            util.set_numa_domain(numa_id, numa_topology)
     if (histoparam['general']['profile']):
         global cProfile_handle
         cProfile_handle = cProfile.Profile()
@@ -88,6 +83,8 @@ def _compute(histoparam, worker_id, worker_type, taskQueue, resultQueue, r_max, 
     To be called via the compute() wrapper.
     """
 
+    worker_str = "%s worker %02d" % (worker_type, worker_id)
+
     if (worker_type == "cpu"):
         if (histoparam['cpu']['module'] == 'pydh'):
             from .kernel import pydh
@@ -98,6 +95,15 @@ def _compute(histoparam, worker_id, worker_type, taskQueue, resultQueue, r_max, 
             from .kernel import dist
         else:
             raise RuntimeError("unsupported CPU histogram kernel requested: " + str(histoparam['cpu']['module']))
+        # handle NUMA pinning for CPU kernels and special cases only
+        if (histoparam['general']['numa_aware']):
+            numa_topology = util.get_numa_domains()
+            n_numa_domains = len(numa_topology)
+            if (n_numa_domains > 0) and (histoparam['cpu']['workers'] % n_numa_domains == 0):
+                numa_id = worker_id % n_numa_domains
+                stat = util.set_numa_domain(numa_id, numa_topology)
+                if (stat and histoparam['general']['verbose']):
+                    print(" %s %s: pinned to NUMA domain %d" % (util.timeStamp(t0=t0), worker_str, numa_id))
     elif (worker_type == "gpu"):
         from .kernel import cudh
         if not cudh.have_c_cudh:
@@ -108,7 +114,6 @@ def _compute(histoparam, worker_id, worker_type, taskQueue, resultQueue, r_max, 
     else:
         raise RuntimeError("unsupported worker type requested: " + str(worker_type))
 
-    worker_str = "%s worker %02d" % (worker_type, worker_id)
     if (histoparam['general']['verbose']):
         print(util.SEP)
         if (worker_type == "cpu"):

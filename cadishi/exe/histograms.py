@@ -211,12 +211,6 @@ def main(argparse_args):
 
     # --- END OF CONFIGURATION SECTION ---
 
-    # get information about the available CPUs
-    if (histoparam['general']['numa_aware']):
-        numa_topology = util.get_numa_domains()
-    else:
-        numa_topology = []
-
     util.md(histoparam['output']['directory'])
 
     reader = hdf5.H5Reader(file=histoparam['input']['file'])

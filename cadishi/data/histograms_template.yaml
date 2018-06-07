@@ -9,6 +9,8 @@ general:
   queue_maxsize: 256  # [expert]
   # max waiting time for IPC queues [expert]
   queue_timeout: 3600  # [expert]
+  # pin CPU workers to NUMA domain, iff number of workers is equal to the number of domains [expert]
+  numa_aware: false  # [expert]
 histogram:
   # maximum distance value of the histogram, >0 sets it explicitly, <0 fetches from capriqorn pipeline
   r_max: 70
