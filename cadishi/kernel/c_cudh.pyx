@@ -33,7 +33,7 @@ cdef extern from "common.h":
 
 
 cdef extern from "c_cudh.h":
-    int get_num_cuda_devices()
+    int _cudaGetDeviceCount()
     int histograms_gpu( np_tuple3d_t *r_ptr,
                         int n_tot,
                         int *nel_ptr,
@@ -50,7 +50,7 @@ cdef extern from "c_cudh.h":
 
 def get_num_cuda_devices():
     cdef int n
-    n = get_num_cuda_devices()
+    n = _cudaGetDeviceCount()
     return n
 
 

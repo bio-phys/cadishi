@@ -18,7 +18,7 @@
 #include <stdint.h>
 
 
-int get_num_cuda_devices();
+int _cudaGetDeviceCount();
 
 int histograms_gpu(np_tuple3d_t *r_ptr,
                    int n_tot,

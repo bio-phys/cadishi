@@ -857,7 +857,7 @@ void histograms_template_dispatcher(NP_TUPLE3_T *r_ptr,   // coordinate tuples
 }
 
 
-int get_num_cuda_devices() {
+int _cudaGetDeviceCount() {
     int n;
     if (cudaGetDeviceCount(&n) != cudaSuccess) {
         n = 0;
