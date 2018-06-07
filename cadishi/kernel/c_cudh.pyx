@@ -48,7 +48,7 @@ cdef extern from "c_cudh.h":
                         const config & cfg)
 
 
-def get_num_devices():
+def get_num_cuda_devices():
     cdef int n
     n = get_num_cuda_devices()
     return n

@@ -32,7 +32,7 @@ from .. import pbc
 
 
 def get_num_devices():
-    """Get the number of available CUDA devices (i.e. GPUs).
+    """Get the number of available NVIDIA devices.
 
     We do not use the function "c_cudh.get_num_devices()" because it is
     not allowed to fork and use CUDA in processes after a first CUDA call,
@@ -46,6 +46,15 @@ def get_num_devices():
         n = len(gpus)
     except:
         pass
+    return n
+
+
+def get_num_cuda_devices():
+    """Get the number of available NVIDIA devices, using the CUDA API."""
+    if have_c_cudh:
+        n = c_cudh.get_num_cuda_devices()
+    else:
+        n = 0
     return n
 
 

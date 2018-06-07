@@ -91,12 +91,20 @@ def _compute(histoparam, worker_id, worker_type, taskQueue, resultQueue, r_max, 
     if (worker_type == "cpu"):
         if (histoparam['cpu']['module'] == 'pydh'):
             from .kernel import pydh
+            if not pydh.have_c_pydh:
+                from .kernel import common
+                raise RuntimeError(common.import_pydh_error_msg)
         elif (histoparam['cpu']['module'] == 'dist'):
             from .kernel import dist
         else:
             raise RuntimeError("unsupported CPU histogram kernel requested: " + str(histoparam['cpu']['module']))
     elif (worker_type == "gpu"):
         from .kernel import cudh
+        if not cudh.have_c_cudh:
+            from .kernel import common
+            raise RuntimeError(common.import_cudh_error_msg)
+        if (cudh.get_num_cuda_devices() == 0):
+            raise RuntimeError("no usable CUDA-enabled GPU detected")
     else:
         raise RuntimeError("unsupported worker type requested: " + str(worker_type))
 
