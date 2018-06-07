@@ -168,11 +168,11 @@ def unexpectedShutdownHandler(signum, frame):
     print(" Killing master process.  Goodbye.")
     print(util.SEP)
     os.kill(os.getpid(), signal.SIGTERM)
+    time.sleep(3.0)
     os.kill(os.getpid(), signal.SIGKILL)
 
 
 def main(argparse_args):
-
     print_it = util.PrintWrapper()
 
     print(util.SEP)
