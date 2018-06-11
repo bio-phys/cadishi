@@ -45,7 +45,7 @@ cdef extern from "c_cudh.h":
                         int *mask_ptr,
                         double *box_ptr,
                         int box_type_id,
-                        const config & cfg)
+                        const config & cfg) nogil
 
 
 def get_num_cuda_devices():
@@ -94,16 +94,17 @@ def histograms(np.ndarray r_ptr,
     cfg.set_gpu_algorithm(algorithm)
 
     cdef int exit_status
-    exit_status = histograms_gpu(<np_tuple3d_t*> r_ptr.data,
-                                 <int> n_tot,
-                                 <int*> nel_ptr.data,
-                                 <int> n_El,
-                                 <stdint.uint64_t*> histo_ptr.data,
-                                 <int> n_bins,
-                                 <int> n_Hij,
-                                 <double> r_max,
-                                 <int*> mask_ptr.data,
-                                 <double*> box_ptr.data,
-                                 <int> box_type_id,
-                                 cfg)
+    with nogil:
+        exit_status = histograms_gpu(<np_tuple3d_t*> r_ptr.data,
+                                     <int> n_tot,
+                                     <int*> nel_ptr.data,
+                                     <int> n_El,
+                                     <stdint.uint64_t*> histo_ptr.data,
+                                     <int> n_bins,
+                                     <int> n_Hij,
+                                     <double> r_max,
+                                     <int*> mask_ptr.data,
+                                     <double*> box_ptr.data,
+                                     <int> box_type_id,
+                                     cfg)
     return exit_status
