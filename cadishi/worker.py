@@ -241,7 +241,8 @@ def sum(histoparam, resultQueue, n_El, n_bins, dr, header_str, t0, n_frames, n_w
         with open(histoparam['output']['directory'] + "distHisto.list", 'w') as fp:
             pass
     #
-    iframe = histoparam['input']['first']
+    # iframe = histoparam['input']['first']
+    iframe = 1
     #
     nHij = int(n_El) * (int(n_El) + 1) // 2
     histo_0 = np.zeros((n_bins, nHij + 1), order='F')
@@ -392,8 +393,6 @@ def sum(histoparam, resultQueue, n_El, n_bins, dr, header_str, t0, n_frames, n_w
                     sys.stdout.flush()
                     if histoparam['output']['write_h5']:
                         h5writer.hard_flush()
-                # if (iframe == histoparam['input']['last']):
-                    # finished = True
                 iframe += 1
                 resultQueue.task_done()
             elif (n_done == n_workers):
