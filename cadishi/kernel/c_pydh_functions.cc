@@ -359,13 +359,13 @@ int get_blocksize(const int n_bins,
     const int n_bins_increase_threshold = 45000;  // value from which the assumed cache size shall be ramped up (up to 60k is safe)
     int n_bytes_block_extension;
     if (n_bins > n_bins_increase_threshold) {
-        n_bytes_block_extension = (n_bins - n_bins_increase_threshold) * sizeof(int);
+        n_bytes_block_extension = (n_bins - n_bins_increase_threshold) * sizeof(uint32_t);
     } else {
         n_bytes_block_extension = 0;
     }
     const float n_bytes_block = n_bytes_l2 - n_bytes_reserve + n_bytes_block_extension;
     const float n_bytes_tuple = sizeof(TUPLE3_T);
-    const float n_bytes_int = sizeof(int);
+    const float n_bytes_int = sizeof(uint32_t);
     // solve quadratic equation y = a * x**2 + b * x + c
     const float y = n_bytes_block;
     const float a = n_bytes_int;
