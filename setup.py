@@ -487,6 +487,7 @@ setup(
         'scipy',
         'h5py',
         'pyyaml'
+        # 'MDAnalysis>=0.14.0'
     ],
     cmdclass={'clean': CleanCommand,
               'build_ext': cuda_build_ext},
