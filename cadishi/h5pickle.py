@@ -23,8 +23,11 @@ Python's native Pickle.
 
 
 from past.builtins import basestring
-import h5py
 import numpy as np
+# disable FutureWarning, intended to warn H5PY developers, but may confuse our users
+import warnings
+warnings.simplefilter(action='ignore', category=FutureWarning)
+import h5py
 
 
 def save(h5_grp, key, data, compression=None):

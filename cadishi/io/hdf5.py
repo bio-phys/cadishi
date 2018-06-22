@@ -22,12 +22,16 @@ from builtins import range
 from past.builtins import basestring
 import re
 import json
-import h5py
 import random
+# disable FutureWarning, intended to warn H5PY developers, but may confuse our users
+import warnings
+warnings.simplefilter(action='ignore', category=FutureWarning)
+import h5py
 
 from .. import base
 from .. import util
 from .. import h5pickle
+
 
 shuffle_reproducible_seed = 42
 
