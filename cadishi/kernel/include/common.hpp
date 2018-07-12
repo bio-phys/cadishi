@@ -77,34 +77,34 @@ const char SEP[] = "------------------------------------------------------------
 
 // Cadishi round wrapper functions for both the precisions
 // Note: C++11 would provide std::round()
-#pragma omp declare simd
+//pragma omp declare simd
 DEVICE inline float cad_round(const float &val) {
     // return roundf(val);
     return nearbyintf(val);  // up to 10% speed advantage on the CPU for orthorhombic compared to roundf
 }
-#pragma omp declare simd
+//pragma omp declare simd
 DEVICE inline double cad_round(const double &val) {
     // return round(val);
     return nearbyint(val);
 }
 
 // Cadishi min wrapper functions for both the precisions
-#pragma omp declare simd
+//pragma omp declare simd
 DEVICE inline float cad_min(const float &v, const float &w) {
     return fminf(v, w);
 }
-#pragma omp declare simd
+//pragma omp declare simd
 DEVICE inline double cad_min(const double &v, const double &w) {
     return fmin(v, w);
 }
 
 // The C++ default function std::numeric_limits<FLOAT_T>::max();
 // cannot be run on the GPU so we use the custom functions below.
-#pragma omp declare simd
+//pragma omp declare simd
 DEVICE inline float float_t_maxval(float dummy) {
     return FLT_MAX;
 }
-#pragma omp declare simd
+//pragma omp declare simd
 DEVICE inline double float_t_maxval(double dummy) {
     return DBL_MAX;
 }
@@ -113,7 +113,7 @@ DEVICE inline double float_t_maxval(double dummy) {
 
 // minimum image convention for orthorhombic systems
 // 12 FLOPS in total
-#pragma omp declare simd
+//pragma omp declare simd
 template <typename TUPLE3_T, typename FLOAT_T>
 DEVICE inline void
 mic_orthorhombic(TUPLE3_T &dp, const TUPLE3_T &box, const TUPLE3_T &box_inv) {
@@ -131,7 +131,7 @@ mic_orthorhombic(TUPLE3_T &dp, const TUPLE3_T &box, const TUPLE3_T &box_inv) {
 // new attempt to implement a correct triclinic minimum image convention
 // credit: Max Linke, pbc_distances
 // 366 FLOPS in total
-#pragma omp declare simd
+//pragma omp declare simd
 template <typename TUPLE3_T, typename FLOAT_T>
 DEVICE inline FLOAT_T
 mic_triclinic(TUPLE3_T &dp, const TUPLE3_T * const box, const TUPLE3_T &box_inv) {
@@ -189,7 +189,7 @@ mic_triclinic(TUPLE3_T &dp, const TUPLE3_T * const box, const TUPLE3_T &box_inv)
 // no box:          9 FLOPS
 // orthorhombic:   21 FLOPS
 // triclinic:     370 FLOPS
-#pragma omp declare simd
+//pragma omp declare simd
 template <typename TUPLE3_T, typename FLOAT_T, int box_type_id>
 DEVICE inline FLOAT_T
 dist(const TUPLE3_T &p1, const TUPLE3_T &p2,

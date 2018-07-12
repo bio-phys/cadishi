@@ -57,7 +57,7 @@ void print_histo(T * histo, const int n) {
 
 template <typename T>
 inline void memset_value(T * arr, const T val, const int n) {
-    #pragma omp simd
+    //pragma omp simd
     for (int i=0; i<n; ++i) {
         arr[i] = val;
     }
@@ -160,7 +160,7 @@ void hist_1(TUPLE3_T * __restrict__ p,
                 }
                 count += (uint32_t)i;
                 // loop vectorizes well (GCC >=4.9, checked using Intel VTUNE & Advisor)
-                #pragma omp simd
+                //pragma omp simd
                 for (int j=0; j<i; ++j) {
                     d[j] = (int) (scal * dist<TUPLE3_T, FLOAT_T, box_type_id>
                                   (p[j], p[i], box, box_ortho, box_inv));
@@ -251,7 +251,7 @@ void hist_2(TUPLE3_T * __restrict__ p1,
                 }
                 count += (uint32_t)n2;
                 // loop vectorizes well (gcc >=4.9, checked using Intel VTUNE & Advisor)
-                #pragma omp simd
+                //pragma omp simd
                 for (int j=0; j<n2; ++j) {
                     d[j] = (int)(scal * dist<TUPLE3_T, FLOAT_T, box_type_id>
                                  (p2[j], p1[i], box, box_ortho, box_inv));
@@ -391,7 +391,7 @@ inline void block_dist_rectangle(
     for (int ii=0; ii<ii_max; ++ii) {
         // Note: nested loop structure vectorizes thanks to 'd_stripe'
         int * d_stripe = &d[ii*bs];
-        #pragma omp simd
+        //pragma omp simd
         for (int jj=0; jj<jj_max; ++jj) {
             // printf("rect, took: ii=%d jj=%d\n", ii, jj);
             d_stripe[jj] = int(scal * dist <TUPLE3_T, FLOAT_T, box_type_id>
@@ -415,7 +415,7 @@ inline void block_dist_triangle(
     for (int ii=0; ii<ii_max; ++ii) {
         // Note: nested loop structure vectorizes thanks to 'd_stripe'
         int * d_stripe = &d[ii*bs];
-        #pragma omp simd
+        //pragma omp simd
         for (int jj=0; jj<ii; ++jj) {
             d_stripe[jj] = int(scal * dist <TUPLE3_T, FLOAT_T, box_type_id>
                                (p2_stripe[jj], p1_stripe[ii], box, box_ortho, box_inv));
