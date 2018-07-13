@@ -177,8 +177,13 @@ def get_icc_flags():
     if CAD_DEBUG:
         cc_flags += ['-O0']
     else:
-        cc_flags += ['-O3']
-        cc_flags += ['-axSSE4.2,AVX,AVX2,CORE-AVX512']
+        #cc_flags += ['-O3']
+        cc_flags += ['-fast']
+        #cc_flags += ['-axSSE4.2,AVX,AVX2,CORE-AVX512']
+        # cc_flags += ['-qopt-zmm-usage=high']
+        # cc_flags += ['-xHost']
+        #cc_flags += ['-xAVX2']
+        #cc_flags += ['-xHost']
         cc_flags += ['-qopt-zmm-usage=high']
         if CAD_OPENMP:
             cc_flags += ['-qopenmp']
