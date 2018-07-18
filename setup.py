@@ -177,13 +177,12 @@ def get_icc_flags():
     if CAD_DEBUG:
         cc_flags += ['-O0']
     else:
-        #cc_flags += ['-O3']
-        cc_flags += ['-fast']
-        #cc_flags += ['-axSSE4.2,AVX,AVX2,CORE-AVX512']
-        # cc_flags += ['-qopt-zmm-usage=high']
+        # cc_flags += ['-O3']
         # cc_flags += ['-xHost']
-        #cc_flags += ['-xAVX2']
-        #cc_flags += ['-xHost']
+        # cc_flags += ['-axSSE4.2,AVX,AVX2,CORE-AVX512']
+        # cc_flags += ['-qopt-zmm-usage=high']
+        # only the flag '-fast' is found to vectorize the box kernels properly
+        cc_flags += ['-fast']
         cc_flags += ['-qopt-zmm-usage=high']
         if CAD_OPENMP:
             cc_flags += ['-qopenmp']
@@ -409,17 +408,17 @@ class CleanCommand(Command):
 #########################
 def extensions():
     "Assemble the extensions array for setuptools."
-    # Experimental support for the Intel compiler.
-    # Set the following environment variables:
+    # Experimental support for the Intel compiler.  Prerequisite environment variables:
     #   export CC=icc
     #   export CXX=icpc
     #   export LDSHARED='icc -shared'
-    # Useful for benchmarking, though recent GCCs appear to produce faster code.
     if ('CC' in os.environ) and ('CXX' in os.environ) and ('LDSHARED' in os.environ) and \
         (os.environ['CC'].endswith('icc')) and (os.environ['CXX'].endswith('icpc')) and \
         (os.environ['LDSHARED'].endswith('icc -shared')):
+        print("Build using the Intel compiler")
         cc_flags = get_icc_flags()
     else:
+        print("Build using the GCC compiler")
         cc_flags = get_gcc_flags()
 
     exts = []
