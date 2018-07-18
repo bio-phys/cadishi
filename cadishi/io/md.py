@@ -13,8 +13,16 @@
 
 
 import numpy as np
-import MDAnalysis as mda
 from six.moves import range
+try:
+    import MDAnalysis as mda
+except:
+    print(util.SEP)
+    print(" MDAnalysis is required to use the cadishi.io.md module.  Use the command")
+    print("   pip install mdanalysis [--user]")
+    print(" to install it, and retry.")
+    print(util.SEP)
+    sys.exit(1)
 
 from cadishi import base
 from cadishi import pbc

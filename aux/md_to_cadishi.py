@@ -22,18 +22,6 @@ from cadishi.io import md
 from cadishi.io import hdf5
 
 
-def mda_check():
-    try:
-        import MDAnalysis
-    except:
-        print(util.SEP)
-        print(" MDAnalysis is required to run this converter.  Use the command")
-        print("   pip install mdanalysis [--user]")
-        print(" to install it.")
-        print(util.SEP)
-        sys.exit(1)
-
-
 def cliarg_get():
     """Define and handle command line arguments, return them as argparse args object."""
     parser = argparse.ArgumentParser()
@@ -46,14 +34,11 @@ def cliarg_get():
 
 
 def main(args):
-    mda_check()
-
     pdb_file = args.pdb
     trajectory_file = args.trajectory
     alias_file = args.alias
     h5_file = args.output
-
-    verbose = True
+    verbose = False
     print(util.SEP)
     reader = md.MDReader(pdb_file=pdb_file, alias_file=alias_file, trajectory_file=trajectory_file, verbose=verbose)
     writer = hdf5.H5Writer(source=reader, file=h5_file, compression="lzf", verbose=verbose)
