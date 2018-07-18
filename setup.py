@@ -14,7 +14,7 @@
 # from __future__ import print_function
 import os
 import sys
-import glob
+from glob import glob
 import platform
 
 try:
@@ -457,14 +457,12 @@ def extensions():
     return exts
 
 
-data_files = [('cadishi/tests/data', glob.glob('cadishi/tests/data/*')),
-              ('cadishi/data', glob.glob('cadishi/data/*'))]
+data_files = [('cadishi/tests/data', glob('cadishi/tests/data/*')),
+              ('cadishi/data', glob('cadishi/data/*'))]
 
 entry_points = {
     'console_scripts': [
-        'cadishi=cadishi.exe.cli:main',
-        'json2yaml=cadishi.exe.json2yaml:main',
-        'yaml2json=cadishi.exe.yaml2json:main'
+        'cadishi=cadishi.exe.cli:main'
     ]
 }
 
@@ -494,5 +492,5 @@ setup(
     entry_points=entry_points,
     data_files=data_files,
     ext_modules=extensions(),
-    scripts=['cadishi.bash'],
+    scripts=glob('aux/*'),
     zip_safe=False)

@@ -39,11 +39,12 @@ def main(args):
     alias_file = args.alias
     h5_file = args.output
 
-    reader = md.MDReader(pdb_file=pdb_file, alias_file=alias_file, trajectory_file=trajectory_file)
-    writer = hdf5.H5Writer(source=reader, file=h5_file, compression="lzf")
+    verbose = True
+    print(util.SEP)
+    reader = md.MDReader(pdb_file=pdb_file, alias_file=alias_file, trajectory_file=trajectory_file, verbose=verbose)
+    writer = hdf5.H5Writer(source=reader, file=h5_file, compression="lzf", verbose=verbose)
     util.md(h5_file)
     writer.dump()
-    print(util.SEP)
     print(" Created trajectory file <" + h5_file + ">.")
     print(util.SEP)
 
