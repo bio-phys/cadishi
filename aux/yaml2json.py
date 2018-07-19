@@ -9,9 +9,9 @@
 #
 # Released under the MIT License, see the file LICENSE.txt.
 
-"""A simple JSON to YAML file converter.
+"""A simple YAML to JSON file converter.
 
-Usage: json2yaml.py input_file [output_file]
+Usage: yaml2json.py input_file [output_file]
 """
 from __future__ import print_function
 
@@ -19,21 +19,21 @@ from __future__ import print_function
 def main():
     import os
     import sys
-    from .. import util
+    from cadishi import util
 
     if (len(sys.argv) == 2):
-        if (sys.argv[1].endswith('json')):
-            output_file = sys.argv[1].rstrip('json') + 'yaml'
+        if (sys.argv[1].endswith('yaml')):
+            output_file = sys.argv[1].rstrip('yaml') + 'json'
         else:
-            output_file = sys.argv[1] + '.yaml'
+            output_file = sys.argv[1] + '.json'
     elif (len(sys.argv) == 3):
         output_file = sys.argv[2]
     else:
-        print("Usage: %s json_file [yaml_file]" % util.get_executable_name())
+        print("Usage: %s yaml_file [json_file]" % util.get_executable_name())
         sys.exit(1)
 
-    data = util.load_json(sys.argv[1])
-    util.save_yaml(data, output_file)
+    data = util.load_yaml(sys.argv[1])
+    util.save_json(data, output_file)
 
 
 if __name__ == "__main__":
