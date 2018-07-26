@@ -19,13 +19,13 @@ precisely, the syllabic abbreviation of) *calculation of distance histograms*.
 Requirements
 ------------
 
-Cadishi requires a Python 2.7 installation including the NumPy, SciPy, Cython,
-h5py, and PyYAML modules. We recommend to use the Anaconda Python Distribution
-which provides all the necessary modules out of the box. Cadishi was mostly
-developed using Anaconda Python 2, versions 4.0.0 and newer. Moreover, to
-compile the high-performance kernels, recent GCC and CUDA (optional)
-installations are required. GCC 4.9, 5.4, 6.4, and 7.2, and CUDA 7.5, 8.0, and
-9.1 were used successfully.
+Cadishi requires a Python 2.7 or Python 3.X installation including the NumPy,
+SciPy, Cython, h5py, and PyYAML modules. We recommend to use the Anaconda Python
+Distribution which provides all the necessary modules out of the box. Cadishi
+was mostly developed using Anaconda Python 2, versions 4.0.0 and newer.
+Moreover, to compile the high-performance kernels, recent GCC and CUDA
+(optional) installations are required. GCC 4.9, 5.4, 6.4, and 7.2, and CUDA 7.5,
+8.0, and 9.1 were used successfully.
 
 
 Features

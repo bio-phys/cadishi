@@ -4,6 +4,18 @@ Changelog
 Unreleased
 ----------
 
+[1.1.0] - 2018-02-05
+--------------------
+Added
+^^^^^
+- Automated detection of the L2 cache size for the CPU kernels.
+- Support for 96 kB of shared memory on Volta GPUs.
+- Python 3 compatibility.
+- MD reader from Capriqorn to make data import from MD codes easier.
+
+Changed
+^^^^^^^
+
 [1.1.0b] - 2018-02-05
 ---------------------
 Added
