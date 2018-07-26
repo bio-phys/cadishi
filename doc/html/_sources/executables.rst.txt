@@ -30,20 +30,6 @@ cadishi.exe.histograms
    :members:
    :undoc-members:
 
-cadishi.exe.json2yaml
----------------------
-
-.. automodule:: cadishi.exe.json2yaml
-   :members:
-   :undoc-members:
-
-cadishi.exe.yaml2json
----------------------
-
-.. automodule:: cadishi.exe.yaml2json
-   :members:
-   :undoc-members:
-
 cadishi.exe.unpack
 ---------------------
 

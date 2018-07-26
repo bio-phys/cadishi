@@ -1,16 +1,13 @@
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
     <title>Cadishi compute kernels &#8212; Cadishi 1.0.0 documentation</title>
-    
     <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
@@ -29,7 +26,7 @@
     <link rel="next" title="Cadishi executables" href="executables.html" />
     <link rel="prev" title="Cadishi modules" href="modules.html" /> 
   </head>
-  <body role="document">
+  <body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -138,10 +135,10 @@ reference implementation for the pydh and cudh packages.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>coordinate_sets</strong> (<em>list of numpy.ndarray</em>) &#8211; List of numpy arrays where each numpy array contains
+<li><strong>coordinate_sets</strong> (<em>list of numpy.ndarray</em>) – List of numpy arrays where each numpy array contains
 the atom coordinates for all the atoms of a species.</li>
-<li><strong>r_max</strong> (<em>float</em>) &#8211; Cutoff radius for the distance calculation.</li>
-<li><strong>n_bins</strong> (<em>int</em>) &#8211; Number of histogram bins.</li>
+<li><strong>r_max</strong> (<em>float</em>) – Cutoff radius for the distance calculation.</li>
+<li><strong>n_bins</strong> (<em>int</em>) – Number of histogram bins.</li>
 </ul>
 </td>
 </tr>
@@ -161,15 +158,57 @@ the atom coordinates for all the atoms of a species.</li>
 <p>pydh Python interface.</p>
 <p>Calls the c_pydh Python module.</p>
 <dl class="function">
-<dt id="cadishi.kernel.pydh.dist_driver">
-<code class="descclassname">cadishi.kernel.pydh.</code><code class="descname">dist_driver</code><span class="sig-paren">(</span><em>coordinates</em>, <em>precision='single'</em>, <em>box=[]</em>, <em>force_triclinic=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cadishi/kernel/pydh.html#dist_driver"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cadishi.kernel.pydh.dist_driver" title="Permalink to this definition">¶</a></dt>
-<dd><p>Debug driver for the distance calculation functions.</p>
+<dt id="cadishi.kernel.pydh.distances">
+<code class="descclassname">cadishi.kernel.pydh.</code><code class="descname">distances</code><span class="sig-paren">(</span><em>coordinates</em>, <em>precision='single'</em>, <em>box=[]</em>, <em>force_triclinic=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cadishi/kernel/pydh.html#distances"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cadishi.kernel.pydh.distances" title="Permalink to this definition">¶</a></dt>
+<dd><p>Driver for the distance calculation functions.</p>
 </dd></dl>
 
 <dl class="function">
 <dt id="cadishi.kernel.pydh.histograms">
-<code class="descclassname">cadishi.kernel.pydh.</code><code class="descname">histograms</code><span class="sig-paren">(</span><em>coordinate_sets</em>, <em>r_max</em>, <em>n_bins</em>, <em>precision='single'</em>, <em>pydh_threads=1</em>, <em>check_input=True</em>, <em>scale_factors=[]</em>, <em>mask_array=[]</em>, <em>box=[]</em>, <em>force_triclinic=False</em>, <em>do_histo2_only=False</em>, <em>verbose=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cadishi/kernel/pydh.html#histograms"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cadishi.kernel.pydh.histograms" title="Permalink to this definition">¶</a></dt>
-<dd><p>Distance histogram calculation.</p>
+<code class="descclassname">cadishi.kernel.pydh.</code><code class="descname">histograms</code><span class="sig-paren">(</span><em>coordinate_sets</em>, <em>r_max</em>, <em>n_bins</em>, <em>precision='single'</em>, <em>n_threads=1</em>, <em>blocksize=0</em>, <em>check_input=True</em>, <em>scale_factors=[]</em>, <em>mask_array=[]</em>, <em>box=[]</em>, <em>force_triclinic=False</em>, <em>do_histo2_only=False</em>, <em>verbose=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cadishi/kernel/pydh.html#histograms"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cadishi.kernel.pydh.histograms" title="Permalink to this definition">¶</a></dt>
+<dd><p>Distance histogram calculation, Python interface.</p>
+<p>This function is the entry point to run distance histogram calculations
+from Python on the CPU.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>coordinate_sets</strong> (<em>list</em>) – list of double precision numpy arrays [N, 3] containing coordinate triples</li>
+<li><strong>r_max</strong> (<em>float</em>) – maximum distance that should be considered for the histograms</li>
+<li><strong>n_bins</strong> (<em>int</em>) – number of histogram bins</li>
+<li><strong>precision</strong> (<em>string</em><em>, </em><em>optional</em>) – String indicating the precision to be used, “single” (default) or “double”</li>
+<li><strong>n_threads</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of CPU (OpenMP) threads to be used for the computation, default 1.</li>
+<li><strong>blocksize</strong> (<em>int</em><em>, </em><em>optional</em>) – Size of the blocks used to optimize cache usage in units of coordinate tuples.
+Values around 230 are best to optimize for a L2 cache size of 256 kb. Possible
+values are: ‘-1’ to disable cache blocking and use naive (old) kernels,
+‘0’ to enable blocking and use internal logic to determine the block size
+(recommended), and positive values to set the block size manually (not recommended,
+only useful for performance exploration). Note that cache blocking is disabled
+internally for bin numbers larger than 48000.</li>
+<li><strong>check_input</strong> (<em>bool</em><em>, </em><em>optional</em>) – Check the input, i.e. check it the distances fit into the histogram window
+defined by r_max. Harms performance to some degree but avoids potential
+memory corruption in case of bogus input. Default is ‘True’.</li>
+<li><strong>scale_factors</strong> (<em>array-like</em><em>, </em><em>optional</em>) – Array of floats used to rescale individual histograms after computation.</li>
+<li><strong>mask_array</strong> (<em>array-like</em><em>, </em><em>optional</em>) – Array of integers to mask the computation of certain histograms, where
+‘0’ indicates that a histogram is skipped.  Internal default is all ‘1’.</li>
+<li><strong>box</strong> (<em>array-like</em><em>, </em><em>optional</em>) – Periodic box specification.  Default is none.</li>
+<li><strong>force_triclinic</strong> (<em>bool</em><em>, </em><em>optional</em>) – Use the triclinic box implementation also for simpler orthorhombic boxes.
+Default is ‘False’.</li>
+<li><strong>do_histo2_only</strong> (<em>bool</em><em>, </em><em>optional</em>) – Perform only the inter-species computation in case 2 species are given.
+Useful for debugging and performance optimization, default is ‘False’.</li>
+<li><strong>verbose</strong> (<em>bool</em><em>, </em><em>optional</em>) – Be verbose about internal states during computation.  Default is ‘False’.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Column 0 contains the radii, other columns contain the histograms.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">NumPy array, double precision</p>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 </div>
@@ -178,9 +217,18 @@ the atom coordinates for all the atoms of a species.</li>
 <p>cudh Python interface.</p>
 <p>Calls the c_cudh Python module.</p>
 <dl class="function">
+<dt id="cadishi.kernel.cudh.get_num_cuda_devices">
+<code class="descclassname">cadishi.kernel.cudh.</code><code class="descname">get_num_cuda_devices</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/cadishi/kernel/cudh.html#get_num_cuda_devices"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cadishi.kernel.cudh.get_num_cuda_devices" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the number of available NVIDIA devices, using the CUDA API.</p>
+</dd></dl>
+
+<dl class="function">
 <dt id="cadishi.kernel.cudh.get_num_devices">
 <code class="descclassname">cadishi.kernel.cudh.</code><code class="descname">get_num_devices</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/cadishi/kernel/cudh.html#get_num_devices"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cadishi.kernel.cudh.get_num_devices" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get the number of available CUDA devices (i.e. GPUs).</p>
+<dd><p>Get the number of available NVIDIA devices.</p>
+<p>We do not use the function “c_cudh.get_num_devices()” because it is
+not allowed to fork and use CUDA in processes after a first CUDA call,
+which would be the case in &lt;histograms.py&gt; (and was hard to figure out).</p>
 </dd></dl>
 
 <dl class="function">
@@ -194,16 +242,16 @@ CUDA kernels that are provided by the Python module c_cudh written in CUDA.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>coordinate_sets</strong> (<em>list of numpy.ndarray</em>) &#8211; List of numpy arrays where each numpy array contains
+<li><strong>coordinate_sets</strong> (<em>list of numpy.ndarray</em>) – List of numpy arrays where each numpy array contains
 the atom coordinates for all the atoms of a species.</li>
-<li><strong>r_max</strong> (<em>float</em>) &#8211; Cutoff radius for the distance calculation.</li>
-<li><strong>n_bins</strong> (<em>int</em>) &#8211; Number of histogram bins.</li>
-<li><strong>precision</strong> (<em>string</em><em>, </em><em>optional</em>) &#8211; String specifying the implementation and/or the precision.  &#8220;single&#8221; is the
-default value for single precision, use &#8220;double&#8221; for double precision.</li>
-<li><strong>gpu_id</strong> (<em>int</em><em>, </em><em>optional</em>) &#8211; The GPU to be used to calculate the histograms.  0 is the default value.</li>
-<li><strong>do_histo2_only</strong> (<em>bool</em><em>, </em><em>optional</em>) &#8211; In case only two sets of coordinates are given, calculate only the distance
+<li><strong>r_max</strong> (<em>float</em>) – Cutoff radius for the distance calculation.</li>
+<li><strong>n_bins</strong> (<em>int</em>) – Number of histogram bins.</li>
+<li><strong>precision</strong> (<em>string</em><em>, </em><em>optional</em>) – String specifying the implementation and/or the precision.  “single” is the
+default value for single precision, use “double” for double precision.</li>
+<li><strong>gpu_id</strong> (<em>int</em><em>, </em><em>optional</em>) – The GPU to be used to calculate the histograms.  0 is the default value.</li>
+<li><strong>do_histo2_only</strong> (<em>bool</em><em>, </em><em>optional</em>) – In case only two sets of coordinates are given, calculate only the distance
 histogram between the species sets.  For benchmark purposes only.</li>
-<li><strong>thread_block_x</strong> (<em>int</em><em>, </em><em>optional</em>) &#8211; Manually set the CUDA thread block size (x), overrides the internal default
+<li><strong>thread_block_x</strong> (<em>int</em><em>, </em><em>optional</em>) – Manually set the CUDA thread block size (x), overrides the internal default
 if set to a value larger than zero.  For benchmark and debugging purposes.</li>
 </ul>
 </td>
@@ -247,7 +295,7 @@ if set to a value larger than zero.  For benchmark and debugging purposes.</li>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2017, Klaus Reuter, Juergen Koefinger.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.6.
     </div>
   </body>
 </html>

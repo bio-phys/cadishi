@@ -24,8 +24,8 @@ h5py, and PyYAML modules. We recommend to use the Anaconda Python Distribution
 which provides all the necessary modules out of the box. Cadishi was mostly
 developed using Anaconda Python 2, versions 4.0.0 and newer. Moreover, to
 compile the high-performance kernels, recent GCC and CUDA (optional)
-installations are required. GCC 4.9 and GCC 5.4, and CUDA 7.5 and 8.0 were used
-successfully. Note that Python 3 is currently not supported.
+installations are required. GCC 4.9, 5.4, 6.4, and 7.2, and CUDA 7.5, 8.0, and
+9.1 were used successfully.
 
 
 Features
@@ -42,16 +42,12 @@ resources of a shared-memory machine. E.g., on a dual-socket server with two
 GPUs, Cadishi would use two CPU worker processes (one per multi-core chip) and
 two GPU worker processes (one per GPU card).
 
-Optionally, Cadishi supports orthorhombic periodic boxes, applying the minimum
-image convention to the distances internally. Support for triclinic boxes is
-implemented following the equations given by Tuckerman (M. E. Tuckerman.
-Statistical Mechanics: Theory and Molecular Simulation. Oxford University Press,
-Oxford, UK, 2010.).  Note that we consider support for triclinic boxes as highly
-experimental. Check your results carefully for possible inconsistencies.
+Cadishi supports orthorhombic and triclinic periodic boxes, applying the minimum
+image convention to the distances internally.
 
 Computations can be performed in single (default) or double precision.
 Optionally, the distances can be checked if they fit into the desired histogram
-width. Given the combinatorial space resulting from these possibilities,
+width. Given the combinatorial explosion resulting from these possibilities,
 templated C++ code is used to generate machine code with a minimum amount of
 branches at runtime. Recent compilers are known to generate well-vectorized
 machine code from the distance calculation for the CPU. The GPU kernel benefits
@@ -68,17 +64,17 @@ Input data, distance histogram computation, output data
 the Capriqorn package from the same authors. In any case the HDF5 file must have
 a certain internal structure as shown in the following example::
 
-    /0/coordinates/species_0
+    /1/coordinates/species_0
                    species_1
                    species_2
                    ...
-    /1/coordinates/species_0
+    /2/coordinates/species_0
                    species_1
                    species_2
                    ...
     ...
 
-Frames are numbered starting with 0. The number is used as the label for the
+Frames are numbered starting with 1. The number is used as the label for the
 uppermost HDF5 group. For each frame the particle coordinates are stored in the
 sub-group 'coordinates'. Coordinate sets are double precision HDF5 datasets of
 size (n_i, 3) where n_i is the number of particles of species i. The coordinate
@@ -90,16 +86,22 @@ available at
 :download:`doc/scripts/input_example.py <./scripts/input_example.py>`.
 Adapt that code to easily implement a reader for arbitrary custom data.
 
+To **convert data from a plethora of MD simulation data formats** to Cadishi's
+HDF5 format, we provide the script ``md_to_cadishi.py`` which is installed
+together with the main program ``cadishi``.  It uses the reader from the
+MDAnalysis package which needs to be installed to be able to use the conversion
+tool (but is not a requirement to run Cadishi).
+
 For each frame read from the HDF5 file **Cadishi computes the distance histograms**
 between the particles for all combinations of species. The top-level parallelization
 of Cadishi is able to compute multiple frames simultaneously on all GPUs and CPUs
-available on a node. Within a frame the computation is highly parallelized using
+available on a node. Within a frame, the computation is highly parallelized using
 threads.
 
 Finally, **Cadishi writes the histograms into HDF5 files** according to the
 following scheme::
 
-    /0/histograms/species_0,species_0
+    /1/histograms/species_0,species_0
                   species_0,species_1
                   species_0,species_2
                   species_1,species_1
@@ -138,10 +140,22 @@ Cadishi is highly configurable via its YAML parameter file (create a sample file
 using ``cadishi example [--expert]``). Below we pick the most important
 parameters and provide some background explanation.
 
-- ``histogram:dr``: Defines the histogram bin width. The total number of bins is determined in conjunction with the following parameter.
-- ``histogram:r_max``: Defines the histogram cutoff radius. Make sure that your input data is compatible with the cutoff radius, i.e. the maximum distance between all points must be smaller. In this context, the following settings are important.
-- ``cpu:check_input`` and ``gpu:check_input``: Checks at runtime if any distance computed is equal or smaller than the cutoff radius. If this is the case, an exception is raised that causes Cadishi to exit. If these parameters are set to false, no checks are performed and outliers may write into non-allocated memory. In order to achieve the highest possible performance, make absolutely sure that your data fits into r_max and disable the checks.
-- ``input:periodic_box``: The default value is null, causing Cadishi to automatically look for the presence of box information in the input data. A box can as well be specified explicitly, or disabled by setting the value to an empty list []. Note that we consider the triclinic box implementation currently as experimental.
+- ``histogram:dr``: Defines the histogram bin width. The total number of bins is
+  determined in conjunction with the following parameter.
+- ``histogram:r_max``: Defines the histogram cutoff radius. Make sure that your
+  input data is compatible with the cutoff radius, i.e. the maximum distance
+  between all points must be smaller. In this context, the following settings
+  are important.
+- ``cpu:check_input`` and ``gpu:check_input``: Checks at runtime if any distance
+  computed is equal or smaller than the cutoff radius. If this is not the case, an
+  exception is raised that causes Cadishi to exit. If these parameters are set
+  to false, no checks are performed and outliers may write into non-allocated
+  memory. In order to achieve the highest possible performance, make absolutely
+  sure that your data fits into r_max and disable the checks.
+- ``input:periodic_box``: The default value is null, causing Cadishi to
+  automatically look for the presence of box information in the input data. A
+  box can as well be specified explicitly, or disabled by setting the value to
+  an empty list [].
 
 To achieve optimum **performance**, the number of workers and threads must be
 tuned to your system. For large frames (>O(100000) particles) it is reasonable
@@ -153,7 +167,7 @@ always have these two processes). For small frames, use more workers and fewer
 with specific datasets. Note that Cadishi supports NUMA awareness, i.e.
 processes can be pinned to CPUs. Calculations on large frames *greatly* benefit
 from the GPU kernels. Enable one worker per GPU. We have seen a binning rate of
-up to 160 billion particle-pairs per second on a single Pascal GPU.
+up to 495 billion particle-pairs per second on a single Volta GPU.
 
 
 Installation
@@ -222,7 +236,7 @@ License and Citation
 Cadishi is released under the permissive MIT license.  See the file
 `LICENSE.txt` for details.
 
-Copyright 2015-2017  Klaus Reuter (MPCDF), Juergen Koefinger (MPIBP)
+Copyright 2015-2018  Klaus Reuter (MPCDF), Juergen Koefinger (MPIBP)
 
 In case you're using Cadishi for your own academic or non-academic research, **we
 kindly request that you cite Cadishi in your publications and presentations**. We

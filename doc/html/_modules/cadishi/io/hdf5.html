@@ -1,16 +1,13 @@
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
     <title>cadishi.io.hdf5 &#8212; Cadishi 1.0.0 documentation</title>
-    
     <link rel="stylesheet" href="../../../_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
-    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../../',
@@ -27,7 +24,7 @@
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" /> 
   </head>
-  <body role="document">
+  <body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -77,17 +74,25 @@
 <span class="sd">HDF5 data reader/writer for base.Container instances.  Heavily used by Cadishi</span>
 <span class="sd">and Capriqorn.</span>
 <span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">print_function</span>
 
 
+<span class="kn">from</span> <span class="nn">builtins</span> <span class="k">import</span> <span class="nb">next</span>
+<span class="kn">from</span> <span class="nn">builtins</span> <span class="k">import</span> <span class="nb">str</span>
+<span class="kn">from</span> <span class="nn">builtins</span> <span class="k">import</span> <span class="nb">range</span>
+<span class="kn">from</span> <span class="nn">past.builtins</span> <span class="k">import</span> <span class="n">basestring</span>
 <span class="kn">import</span> <span class="nn">re</span>
 <span class="kn">import</span> <span class="nn">json</span>
-<span class="kn">import</span> <span class="nn">h5py</span>
 <span class="kn">import</span> <span class="nn">random</span>
-<span class="kn">from</span> <span class="nn">six.moves</span> <span class="k">import</span> <span class="nb">range</span>
+<span class="c1"># disable FutureWarning, intended to warn H5PY developers, but may confuse our users</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
+<span class="n">warnings</span><span class="o">.</span><span class="n">simplefilter</span><span class="p">(</span><span class="n">action</span><span class="o">=</span><span class="s1">&#39;ignore&#39;</span><span class="p">,</span> <span class="n">category</span><span class="o">=</span><span class="ne">FutureWarning</span><span class="p">)</span>
+<span class="kn">import</span> <span class="nn">h5py</span>
 
 <span class="kn">from</span> <span class="nn">..</span> <span class="k">import</span> <span class="n">base</span>
 <span class="kn">from</span> <span class="nn">..</span> <span class="k">import</span> <span class="n">util</span>
 <span class="kn">from</span> <span class="nn">..</span> <span class="k">import</span> <span class="n">h5pickle</span>
+
 
 <span class="n">shuffle_reproducible_seed</span> <span class="o">=</span> <span class="mi">42</span>
 
@@ -134,7 +139,7 @@
         <span class="c1"># --- build a list of all available frames explicitly</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">frame_pool</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">file_idx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">file_names</span><span class="p">)):</span>
-            <span class="k">for</span> <span class="n">frame_idx</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">keys</span><span class="p">)</span> <span class="k">for</span> <span class="n">keys</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_h5fp</span><span class="p">(</span><span class="n">file_idx</span><span class="p">)</span><span class="o">.</span><span class="n">keys</span><span class="p">()):</span>
+            <span class="k">for</span> <span class="n">frame_idx</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">keys</span><span class="p">)</span> <span class="k">for</span> <span class="n">keys</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_h5fp</span><span class="p">(</span><span class="n">file_idx</span><span class="p">)</span><span class="o">.</span><span class="n">keys</span><span class="p">())):</span>
                 <span class="c1"># check if frame_idx is actually a frame number</span>
                 <span class="n">frame_idx</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">frame_idx</span><span class="p">))</span>
                 <span class="k">if</span> <span class="p">(</span><span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s2">&quot;[0-9]+&quot;</span><span class="p">,</span> <span class="n">frame_idx</span><span class="p">)</span> <span class="o">==</span> <span class="kc">None</span><span class="p">):</span>
@@ -147,13 +152,14 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">frame_pool</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">frame_pool</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">first</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:]</span>
         <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">step</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">frame_pool</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">frame_pool</span><span class="p">[::</span><span class="bp">self</span><span class="o">.</span><span class="n">step</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_elem</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">frame_pool</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">shuffle</span><span class="p">:</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">shuffle_reproducible</span><span class="p">:</span>
                 <span class="n">random</span><span class="o">.</span><span class="n">Random</span><span class="p">(</span><span class="n">shuffle_reproducible_seed</span><span class="p">)</span><span class="o">.</span><span class="n">shuffle</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">frame_pool</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">random</span><span class="o">.</span><span class="n">shuffle</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">frame_pool</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verb</span><span class="p">:</span>
-            <span class="nb">print</span> <span class="s2">&quot;H5Reader.next() : frame_pool &quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">frame_pool</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;H5Reader.next() : frame_pool &quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">frame_pool</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">__del__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">close_h5fp</span><span class="p">()</span>
@@ -162,7 +168,7 @@
         <span class="k">return</span> <span class="bp">self</span>
 
     <span class="k">def</span> <span class="nf">__exit__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">type</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">traceback</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__del__</span>
+        <span class="bp">self</span><span class="o">.</span><span class="fm">__del__</span>
 
 <div class="viewcode-block" id="H5Reader.get_meta"><a class="viewcode-back" href="../../../modules.html#cadishi.io.hdf5.H5Reader.get_meta">[docs]</a>    <span class="k">def</span> <span class="nf">get_meta</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Return information on the HDF5 reader,</span>
@@ -171,7 +177,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">meta</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="n">label</span> <span class="o">=</span> <span class="s1">&#39;H5Reader&#39;</span>
-        <span class="n">param</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;file&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">file_names</span><span class="p">,</span>
+        <span class="n">param</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;file&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">file_names</span><span class="p">,</span> <span class="s1">&#39;n_elem&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_elem</span><span class="p">,</span>
                  <span class="s1">&#39;first&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">first</span><span class="p">,</span> <span class="s1">&#39;last&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">last</span><span class="p">,</span> <span class="s1">&#39;step&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">step</span><span class="p">,</span>
                  <span class="s1">&#39;shuffle&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="s1">&#39;shuffle_reproducible&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">}</span>
         <span class="n">meta</span><span class="p">[</span><span class="n">label</span><span class="p">]</span> <span class="o">=</span> <span class="n">param</span>
@@ -192,7 +198,7 @@
         <span class="n">frm</span><span class="o">.</span><span class="n">i</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">frame_idx</span><span class="p">)</span>  <span class="c1"># may be changed outside with absolute numbering</span>
         <span class="c1"># ---</span>
         <span class="n">frm</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">h5pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">group</span><span class="p">)</span>
-        <span class="k">if</span> <span class="s1">&#39;log&#39;</span> <span class="ow">in</span> <span class="n">frm</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+        <span class="k">if</span> <span class="s1">&#39;log&#39;</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">frm</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">keys</span><span class="p">()):</span>
             <span class="n">json_str</span> <span class="o">=</span> <span class="n">frm</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;log&#39;</span><span class="p">]</span>
             <span class="k">del</span> <span class="n">frm</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;log&#39;</span><span class="p">]</span>
             <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">json_str</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
@@ -202,7 +208,7 @@
         <span class="c1"># ---</span>
         <span class="k">return</span> <span class="n">frm</span></div>
 
-<div class="viewcode-block" id="H5Reader.next"><a class="viewcode-back" href="../../../modules.html#cadishi.io.hdf5.H5Reader.next">[docs]</a>    <span class="k">def</span> <span class="nf">next</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__next__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Generator yielding frame by frame (re-numbering frames from one).&quot;&quot;&quot;</span>
         <span class="n">c</span> <span class="o">=</span> <span class="mi">1</span>
         <span class="k">for</span> <span class="n">idx_tuple</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">frame_pool</span><span class="p">:</span>
@@ -211,9 +217,9 @@
             <span class="n">frm</span><span class="o">.</span><span class="n">i</span> <span class="o">=</span> <span class="n">c</span>  <span class="c1"># re-introduce numbering</span>
             <span class="n">frm</span><span class="o">.</span><span class="n">put_meta</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_meta</span><span class="p">())</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verb</span><span class="p">:</span>
-                <span class="nb">print</span> <span class="s2">&quot;H5Reader.next() : &quot;</span><span class="p">,</span> <span class="n">frm</span><span class="o">.</span><span class="n">i</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;H5Reader.next() : &quot;</span><span class="p">,</span> <span class="n">frm</span><span class="o">.</span><span class="n">i</span><span class="p">)</span>
             <span class="k">yield</span> <span class="n">frm</span>
-            <span class="n">c</span> <span class="o">+=</span> <span class="mi">1</span></div>
+            <span class="n">c</span> <span class="o">+=</span> <span class="mi">1</span>
 
 <div class="viewcode-block" id="H5Reader.get_trajectory_information"><a class="viewcode-back" href="../../../modules.html#cadishi.io.hdf5.H5Reader.get_trajectory_information">[docs]</a>    <span class="k">def</span> <span class="nf">get_trajectory_information</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Collect information from the first frame, assume it to be</span>
@@ -222,13 +228,16 @@
         <span class="n">ti</span> <span class="o">=</span> <span class="n">base</span><span class="o">.</span><span class="n">TrajectoryInformation</span><span class="p">()</span>
         <span class="n">idx_tuple</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">frame_pool</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
         <span class="n">frm</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_frame</span><span class="p">(</span><span class="n">idx_tuple</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">frm</span><span class="o">.</span><span class="n">has_key</span><span class="p">(</span><span class="n">base</span><span class="o">.</span><span class="n">loc_coordinates</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">frm</span><span class="o">.</span><span class="n">contains_key</span><span class="p">(</span><span class="n">base</span><span class="o">.</span><span class="n">loc_coordinates</span><span class="p">):</span>
             <span class="n">ti</span><span class="o">.</span><span class="n">species</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">frm</span><span class="o">.</span><span class="n">get_keys</span><span class="p">(</span><span class="n">base</span><span class="o">.</span><span class="n">loc_coordinates</span><span class="p">))</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">ti</span><span class="o">.</span><span class="n">species</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">ti</span><span class="o">.</span><span class="n">pipeline_log</span> <span class="o">=</span> <span class="n">frm</span><span class="o">.</span><span class="n">get_meta</span><span class="p">()</span>
         <span class="n">ti</span><span class="o">.</span><span class="n">frame_numbers</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">frame_pool</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span>
-        <span class="k">return</span> <span class="n">ti</span></div></div>
+        <span class="k">return</span> <span class="n">ti</span></div>
+
+<div class="viewcode-block" id="H5Reader.get_n_elem"><a class="viewcode-back" href="../../../modules.html#cadishi.io.hdf5.H5Reader.get_n_elem">[docs]</a>    <span class="k">def</span> <span class="nf">get_n_elem</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_elem</span></div></div>
 
 
 <div class="viewcode-block" id="H5Writer"><a class="viewcode-back" href="../../../modules.html#cadishi.io.hdf5.H5Writer">[docs]</a><span class="k">class</span> <span class="nc">H5Writer</span><span class="p">(</span><span class="n">base</span><span class="o">.</span><span class="n">Writer</span><span class="p">):</span>
@@ -241,16 +250,11 @@
 
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="s2">&quot;default.hdf5&quot;</span><span class="p">,</span> <span class="n">source</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span>
                  <span class="n">compression</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;w&quot;</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">file</span> <span class="o">=</span> <span class="n">file</span>
         <span class="n">util</span><span class="o">.</span><span class="n">md</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
-        <span class="k">try</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">h5fp</span> <span class="o">=</span> <span class="n">h5py</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="n">file</span><span class="p">,</span> <span class="n">mode</span><span class="p">)</span>
-        <span class="k">except</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">file_is_open</span> <span class="o">=</span> <span class="kc">False</span>
-            <span class="k">raise</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">file_is_open</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">safe_open</span><span class="p">(</span><span class="n">file</span><span class="p">,</span> <span class="n">mode</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">src</span> <span class="o">=</span> <span class="n">source</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">file</span> <span class="o">=</span> <span class="n">file</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="o">=</span> <span class="n">mode</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">comp</span> <span class="o">=</span> <span class="n">compression</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">verb</span> <span class="o">=</span> <span class="n">verbose</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">info</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
@@ -262,16 +266,32 @@
         <span class="k">return</span> <span class="bp">self</span>
 
     <span class="k">def</span> <span class="nf">__del__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">close_file_safely</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">safe_close</span><span class="p">()</span>
 
     <span class="k">def</span> <span class="nf">__exit__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">type</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">traceback</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">close_file_safely</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">safe_close</span><span class="p">()</span>
 
-<div class="viewcode-block" id="H5Writer.close_file_safely"><a class="viewcode-back" href="../../../modules.html#cadishi.io.hdf5.H5Writer.close_file_safely">[docs]</a>    <span class="k">def</span> <span class="nf">close_file_safely</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="H5Writer.safe_open"><a class="viewcode-back" href="../../../modules.html#cadishi.io.hdf5.H5Writer.safe_open">[docs]</a>    <span class="k">def</span> <span class="nf">safe_open</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file</span><span class="p">,</span> <span class="n">mode</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">h5fp</span> <span class="o">=</span> <span class="n">h5py</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="n">file</span><span class="p">,</span> <span class="n">mode</span><span class="p">)</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">file_is_open</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="k">raise</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">file_is_open</span> <span class="o">=</span> <span class="kc">True</span></div>
+
+<div class="viewcode-block" id="H5Writer.safe_close"><a class="viewcode-back" href="../../../modules.html#cadishi.io.hdf5.H5Writer.safe_close">[docs]</a>    <span class="k">def</span> <span class="nf">safe_close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">file_is_open</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">h5fp</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">h5fp</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+            <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">h5fp</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">file_is_open</span> <span class="o">=</span> <span class="kc">False</span></div>
+
+<div class="viewcode-block" id="H5Writer.hard_flush"><a class="viewcode-back" href="../../../modules.html#cadishi.io.hdf5.H5Writer.hard_flush">[docs]</a>    <span class="k">def</span> <span class="nf">hard_flush</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">file</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">file</span>
+        <span class="n">mode</span> <span class="o">=</span> <span class="s1">&#39;a&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">safe_close</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">safe_open</span><span class="p">(</span><span class="n">file</span><span class="p">,</span> <span class="n">mode</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="H5Writer.get_meta"><a class="viewcode-back" href="../../../modules.html#cadishi.io.hdf5.H5Writer.get_meta">[docs]</a>    <span class="k">def</span> <span class="nf">get_meta</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Return information on the HDF5 writer,</span>
@@ -290,7 +310,7 @@
 <span class="sd">        labeled with the frame number.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">frm</span><span class="o">.</span><span class="n">put_meta</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_meta</span><span class="p">())</span>
-        <span class="k">if</span> <span class="s1">&#39;log&#39;</span> <span class="ow">in</span> <span class="n">frm</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+        <span class="k">if</span> <span class="s1">&#39;log&#39;</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">frm</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">keys</span><span class="p">()):</span>
             <span class="n">json_str</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">frm</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;log&#39;</span><span class="p">])</span>
             <span class="k">del</span> <span class="n">frm</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;log&#39;</span><span class="p">]</span>
             <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">json_str</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
@@ -305,10 +325,10 @@
 <span class="sd">        If the user code sets up a data processing pipeline,</span>
 <span class="sd">        the dump() routine drives it by providing the final sink.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">for</span> <span class="n">frm</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">src</span><span class="o">.</span><span class="n">next</span><span class="p">():</span>
+        <span class="k">for</span> <span class="n">frm</span> <span class="ow">in</span> <span class="nb">next</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">src</span><span class="p">):</span>
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">frm</span><span class="p">,</span> <span class="n">base</span><span class="o">.</span><span class="n">Container</span><span class="p">):</span>
                 <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verb</span><span class="p">:</span>
-                    <span class="nb">print</span> <span class="s2">&quot;H5Writer.dump() : &quot;</span><span class="p">,</span> <span class="n">frm</span><span class="o">.</span><span class="n">i</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;H5Writer.dump() : &quot;</span><span class="p">,</span> <span class="n">frm</span><span class="o">.</span><span class="n">i</span><span class="p">)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">put_frame</span><span class="p">(</span><span class="n">frm</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="c1"># None objects</span>
@@ -335,7 +355,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2017, Klaus Reuter, Juergen Koefinger.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.6.
     </div>
   </body>
 </html>

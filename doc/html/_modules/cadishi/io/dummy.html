@@ -1,16 +1,13 @@
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
     <title>cadishi.io.dummy &#8212; Cadishi 1.0.0 documentation</title>
-    
     <link rel="stylesheet" href="../../../_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
-    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../../',
@@ -27,7 +24,7 @@
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" /> 
   </head>
-  <body role="document">
+  <body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -74,7 +71,11 @@
 
 <span class="sd">&quot;&quot;&quot;Cadishi dummy IO module, useful to test and develop Capriqorn pipelines.</span>
 <span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">print_function</span>
 
+<span class="kn">from</span> <span class="nn">builtins</span> <span class="k">import</span> <span class="nb">next</span>
+<span class="kn">from</span> <span class="nn">builtins</span> <span class="k">import</span> <span class="nb">str</span>
+<span class="kn">from</span> <span class="nn">builtins</span> <span class="k">import</span> <span class="nb">range</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">from</span> <span class="nn">..</span> <span class="k">import</span> <span class="n">base</span>
 <span class="kn">from</span> <span class="nn">..</span> <span class="k">import</span> <span class="n">util</span>
@@ -106,9 +107,9 @@
         <span class="n">frm</span><span class="o">.</span><span class="n">i</span> <span class="o">=</span> <span class="n">i</span>
         <span class="k">return</span> <span class="n">frm</span></div>
 
-<div class="viewcode-block" id="DummyReader.next"><a class="viewcode-back" href="../../../modules.html#cadishi.io.dummy.DummyReader.next">[docs]</a>    <span class="k">def</span> <span class="nf">next</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_frames</span><span class="p">):</span>
-            <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_frame</span><span class="p">(</span><span class="n">i</span><span class="p">)</span></div></div>
+    <span class="k">def</span> <span class="nf">__next__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_frames</span><span class="p">):</span>
+            <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_frame</span><span class="p">(</span><span class="n">i</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="DummyWriter"><a class="viewcode-back" href="../../../modules.html#cadishi.io.dummy.DummyWriter">[docs]</a><span class="k">class</span> <span class="nc">DummyWriter</span><span class="p">(</span><span class="n">base</span><span class="o">.</span><span class="n">Writer</span><span class="p">):</span>
@@ -126,9 +127,9 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_conflicts</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="nb">super</span><span class="p">(</span><span class="n">base</span><span class="o">.</span><span class="n">Writer</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">_conflicts</span><span class="p">)</span>
 
 <div class="viewcode-block" id="DummyWriter.dump"><a class="viewcode-back" href="../../../modules.html#cadishi.io.dummy.DummyWriter.dump">[docs]</a>    <span class="k">def</span> <span class="nf">dump</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">for</span> <span class="n">frm</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">src</span><span class="o">.</span><span class="n">next</span><span class="p">():</span>
+        <span class="k">for</span> <span class="n">frm</span> <span class="ow">in</span> <span class="nb">next</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">src</span><span class="p">):</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verb</span><span class="p">:</span>
-                <span class="nb">print</span> <span class="s2">&quot;DummyWriter.dump() : &quot;</span><span class="p">,</span> <span class="n">frm</span><span class="o">.</span><span class="n">i</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;DummyWriter.dump() : &quot;</span><span class="p">,</span> <span class="n">frm</span><span class="o">.</span><span class="n">i</span><span class="p">)</span>
             <span class="k">pass</span></div></div>
 </pre></div>
 
@@ -152,7 +153,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2017, Klaus Reuter, Juergen Koefinger.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.6.
     </div>
   </body>
 </html>

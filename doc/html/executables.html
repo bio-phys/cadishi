@@ -1,16 +1,13 @@
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
     <title>Cadishi executables &#8212; Cadishi 1.0.0 documentation</title>
-    
     <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
@@ -28,7 +25,7 @@
     <link rel="search" title="Search" href="search.html" />
     <link rel="prev" title="Cadishi compute kernels" href="kernel.html" /> 
   </head>
-  <body role="document">
+  <body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -52,8 +49,6 @@
 <li><a class="reference internal" href="#module-cadishi.exe">cadishi.exe</a></li>
 <li><a class="reference internal" href="#module-cadishi.exe.cli">cadishi.exe.cli</a></li>
 <li><a class="reference internal" href="#module-cadishi.exe.histograms">cadishi.exe.histograms</a></li>
-<li><a class="reference internal" href="#module-cadishi.exe.json2yaml">cadishi.exe.json2yaml</a></li>
-<li><a class="reference internal" href="#module-cadishi.exe.yaml2json">cadishi.exe.yaml2json</a></li>
 <li><a class="reference internal" href="#module-cadishi.exe.unpack">cadishi.exe.unpack</a></li>
 </ul>
 </li>
@@ -111,7 +106,7 @@ a user executable <cite>cadishi</cite> is created via an entry_point in setup.py
 <dl class="function">
 <dt id="cadishi.exe.cli.parse_args">
 <code class="descclassname">cadishi.exe.cli.</code><code class="descname">parse_args</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/cadishi/exe/cli.html#parse_args"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cadishi.exe.cli.parse_args" title="Permalink to this definition">¶</a></dt>
-<dd><p>&#8220;Set up the cadishi command line interface using argparse.</p>
+<dd><p>“Set up the cadishi command line interface using argparse.</p>
 <p>Individual cadishi commands and their arguments are set up
 next to their implementation via the configure_cli() functions.</p>
 </dd></dl>
@@ -150,30 +145,10 @@ to be extended with each new parameter that is introduced.</p>
 </dd></dl>
 
 </div>
-<div class="section" id="module-cadishi.exe.json2yaml">
-<span id="cadishi-exe-json2yaml"></span><h2>cadishi.exe.json2yaml<a class="headerlink" href="#module-cadishi.exe.json2yaml" title="Permalink to this headline">¶</a></h2>
-<p>A simple JSON to YAML file converter.</p>
-<p>Usage: json2yaml.py input_file [output_file]</p>
-<dl class="function">
-<dt id="cadishi.exe.json2yaml.main">
-<code class="descclassname">cadishi.exe.json2yaml.</code><code class="descname">main</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/cadishi/exe/json2yaml.html#main"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cadishi.exe.json2yaml.main" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-</div>
-<div class="section" id="module-cadishi.exe.yaml2json">
-<span id="cadishi-exe-yaml2json"></span><h2>cadishi.exe.yaml2json<a class="headerlink" href="#module-cadishi.exe.yaml2json" title="Permalink to this headline">¶</a></h2>
-<p>A simple YAML to JSON file converter.</p>
-<p>Usage: yaml2json.py input_file [output_file]</p>
-<dl class="function">
-<dt id="cadishi.exe.yaml2json.main">
-<code class="descclassname">cadishi.exe.yaml2json.</code><code class="descname">main</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/cadishi/exe/yaml2json.html#main"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cadishi.exe.yaml2json.main" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-</div>
 <div class="section" id="module-cadishi.exe.unpack">
 <span id="cadishi-exe-unpack"></span><h2>cadishi.exe.unpack<a class="headerlink" href="#module-cadishi.exe.unpack" title="Permalink to this headline">¶</a></h2>
 <p>Extract data from HDF5 to legacy (NumPy, JSON) text data.</p>
-<p>unpack creates a directory structure from the HDF5 file&#8217;s group structure and
+<p>unpack creates a directory structure from the HDF5 file’s group structure and
 writes the HDF5 datasets to text files located in the correct directories.</p>
 <p>The main() function is to be called via cli.py.</p>
 <dl class="function">
@@ -213,7 +188,7 @@ writes the HDF5 datasets to text files located in the correct directories.</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2017, Klaus Reuter, Juergen Koefinger.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.6.
     </div>
   </body>
 </html>

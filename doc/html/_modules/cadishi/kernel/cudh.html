@@ -1,16 +1,13 @@
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
     <title>cadishi.kernel.cudh &#8212; Cadishi 1.0.0 documentation</title>
-    
     <link rel="stylesheet" href="../../../_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
-    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../../',
@@ -27,7 +24,7 @@
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" /> 
   </head>
-  <body role="document">
+  <body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -76,10 +73,15 @@
 
 <span class="sd">Calls the c_cudh Python module.</span>
 <span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">print_function</span>
 
+<span class="kn">import</span> <span class="nn">subprocess</span> <span class="k">as</span> <span class="nn">sub</span>
+
+<span class="kn">from</span> <span class="nn">builtins</span> <span class="k">import</span> <span class="nb">str</span>
+<span class="kn">from</span> <span class="nn">builtins</span> <span class="k">import</span> <span class="nb">zip</span>
+<span class="kn">from</span> <span class="nn">builtins</span> <span class="k">import</span> <span class="nb">range</span>
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">from</span> <span class="nn">six.moves</span> <span class="k">import</span> <span class="nb">range</span>
 <span class="kn">from</span> <span class="nn">.</span> <span class="k">import</span> <span class="n">common</span>
 <span class="k">try</span><span class="p">:</span>
     <span class="kn">from</span> <span class="nn">.</span> <span class="k">import</span> <span class="n">c_cudh</span>
@@ -91,12 +93,30 @@
 
 
 <div class="viewcode-block" id="get_num_devices"><a class="viewcode-back" href="../../../kernel.html#cadishi.kernel.cudh.get_num_devices">[docs]</a><span class="k">def</span> <span class="nf">get_num_devices</span><span class="p">():</span>
-    <span class="sd">&quot;&quot;&quot;Get the number of available CUDA devices (i.e. GPUs).&quot;&quot;&quot;</span>
+    <span class="sd">&quot;&quot;&quot;Get the number of available NVIDIA devices.</span>
+
+<span class="sd">    We do not use the function &quot;c_cudh.get_num_devices()&quot; because it is</span>
+<span class="sd">    not allowed to fork and use CUDA in processes after a first CUDA call,</span>
+<span class="sd">    which would be the case in &lt;histograms.py&gt; (and was hard to figure out).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">cmd</span> <span class="o">=</span> <span class="s2">&quot;nvidia-smi -L&quot;</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">raw</span> <span class="o">=</span> <span class="n">sub</span><span class="o">.</span><span class="n">check_output</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="n">gpus</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">raw</span> <span class="k">if</span> <span class="n">x</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;gpu&quot;</span><span class="p">)]</span>
+        <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">gpus</span><span class="p">)</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="k">pass</span>
+    <span class="k">return</span> <span class="n">n</span></div>
+
+
+<div class="viewcode-block" id="get_num_cuda_devices"><a class="viewcode-back" href="../../../kernel.html#cadishi.kernel.cudh.get_num_cuda_devices">[docs]</a><span class="k">def</span> <span class="nf">get_num_cuda_devices</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;Get the number of available NVIDIA devices, using the CUDA API.&quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">have_c_cudh</span><span class="p">:</span>
-        <span class="n">nd</span> <span class="o">=</span> <span class="n">c_cudh</span><span class="o">.</span><span class="n">get_num_devices</span><span class="p">()</span>
+        <span class="n">n</span> <span class="o">=</span> <span class="n">c_cudh</span><span class="o">.</span><span class="n">get_num_cuda_devices</span><span class="p">()</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="n">nd</span> <span class="o">=</span> <span class="mi">0</span>
-    <span class="k">return</span> <span class="n">nd</span></div>
+        <span class="n">n</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">return</span> <span class="n">n</span></div>
 
 
 <div class="viewcode-block" id="histograms"><a class="viewcode-back" href="../../../kernel.html#cadishi.kernel.cudh.histograms">[docs]</a><span class="k">def</span> <span class="nf">histograms</span><span class="p">(</span><span class="n">coordinate_sets</span><span class="p">,</span>
@@ -157,20 +177,24 @@
     <span class="n">n_El</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">coordinate_sets</span><span class="p">)</span>
     <span class="n">n_Hij</span> <span class="o">=</span> <span class="n">n_El</span> <span class="o">*</span> <span class="p">(</span><span class="n">n_El</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span>
 
-<span class="c1">#     if (len(box) &gt; 0):</span>
-<span class="c1">#         raise NotImplementedError(&quot;CUDH periodicx box handling&quot;)</span>
+    <span class="k">if</span> <span class="n">do_histo2_only</span> <span class="ow">and</span> <span class="p">(</span><span class="n">n_El</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">common</span><span class="o">.</span><span class="n">histo2_error_msg</span><span class="p">)</span>
 
     <span class="c1"># Reorder coordinate sets by size to maximize the performance of the CUDA</span>
     <span class="c1"># smem kernels, this is most advantageous when small and large sets are mixed.</span>
     <span class="n">do_reorder</span> <span class="o">=</span> <span class="kc">True</span>
-
-    <span class="k">if</span> <span class="p">(</span><span class="n">n_Hij</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">mask_array</span><span class="p">)):</span>
-        <span class="n">np_mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">mask_array</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
-        <span class="c1"># TODO : implement reordering of mask_array for the general case</span>
-        <span class="k">if</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">np_mask</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">))</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">):</span>
-            <span class="n">do_reorder</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="k">if</span> <span class="n">do_histo2_only</span><span class="p">:</span>
+        <span class="n">np_mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
+        <span class="n">np_mask</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">do_reorder</span> <span class="o">=</span> <span class="kc">False</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="n">np_mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">n_Hij</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">n_Hij</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">mask_array</span><span class="p">)):</span>
+            <span class="n">np_mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">mask_array</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
+            <span class="c1"># TODO : implement reordering of mask_array for the general case</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">np_mask</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">))</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">):</span>
+                <span class="n">do_reorder</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">np_mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">n_Hij</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">do_reorder</span><span class="p">:</span>
         <span class="c1"># --- create lists containing (indices,sizes) sorted by size</span>
@@ -178,9 +202,9 @@
         <span class="n">el_siz</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">el_idx</span><span class="p">:</span>
             <span class="n">el_siz</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">coordinate_sets</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-        <span class="n">idx_siz</span> <span class="o">=</span> <span class="nb">zip</span><span class="p">(</span><span class="n">el_idx</span><span class="p">,</span> <span class="n">el_siz</span><span class="p">)</span>
+        <span class="n">idx_siz</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">el_idx</span><span class="p">,</span> <span class="n">el_siz</span><span class="p">))</span>
         <span class="n">idx_siz</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">tup</span><span class="p">:</span> <span class="n">tup</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
-        <span class="n">el_idx_srt</span><span class="p">,</span> <span class="n">el_siz_srt</span> <span class="o">=</span> <span class="nb">zip</span><span class="p">(</span><span class="o">*</span><span class="n">idx_siz</span><span class="p">)</span>
+        <span class="n">el_idx_srt</span><span class="p">,</span> <span class="n">el_siz_srt</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="o">*</span><span class="n">idx_siz</span><span class="p">))</span>
 
         <span class="c1"># --- create reordered concatenated numpy arrays</span>
         <span class="n">n_coord</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">el_siz</span><span class="p">)</span>
@@ -227,16 +251,14 @@
     <span class="n">precision</span> <span class="o">=</span> <span class="n">common</span><span class="o">.</span><span class="n">precision_to_enum</span><span class="p">(</span><span class="n">precision</span><span class="p">)</span>
 
     <span class="c1"># --- run the CUDH distance histogram kernel</span>
-    <span class="n">exit_status</span> <span class="o">=</span> <span class="n">c_cudh</span><span class="o">.</span><span class="n">histograms</span><span class="p">(</span><span class="n">np_coord</span><span class="p">,</span> <span class="n">np_nelem</span><span class="p">,</span> <span class="n">histos</span><span class="p">,</span> <span class="n">r_max</span><span class="p">,</span> <span class="n">np_mask</span><span class="p">,</span>
-                                    <span class="n">np_box</span><span class="p">,</span> <span class="n">box_type_id</span><span class="p">,</span>
-                                    <span class="n">precision</span><span class="p">,</span> <span class="n">gpu_id</span><span class="p">,</span> <span class="n">do_histo2_only</span><span class="p">,</span> <span class="n">thread_block_x</span><span class="p">,</span>
-                                    <span class="n">check_input</span><span class="p">,</span> <span class="n">verbose</span><span class="p">,</span> <span class="n">algorithm</span><span class="p">)</span>
+    <span class="n">exit_status</span> <span class="o">=</span> <span class="n">c_cudh</span><span class="o">.</span><span class="n">histograms</span><span class="p">(</span><span class="n">np_coord</span><span class="p">,</span> <span class="n">np_nelem</span><span class="p">,</span> <span class="n">histos</span><span class="p">,</span> <span class="n">r_max</span><span class="p">,</span> <span class="n">np_mask</span><span class="p">,</span> <span class="n">np_box</span><span class="p">,</span> <span class="n">box_type_id</span><span class="p">,</span>
+                                    <span class="n">precision</span><span class="p">,</span> <span class="n">check_input</span><span class="p">,</span> <span class="n">verbose</span><span class="p">,</span> <span class="n">gpu_id</span><span class="p">,</span> <span class="n">thread_block_x</span><span class="p">,</span> <span class="n">algorithm</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="p">(</span><span class="n">exit_status</span> <span class="o">==</span> <span class="mi">1</span><span class="p">):</span>
-        <span class="n">c_cudh</span><span class="o">.</span><span class="n">free</span><span class="p">()</span>
+        <span class="c1">#c_cudh.free()</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">common</span><span class="o">.</span><span class="n">overflow_error_msg</span><span class="p">)</span>
     <span class="k">elif</span> <span class="p">(</span><span class="n">exit_status</span> <span class="o">&gt;=</span> <span class="mi">2</span><span class="p">):</span>
-        <span class="n">c_cudh</span><span class="o">.</span><span class="n">free</span><span class="p">()</span>
+        <span class="c1">#c_cudh.free()</span>
         <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">common</span><span class="o">.</span><span class="n">general_error_msg</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">do_reorder</span><span class="p">:</span>
@@ -278,7 +300,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2017, Klaus Reuter, Juergen Koefinger.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.6.
     </div>
   </body>
 </html>

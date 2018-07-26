@@ -1,16 +1,13 @@
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
     <title>cadishi.exe.histograms &#8212; Cadishi 1.0.0 documentation</title>
-    
     <link rel="stylesheet" href="../../../_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
-    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../../',
@@ -27,7 +24,7 @@
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" /> 
   </head>
-  <body role="document">
+  <body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -80,8 +77,17 @@
 <span class="sd">This program is not intended to be invoked directly. It is launched via cli.py</span>
 <span class="sd">which in turn is called as the `cadishi` command via an entry_point in setup.py.</span>
 <span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">print_function</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">division</span>
 
 
+<span class="kn">from</span> <span class="nn">future</span> <span class="k">import</span> <span class="n">standard_library</span>
+<span class="n">standard_library</span><span class="o">.</span><span class="n">install_aliases</span><span class="p">()</span>
+<span class="kn">from</span> <span class="nn">builtins</span> <span class="k">import</span> <span class="nb">next</span>
+<span class="kn">from</span> <span class="nn">builtins</span> <span class="k">import</span> <span class="nb">str</span>
+<span class="kn">from</span> <span class="nn">builtins</span> <span class="k">import</span> <span class="nb">range</span>
+<span class="kn">from</span> <span class="nn">past.builtins</span> <span class="k">import</span> <span class="n">basestring</span>
+<span class="kn">from</span> <span class="nn">past.utils</span> <span class="k">import</span> <span class="n">old_div</span>
 <span class="kn">import</span> <span class="nn">sys</span>
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">math</span>
@@ -92,10 +98,9 @@
 <span class="kn">import</span> <span class="nn">multiprocessing</span>
 <span class="kn">import</span> <span class="nn">json</span>
 <span class="kn">import</span> <span class="nn">ctypes</span>
-<span class="kn">from</span> <span class="nn">six.moves</span> <span class="k">import</span> <span class="nb">range</span>
 <span class="kn">import</span> <span class="nn">signal</span>
 <span class="kn">import</span> <span class="nn">cProfile</span>
-<span class="kn">import</span> <span class="nn">StringIO</span>
+<span class="kn">import</span> <span class="nn">io</span>
 <span class="kn">import</span> <span class="nn">pstats</span>
 <span class="kn">import</span> <span class="nn">argparse</span>
 <span class="kn">from</span> <span class="nn">..</span> <span class="k">import</span> <span class="n">base</span>
@@ -104,6 +109,7 @@
 <span class="kn">from</span> <span class="nn">..</span> <span class="k">import</span> <span class="n">version</span>
 <span class="kn">from</span> <span class="nn">..io</span> <span class="k">import</span> <span class="n">hdf5</span>
 <span class="kn">from</span> <span class="nn">..</span> <span class="k">import</span> <span class="n">worker</span>
+<span class="kn">from</span> <span class="nn">..kernel</span> <span class="k">import</span> <span class="n">cudh</span>
 
 
 <div class="viewcode-block" id="configure_cli"><a class="viewcode-back" href="../../../executables.html#cadishi.exe.histograms.configure_cli">[docs]</a><span class="k">def</span> <span class="nf">configure_cli</span><span class="p">(</span><span class="n">subparsers</span><span class="p">):</span>
@@ -132,8 +138,9 @@
     <span class="n">util</span><span class="o">.</span><span class="n">check_parameter</span><span class="p">(</span><span class="n">histoparam</span><span class="p">,</span> <span class="s1">&#39;cpu:module&#39;</span><span class="p">,</span> <span class="n">basestring</span><span class="p">,</span> <span class="s1">&#39;pydh&#39;</span><span class="p">,</span> <span class="n">valid_values</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;pydh&#39;</span><span class="p">,</span> <span class="s1">&#39;dist&#39;</span><span class="p">])</span>
     <span class="n">util</span><span class="o">.</span><span class="n">check_parameter</span><span class="p">(</span><span class="n">histoparam</span><span class="p">,</span> <span class="s1">&#39;gpu:module&#39;</span><span class="p">,</span> <span class="n">basestring</span><span class="p">,</span> <span class="s1">&#39;cudh&#39;</span><span class="p">,</span> <span class="n">valid_values</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;cudh&#39;</span><span class="p">])</span>
 
-    <span class="c1"># auto-detect the number of CPU workers</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="s1">&#39;workers&#39;</span> <span class="ow">in</span> <span class="n">histoparam</span><span class="p">[</span><span class="s1">&#39;cpu&#39;</span><span class="p">]</span> <span class="ow">or</span> <span class="p">(</span><span class="n">histoparam</span><span class="p">[</span><span class="s1">&#39;cpu&#39;</span><span class="p">][</span><span class="s1">&#39;workers&#39;</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">):</span>
+    <span class="c1"># auto-detect the number of CPU workers, if not set explicitly</span>
+    <span class="n">util</span><span class="o">.</span><span class="n">check_parameter</span><span class="p">(</span><span class="n">histoparam</span><span class="p">,</span> <span class="s1">&#39;cpu:workers&#39;</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">histoparam</span><span class="p">[</span><span class="s1">&#39;cpu&#39;</span><span class="p">][</span><span class="s1">&#39;workers&#39;</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">):</span>
         <span class="k">if</span> <span class="s1">&#39;threads&#39;</span> <span class="ow">in</span> <span class="n">histoparam</span><span class="p">[</span><span class="s1">&#39;cpu&#39;</span><span class="p">]:</span>
             <span class="k">del</span> <span class="n">histoparam</span><span class="p">[</span><span class="s1">&#39;cpu&#39;</span><span class="p">][</span><span class="s1">&#39;threads&#39;</span><span class="p">]</span>  <span class="c1"># autodetect below</span>
         <span class="k">try</span><span class="p">:</span>
@@ -142,7 +149,10 @@
             <span class="n">n_workers</span> <span class="o">=</span> <span class="mi">1</span>
         <span class="n">histoparam</span><span class="p">[</span><span class="s1">&#39;cpu&#39;</span><span class="p">][</span><span class="s1">&#39;workers&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">n_workers</span>
 
-    <span class="n">util</span><span class="o">.</span><span class="n">check_parameter</span><span class="p">(</span><span class="n">histoparam</span><span class="p">,</span> <span class="s1">&#39;gpu:workers&#39;</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="c1"># auto-detect the number of GPU workers, if not set explicitly</span>
+    <span class="n">util</span><span class="o">.</span><span class="n">check_parameter</span><span class="p">(</span><span class="n">histoparam</span><span class="p">,</span> <span class="s1">&#39;gpu:workers&#39;</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">histoparam</span><span class="p">[</span><span class="s1">&#39;gpu&#39;</span><span class="p">][</span><span class="s1">&#39;workers&#39;</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">cudh</span><span class="o">.</span><span class="n">have_c_cudh</span><span class="p">):</span>
+        <span class="n">histoparam</span><span class="p">[</span><span class="s1">&#39;gpu&#39;</span><span class="p">][</span><span class="s1">&#39;workers&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">cudh</span><span class="o">.</span><span class="n">get_num_devices</span><span class="p">()</span>
 
     <span class="k">if</span> <span class="p">(</span><span class="n">histoparam</span><span class="p">[</span><span class="s1">&#39;cpu&#39;</span><span class="p">][</span><span class="s1">&#39;workers&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">histoparam</span><span class="p">[</span><span class="s1">&#39;gpu&#39;</span><span class="p">][</span><span class="s1">&#39;workers&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">):</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;At least one worker (CPU and/or GPU) must be used&quot;</span><span class="p">)</span>
@@ -154,7 +164,7 @@
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
             <span class="n">n_cores</span> <span class="o">=</span> <span class="mi">1</span>
         <span class="n">n_cores</span> <span class="o">=</span> <span class="n">n_cores</span> <span class="o">-</span> <span class="n">histoparam</span><span class="p">[</span><span class="s1">&#39;gpu&#39;</span><span class="p">][</span><span class="s1">&#39;workers&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="mi">2</span>  <span class="c1"># 2: main task, sum task</span>
-        <span class="n">n_cores</span> <span class="o">=</span> <span class="n">n_cores</span> <span class="o">/</span> <span class="n">histoparam</span><span class="p">[</span><span class="s1">&#39;cpu&#39;</span><span class="p">][</span><span class="s1">&#39;workers&#39;</span><span class="p">]</span>
+        <span class="n">n_cores</span> <span class="o">=</span> <span class="n">old_div</span><span class="p">(</span><span class="n">n_cores</span><span class="p">,</span> <span class="n">histoparam</span><span class="p">[</span><span class="s1">&#39;cpu&#39;</span><span class="p">][</span><span class="s1">&#39;workers&#39;</span><span class="p">])</span>
         <span class="k">if</span> <span class="p">(</span><span class="n">n_cores</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">):</span>
             <span class="n">n_cores</span> <span class="o">=</span> <span class="mi">1</span>
         <span class="n">histoparam</span><span class="p">[</span><span class="s1">&#39;cpu&#39;</span><span class="p">][</span><span class="s1">&#39;threads&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">n_cores</span>
@@ -163,6 +173,8 @@
     <span class="n">util</span><span class="o">.</span><span class="n">check_parameter</span><span class="p">(</span><span class="n">histoparam</span><span class="p">,</span> <span class="s1">&#39;general:numa_aware&#39;</span><span class="p">,</span> <span class="nb">bool</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
     <span class="n">util</span><span class="o">.</span><span class="n">check_parameter</span><span class="p">(</span><span class="n">histoparam</span><span class="p">,</span> <span class="s1">&#39;general:redirect_output&#39;</span><span class="p">,</span> <span class="nb">bool</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
     <span class="n">util</span><span class="o">.</span><span class="n">check_parameter</span><span class="p">(</span><span class="n">histoparam</span><span class="p">,</span> <span class="s1">&#39;general:verbose&#39;</span><span class="p">,</span> <span class="nb">bool</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+    <span class="n">util</span><span class="o">.</span><span class="n">check_parameter</span><span class="p">(</span><span class="n">histoparam</span><span class="p">,</span> <span class="s1">&#39;general:queue_maxsize&#39;</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="mi">256</span><span class="p">)</span>
+    <span class="n">util</span><span class="o">.</span><span class="n">check_parameter</span><span class="p">(</span><span class="n">histoparam</span><span class="p">,</span> <span class="s1">&#39;general:queue_timeout&#39;</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="mi">3600</span><span class="p">)</span>
 
     <span class="c1"># define the maximum distance for the histograms</span>
     <span class="c1"># default &#39;-1&#39;: set r_max to be set by the capriqorn preprocessor pipeline log</span>
@@ -209,22 +221,22 @@
 
 <div class="viewcode-block" id="unexpectedShutdownHandler"><a class="viewcode-back" href="../../../executables.html#cadishi.exe.histograms.unexpectedShutdownHandler">[docs]</a><span class="k">def</span> <span class="nf">unexpectedShutdownHandler</span><span class="p">(</span><span class="n">signum</span><span class="p">,</span> <span class="n">frame</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Singnal handler, to catch SIGUSR1 sent by child processes, and SIGTERM.&quot;&quot;&quot;</span>
-    <span class="nb">print</span> <span class="n">util</span><span class="o">.</span><span class="n">SEP</span>
-    <span class="nb">print</span> <span class="s2">&quot; </span><span class="si">%s</span><span class="s2"> Shutdown signal received!&quot;</span> <span class="o">%</span> <span class="n">util</span><span class="o">.</span><span class="n">timeStamp</span><span class="p">(</span><span class="n">dateAndTime</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-    <span class="nb">print</span> <span class="s2">&quot; Killing all child processes ...&quot;</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">util</span><span class="o">.</span><span class="n">SEP</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; </span><span class="si">%s</span><span class="s2"> Shutdown signal received!&quot;</span> <span class="o">%</span> <span class="n">util</span><span class="o">.</span><span class="n">timeStamp</span><span class="p">(</span><span class="n">dateAndTime</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; Killing all child processes ...&quot;</span><span class="p">)</span>
     <span class="k">for</span> <span class="n">mp_worker</span> <span class="ow">in</span> <span class="n">mp_all_workers_list</span><span class="p">:</span>
         <span class="n">mp_worker</span><span class="o">.</span><span class="n">terminate</span><span class="p">()</span>
-    <span class="nb">print</span> <span class="s2">&quot; Killing master process.  Goodbye.&quot;</span>
-    <span class="nb">print</span> <span class="n">util</span><span class="o">.</span><span class="n">SEP</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; Killing master process.  Goodbye.&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">util</span><span class="o">.</span><span class="n">SEP</span><span class="p">)</span>
     <span class="n">os</span><span class="o">.</span><span class="n">kill</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">getpid</span><span class="p">(),</span> <span class="n">signal</span><span class="o">.</span><span class="n">SIGTERM</span><span class="p">)</span>
+    <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">3.0</span><span class="p">)</span>
     <span class="n">os</span><span class="o">.</span><span class="n">kill</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">getpid</span><span class="p">(),</span> <span class="n">signal</span><span class="o">.</span><span class="n">SIGKILL</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="main"><a class="viewcode-back" href="../../../executables.html#cadishi.exe.histograms.main">[docs]</a><span class="k">def</span> <span class="nf">main</span><span class="p">(</span><span class="n">argparse_args</span><span class="p">):</span>
-
     <span class="n">print_it</span> <span class="o">=</span> <span class="n">util</span><span class="o">.</span><span class="n">PrintWrapper</span><span class="p">()</span>
 
-    <span class="nb">print</span> <span class="n">util</span><span class="o">.</span><span class="n">SEP</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">util</span><span class="o">.</span><span class="n">SEP</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="p">(</span><span class="n">argparse_args</span><span class="o">.</span><span class="n">input</span><span class="p">):</span>
         <span class="n">parameter_file</span> <span class="o">=</span> <span class="n">argparse_args</span><span class="o">.</span><span class="n">input</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
@@ -244,11 +256,11 @@
     <span class="k">try</span><span class="p">:</span>
         <span class="n">histoparam</span> <span class="o">=</span> <span class="n">util</span><span class="o">.</span><span class="n">load_parameter_file</span><span class="p">(</span><span class="n">parameter_file</span><span class="p">)</span>
     <span class="k">except</span><span class="p">:</span>
-        <span class="nb">print</span> <span class="s2">&quot; Error: Could not read input file &#39;&quot;</span> <span class="o">+</span> <span class="n">parameter_file</span> <span class="o">+</span> <span class="s2">&quot;&#39;.&quot;</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; Error: Could not read input file &#39;&quot;</span> <span class="o">+</span> <span class="n">parameter_file</span> <span class="o">+</span> <span class="s2">&quot;&#39;.&quot;</span><span class="p">)</span>
         <span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
 
     <span class="k">try</span><span class="p">:</span>
-        <span class="n">template_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">__file__</span><span class="p">))</span>
+        <span class="n">template_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="vm">__file__</span><span class="p">))</span>
                                         <span class="o">+</span> <span class="s2">&quot;/../data/histograms_template.yaml&quot;</span><span class="p">)</span>
         <span class="n">valid_parameters</span> <span class="o">=</span> <span class="n">util</span><span class="o">.</span><span class="n">load_parameter_file</span><span class="p">(</span><span class="n">template_file</span><span class="p">)</span>
         <span class="n">util</span><span class="o">.</span><span class="n">check_parameter_labels</span><span class="p">(</span><span class="n">histoparam</span><span class="p">,</span> <span class="n">valid_parameters</span><span class="p">)</span>
@@ -259,15 +271,6 @@
         <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
 
     <span class="c1"># --- END OF CONFIGURATION SECTION ---</span>
-
-    <span class="c1"># get information about the available CPUs</span>
-    <span class="k">if</span> <span class="p">(</span><span class="n">histoparam</span><span class="p">[</span><span class="s1">&#39;general&#39;</span><span class="p">][</span><span class="s1">&#39;numa_aware&#39;</span><span class="p">]):</span>
-        <span class="n">numa_topology</span> <span class="o">=</span> <span class="n">util</span><span class="o">.</span><span class="n">get_numa_domains</span><span class="p">()</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">numa_topology</span> <span class="o">=</span> <span class="p">[]</span>
-
-    <span class="n">task_queue_timeout</span> <span class="o">=</span> <span class="mi">360</span>
-    <span class="n">task_queue_maxsize</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="n">histoparam</span><span class="p">[</span><span class="s1">&#39;cpu&#39;</span><span class="p">][</span><span class="s1">&#39;workers&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">histoparam</span><span class="p">[</span><span class="s1">&#39;gpu&#39;</span><span class="p">][</span><span class="s1">&#39;workers&#39;</span><span class="p">])</span>
 
     <span class="n">util</span><span class="o">.</span><span class="n">md</span><span class="p">(</span><span class="n">histoparam</span><span class="p">[</span><span class="s1">&#39;output&#39;</span><span class="p">][</span><span class="s1">&#39;directory&#39;</span><span class="p">])</span>
 
@@ -286,26 +289,30 @@
     <span class="k">assert</span> <span class="p">(</span><span class="n">histoparam</span><span class="p">[</span><span class="s1">&#39;input&#39;</span><span class="p">][</span><span class="s1">&#39;last&#39;</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">ti</span><span class="o">.</span><span class="n">frame_numbers</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
     <span class="k">assert</span> <span class="p">(</span><span class="n">histoparam</span><span class="p">[</span><span class="s1">&#39;input&#39;</span><span class="p">][</span><span class="s1">&#39;first&#39;</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">histoparam</span><span class="p">[</span><span class="s1">&#39;input&#39;</span><span class="p">][</span><span class="s1">&#39;last&#39;</span><span class="p">])</span>
 
+    <span class="n">n_frames</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">histoparam</span><span class="p">[</span><span class="s1">&#39;input&#39;</span><span class="p">][</span><span class="s1">&#39;first&#39;</span><span class="p">],</span> \
+                         <span class="n">histoparam</span><span class="p">[</span><span class="s1">&#39;input&#39;</span><span class="p">][</span><span class="s1">&#39;last&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> \
+                         <span class="n">histoparam</span><span class="p">[</span><span class="s1">&#39;input&#39;</span><span class="p">][</span><span class="s1">&#39;step&#39;</span><span class="p">]))</span>
+
     <span class="k">if</span> <span class="n">histoparam</span><span class="p">[</span><span class="s1">&#39;histogram&#39;</span><span class="p">][</span><span class="s1">&#39;r_max&#39;</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
         <span class="n">r_max</span> <span class="o">=</span> <span class="n">ti</span><span class="o">.</span><span class="n">get_pipeline_parameter</span><span class="p">(</span><span class="s1">&#39;r_max&#39;</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">r_max</span> <span class="o">=</span> <span class="n">histoparam</span><span class="p">[</span><span class="s1">&#39;histogram&#39;</span><span class="p">][</span><span class="s1">&#39;r_max&#39;</span><span class="p">]</span>
 
     <span class="n">dr</span> <span class="o">=</span> <span class="n">histoparam</span><span class="p">[</span><span class="s1">&#39;histogram&#39;</span><span class="p">][</span><span class="s1">&#39;dr&#39;</span><span class="p">]</span>
-    <span class="n">nbins</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">r_max</span> <span class="o">/</span> <span class="n">dr</span><span class="p">))</span>
+    <span class="n">nbins</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">old_div</span><span class="p">(</span><span class="n">r_max</span><span class="p">,</span> <span class="n">dr</span><span class="p">)))</span>
 
-    <span class="nb">print</span> <span class="n">version</span><span class="o">.</span><span class="n">get_printable_version_string</span><span class="p">()</span>
-    <span class="nb">print</span> <span class="n">util</span><span class="o">.</span><span class="n">SEP</span>
-    <span class="nb">print</span> <span class="s2">&quot; parameter file:       &quot;</span> <span class="o">+</span> <span class="n">parameter_file</span>
-    <span class="nb">print</span> <span class="s2">&quot; trajectory file:      &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">histoparam</span><span class="p">[</span><span class="s1">&#39;input&#39;</span><span class="p">][</span><span class="s1">&#39;file&#39;</span><span class="p">])</span>
-    <span class="nb">print</span> <span class="s2">&quot; output directory:     &quot;</span> <span class="o">+</span> <span class="n">histoparam</span><span class="p">[</span><span class="s1">&#39;output&#39;</span><span class="p">][</span><span class="s1">&#39;directory&#39;</span><span class="p">]</span>
-    <span class="nb">print</span> <span class="s2">&quot; r_max:                &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">r_max</span><span class="p">)</span>
-    <span class="nb">print</span> <span class="s2">&quot; nbins:                &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">nbins</span><span class="p">)</span>
-    <span class="nb">print</span> <span class="s2">&quot; cpu workers:          &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">histoparam</span><span class="p">[</span><span class="s1">&#39;cpu&#39;</span><span class="p">][</span><span class="s1">&#39;workers&#39;</span><span class="p">])</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">version</span><span class="o">.</span><span class="n">get_printable_version_string</span><span class="p">())</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">util</span><span class="o">.</span><span class="n">SEP</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; parameter file:       &quot;</span> <span class="o">+</span> <span class="n">parameter_file</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; trajectory file:      &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">histoparam</span><span class="p">[</span><span class="s1">&#39;input&#39;</span><span class="p">][</span><span class="s1">&#39;file&#39;</span><span class="p">]))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; output directory:     &quot;</span> <span class="o">+</span> <span class="n">histoparam</span><span class="p">[</span><span class="s1">&#39;output&#39;</span><span class="p">][</span><span class="s1">&#39;directory&#39;</span><span class="p">])</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; r_max:                &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">r_max</span><span class="p">))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; nbins:                &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">nbins</span><span class="p">))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; cpu workers:          &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">histoparam</span><span class="p">[</span><span class="s1">&#39;cpu&#39;</span><span class="p">][</span><span class="s1">&#39;workers&#39;</span><span class="p">]))</span>
     <span class="k">if</span> <span class="p">(</span><span class="n">histoparam</span><span class="p">[</span><span class="s1">&#39;cpu&#39;</span><span class="p">][</span><span class="s1">&#39;workers&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">):</span>
-        <span class="nb">print</span> <span class="s2">&quot; cpu threads:          &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">histoparam</span><span class="p">[</span><span class="s1">&#39;cpu&#39;</span><span class="p">][</span><span class="s1">&#39;threads&#39;</span><span class="p">])</span>
-    <span class="nb">print</span> <span class="s2">&quot; gpu workers:          &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">histoparam</span><span class="p">[</span><span class="s1">&#39;gpu&#39;</span><span class="p">][</span><span class="s1">&#39;workers&#39;</span><span class="p">])</span>
-    <span class="nb">print</span> <span class="n">util</span><span class="o">.</span><span class="n">SEP</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; cpu threads:          &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">histoparam</span><span class="p">[</span><span class="s1">&#39;cpu&#39;</span><span class="p">][</span><span class="s1">&#39;threads&#39;</span><span class="p">]))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; gpu workers:          &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">histoparam</span><span class="p">[</span><span class="s1">&#39;gpu&#39;</span><span class="p">][</span><span class="s1">&#39;workers&#39;</span><span class="p">]))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">util</span><span class="o">.</span><span class="n">SEP</span><span class="p">)</span>
 
     <span class="n">elements</span> <span class="o">=</span> <span class="n">ti</span><span class="o">.</span><span class="n">species</span>
 
@@ -324,16 +331,12 @@
 
     <span class="c1"># initialize a time mark for relative timing information</span>
     <span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
-    <span class="nb">print</span> <span class="s2">&quot; </span><span class="si">%s</span><span class="s2"> proceeding to distance histogram computation&quot;</span> <span class="o">%</span> <span class="n">util</span><span class="o">.</span><span class="n">timeStamp</span><span class="p">(</span><span class="n">dateAndTime</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-
-    <span class="k">if</span> <span class="p">(</span><span class="n">histoparam</span><span class="p">[</span><span class="s1">&#39;general&#39;</span><span class="p">][</span><span class="s1">&#39;verbose&#39;</span><span class="p">]):</span>
-        <span class="nb">print</span> <span class="n">util</span><span class="o">.</span><span class="n">SEP</span>
-        <span class="nb">print</span> <span class="s2">&quot; </span><span class="si">%s</span><span class="s2"> spawning worker processes ...&quot;</span> <span class="o">%</span> <span class="n">util</span><span class="o">.</span><span class="n">timeStamp</span><span class="p">(</span><span class="n">t0</span><span class="o">=</span><span class="n">t0</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; </span><span class="si">%s</span><span class="s2"> proceeding to distance histogram computation&quot;</span> <span class="o">%</span> <span class="n">util</span><span class="o">.</span><span class="n">timeStamp</span><span class="p">(</span><span class="n">dateAndTime</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
 
     <span class="c1"># ------ set up the multiprocessing environment ------</span>
     <span class="c1"># use blocking queues for job handling and synchronization</span>
-    <span class="n">task_queue</span> <span class="o">=</span> <span class="n">multiprocessing</span><span class="o">.</span><span class="n">JoinableQueue</span><span class="p">(</span><span class="n">task_queue_maxsize</span><span class="p">)</span>
-    <span class="n">result_queue</span> <span class="o">=</span> <span class="n">multiprocessing</span><span class="o">.</span><span class="n">JoinableQueue</span><span class="p">(</span><span class="n">task_queue_maxsize</span><span class="p">)</span>
+    <span class="n">task_queue</span> <span class="o">=</span> <span class="n">multiprocessing</span><span class="o">.</span><span class="n">JoinableQueue</span><span class="p">(</span><span class="n">histoparam</span><span class="p">[</span><span class="s1">&#39;general&#39;</span><span class="p">][</span><span class="s1">&#39;queue_maxsize&#39;</span><span class="p">])</span>
+    <span class="n">result_queue</span> <span class="o">=</span> <span class="n">multiprocessing</span><span class="o">.</span><span class="n">JoinableQueue</span><span class="p">(</span><span class="n">histoparam</span><span class="p">[</span><span class="s1">&#39;general&#39;</span><span class="p">][</span><span class="s1">&#39;queue_maxsize&#39;</span><span class="p">])</span>
     <span class="c1"># set up and launch worker processes</span>
     <span class="n">pool</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="c1"># set up processes for the calculation of the individual histograms</span>
@@ -345,12 +348,22 @@
         <span class="n">mp_worker</span> <span class="o">=</span> <span class="n">multiprocessing</span><span class="o">.</span><span class="n">Process</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="n">worker</span><span class="o">.</span><span class="n">compute</span><span class="p">,</span>
                                             <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">histoparam</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="s1">&#39;gpu&#39;</span><span class="p">,</span> <span class="n">task_queue</span><span class="p">,</span> <span class="n">result_queue</span><span class="p">,</span> <span class="n">r_max</span><span class="p">,</span> <span class="n">nbins</span><span class="p">,</span> <span class="n">t0</span><span class="p">))</span>
         <span class="n">pool</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">mp_worker</span><span class="p">)</span>
+    <span class="n">n_workers</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">pool</span><span class="p">)</span>
+
     <span class="c1"># set up process for summing-up and writing the histograms</span>
     <span class="n">sum_worker</span> <span class="o">=</span> <span class="n">multiprocessing</span><span class="o">.</span><span class="n">Process</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="n">worker</span><span class="o">.</span><span class="n">sum</span><span class="p">,</span>
-                                         <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">histoparam</span><span class="p">,</span> <span class="n">result_queue</span><span class="p">,</span> <span class="n">nEl</span><span class="p">,</span> <span class="n">nbins</span><span class="p">,</span> <span class="n">dr</span><span class="p">,</span> <span class="n">header_str</span><span class="p">,</span> <span class="n">t0</span><span class="p">))</span>
+                                         <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">histoparam</span><span class="p">,</span> <span class="n">result_queue</span><span class="p">,</span> <span class="n">nEl</span><span class="p">,</span> <span class="n">nbins</span><span class="p">,</span> <span class="n">dr</span><span class="p">,</span> <span class="n">header_str</span><span class="p">,</span> <span class="n">t0</span><span class="p">,</span> <span class="n">n_frames</span><span class="p">,</span> <span class="n">n_workers</span><span class="p">))</span>
 
     <span class="c1"># build list of all child processes to be used by the signal handler</span>
     <span class="n">mp_all_workers_list</span> <span class="o">=</span> <span class="n">pool</span> <span class="o">+</span> <span class="p">[</span><span class="n">sum_worker</span><span class="p">]</span>
+
+
+    <span class="k">if</span> <span class="p">(</span><span class="n">histoparam</span><span class="p">[</span><span class="s1">&#39;general&#39;</span><span class="p">][</span><span class="s1">&#39;verbose&#39;</span><span class="p">]):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">util</span><span class="o">.</span><span class="n">SEP</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; </span><span class="si">%s</span><span class="s2"> spawning processes: </span><span class="si">%d</span><span class="s2"> CPU worker, </span><span class="si">%d</span><span class="s2"> GPU worker, 1 writer&quot;</span> <span class="o">%</span> \
+            <span class="p">(</span><span class="n">util</span><span class="o">.</span><span class="n">timeStamp</span><span class="p">(</span><span class="n">t0</span><span class="o">=</span><span class="n">t0</span><span class="p">),</span> <span class="n">histoparam</span><span class="p">[</span><span class="s1">&#39;cpu&#39;</span><span class="p">][</span><span class="s1">&#39;workers&#39;</span><span class="p">],</span> <span class="n">histoparam</span><span class="p">[</span><span class="s1">&#39;gpu&#39;</span><span class="p">][</span><span class="s1">&#39;workers&#39;</span><span class="p">]))</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
+
 
     <span class="k">for</span> <span class="n">mp_worker</span> <span class="ow">in</span> <span class="n">mp_all_workers_list</span><span class="p">:</span>
         <span class="n">mp_worker</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
@@ -374,13 +387,15 @@
     <span class="n">nr_header</span> <span class="o">=</span> <span class="s2">&quot;# &quot;</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> &quot;</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">elements</span><span class="p">)</span> <span class="o">%</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">elements</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>
     <span class="n">nr_part_fp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">nr_header</span><span class="p">)</span>
 
+    <span class="n">termination_msg</span> <span class="o">=</span> <span class="s2">&quot;done&quot;</span>
+
     <span class="n">reader</span> <span class="o">=</span> <span class="n">hdf5</span><span class="o">.</span><span class="n">H5Reader</span><span class="p">(</span><span class="n">file</span><span class="o">=</span><span class="n">histoparam</span><span class="p">[</span><span class="s1">&#39;input&#39;</span><span class="p">][</span><span class="s1">&#39;file&#39;</span><span class="p">],</span>
                            <span class="n">first</span><span class="o">=</span><span class="n">histoparam</span><span class="p">[</span><span class="s1">&#39;input&#39;</span><span class="p">][</span><span class="s1">&#39;first&#39;</span><span class="p">],</span>
                            <span class="n">last</span><span class="o">=</span><span class="n">histoparam</span><span class="p">[</span><span class="s1">&#39;input&#39;</span><span class="p">][</span><span class="s1">&#39;last&#39;</span><span class="p">],</span>
                            <span class="n">step</span><span class="o">=</span><span class="n">histoparam</span><span class="p">[</span><span class="s1">&#39;input&#39;</span><span class="p">][</span><span class="s1">&#39;step&#39;</span><span class="p">],</span>
                            <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
     <span class="c1"># --- fetch data from reader and put it into the task queue</span>
-    <span class="k">for</span> <span class="n">frm</span> <span class="ow">in</span> <span class="n">reader</span><span class="o">.</span><span class="n">next</span><span class="p">():</span>
+    <span class="k">for</span> <span class="n">frm</span> <span class="ow">in</span> <span class="nb">next</span><span class="p">(</span><span class="n">reader</span><span class="p">):</span>
         <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">frm</span><span class="p">,</span> <span class="n">base</span><span class="o">.</span><span class="n">Container</span><span class="p">)</span>
 
         <span class="c1"># (1) --- create a list containing per-species numpy arrays with coordinate triples</span>
@@ -418,7 +433,7 @@
             <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;geometry filter detected, disabling box.&quot;</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">histoparam</span><span class="p">[</span><span class="s1">&#39;input&#39;</span><span class="p">][</span><span class="s1">&#39;periodic_box&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="k">if</span> <span class="n">frm</span><span class="o">.</span><span class="n">has_key</span><span class="p">(</span><span class="n">base</span><span class="o">.</span><span class="n">loc_dimensions</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">frm</span><span class="o">.</span><span class="n">contains_key</span><span class="p">(</span><span class="n">base</span><span class="o">.</span><span class="n">loc_dimensions</span><span class="p">):</span>
                     <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;using box information provided by frame.&quot;</span>
                     <span class="k">pass</span>
                 <span class="k">else</span><span class="p">:</span>
@@ -435,10 +450,10 @@
         <span class="k">if</span> <span class="n">box_volume</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">frm</span><span class="o">.</span><span class="n">put_data</span><span class="p">(</span><span class="n">base</span><span class="o">.</span><span class="n">loc_volumes</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;box&#39;</span><span class="p">:</span> <span class="n">box_volume</span><span class="p">})</span>
 
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">frm</span><span class="o">.</span><span class="n">has_key</span><span class="p">(</span><span class="n">base</span><span class="o">.</span><span class="n">loc_histogram_scale_factors</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">frm</span><span class="o">.</span><span class="n">contains_key</span><span class="p">(</span><span class="n">base</span><span class="o">.</span><span class="n">loc_histogram_scale_factors</span><span class="p">):</span>
             <span class="n">frm</span><span class="o">.</span><span class="n">put_data</span><span class="p">(</span><span class="n">base</span><span class="o">.</span><span class="n">loc_histogram_scale_factors</span><span class="p">,</span> <span class="p">[])</span>
 
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">frm</span><span class="o">.</span><span class="n">has_key</span><span class="p">(</span><span class="n">base</span><span class="o">.</span><span class="n">loc_histogram_mask</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">frm</span><span class="o">.</span><span class="n">contains_key</span><span class="p">(</span><span class="n">base</span><span class="o">.</span><span class="n">loc_histogram_mask</span><span class="p">):</span>
             <span class="n">frm</span><span class="o">.</span><span class="n">put_data</span><span class="p">(</span><span class="n">base</span><span class="o">.</span><span class="n">loc_histogram_mask</span><span class="p">,</span> <span class="p">[])</span>
 
         <span class="n">bap</span> <span class="o">=</span> <span class="mf">0.0</span>  <span class="c1"># billion atom pairs</span>
@@ -447,51 +462,65 @@
                 <span class="n">n_at1</span> <span class="o">=</span> <span class="n">particleNrs</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
                 <span class="n">n_at2</span> <span class="o">=</span> <span class="n">particleNrs</span><span class="p">[</span><span class="n">j</span><span class="p">]</span>
                 <span class="k">if</span> <span class="p">(</span><span class="n">i</span> <span class="o">==</span> <span class="n">j</span><span class="p">):</span>
-                    <span class="n">bap</span> <span class="o">+=</span> <span class="nb">float</span><span class="p">((</span><span class="n">n_at1</span> <span class="o">*</span> <span class="p">(</span><span class="n">n_at1</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="mf">1.e9</span>
+                    <span class="n">bap</span> <span class="o">+=</span> <span class="n">old_div</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">old_div</span><span class="p">((</span><span class="n">n_at1</span> <span class="o">*</span> <span class="p">(</span><span class="n">n_at1</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)),</span> <span class="mi">2</span><span class="p">)),</span> <span class="mf">1.e9</span><span class="p">)</span>
                 <span class="k">else</span><span class="p">:</span>
-                    <span class="n">bap</span> <span class="o">+=</span> <span class="nb">float</span><span class="p">(</span><span class="n">n_at1</span> <span class="o">*</span> <span class="n">n_at2</span><span class="p">)</span> <span class="o">/</span> <span class="mf">1.e9</span>
+                    <span class="n">bap</span> <span class="o">+=</span> <span class="n">old_div</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">n_at1</span> <span class="o">*</span> <span class="n">n_at2</span><span class="p">),</span> <span class="mf">1.e9</span><span class="p">)</span>
 
         <span class="c1"># --- write out particle numbers</span>
         <span class="n">nr_part_fp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%d</span><span class="s2"> &quot;</span> <span class="o">*</span> <span class="p">(</span><span class="n">nEl</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="nb">tuple</span><span class="p">([</span><span class="n">frm</span><span class="o">.</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="n">particleNrs</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="p">(</span><span class="n">histoparam</span><span class="p">[</span><span class="s1">&#39;general&#39;</span><span class="p">][</span><span class="s1">&#39;verbose&#39;</span><span class="p">]):</span>
-            <span class="nb">print</span> <span class="s2">&quot; </span><span class="si">%s</span><span class="s2"> enqueueing frame </span><span class="si">%d</span><span class="s2"> ...&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">util</span><span class="o">.</span><span class="n">timeStamp</span><span class="p">(</span><span class="n">t0</span><span class="o">=</span><span class="n">t0</span><span class="p">),</span> <span class="n">frm</span><span class="o">.</span><span class="n">i</span><span class="p">)</span>
-            <span class="k">if</span> <span class="p">(</span><span class="n">frm</span><span class="o">.</span><span class="n">i</span> <span class="o">==</span> <span class="mi">0</span><span class="p">):</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; </span><span class="si">%s</span><span class="s2"> enqueueing frame </span><span class="si">%d</span><span class="s2"> ...&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">util</span><span class="o">.</span><span class="n">timeStamp</span><span class="p">(</span><span class="n">t0</span><span class="o">=</span><span class="n">t0</span><span class="p">),</span> <span class="n">frm</span><span class="o">.</span><span class="n">i</span><span class="p">))</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">frm</span><span class="o">.</span><span class="n">i</span> <span class="o">%</span> <span class="n">histoparam</span><span class="p">[</span><span class="s1">&#39;output&#39;</span><span class="p">][</span><span class="s1">&#39;flush_interval&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">):</span>
                 <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
 
         <span class="n">work_package</span> <span class="o">=</span> <span class="p">(</span><span class="n">frm</span><span class="p">,</span> <span class="n">bap</span><span class="p">)</span>
-        <span class="n">task_queue</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">work_package</span><span class="p">,</span> <span class="n">task_queue_timeout</span><span class="p">)</span>
+        <span class="n">task_queue</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">work_package</span><span class="p">,</span> <span class="n">histoparam</span><span class="p">[</span><span class="s1">&#39;general&#39;</span><span class="p">][</span><span class="s1">&#39;queue_timeout&#39;</span><span class="p">])</span>
 
         <span class="c1"># cadishi cat be stopped by creating a file &quot;stop&quot; in the same directory</span>
         <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="s2">&quot;stop&quot;</span><span class="p">):</span>
+            <span class="n">termination_msg</span> <span class="o">=</span> <span class="s2">&quot;stop&quot;</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">histoparam</span><span class="p">[</span><span class="s1">&#39;general&#39;</span><span class="p">][</span><span class="s1">&#39;verbose&#39;</span><span class="p">]):</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; </span><span class="si">%s</span><span class="s2"> `stop&#39; file encountered&quot;</span> <span class="o">%</span> <span class="n">util</span><span class="o">.</span><span class="n">timeStamp</span><span class="p">(</span><span class="n">t0</span><span class="o">=</span><span class="n">t0</span><span class="p">))</span>
+                <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
             <span class="k">break</span>
 
     <span class="n">nr_part_fp</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 
     <span class="c1"># Trigger the workers to shut down in a controlled way by sending &quot;None&quot;.</span>
     <span class="k">for</span> <span class="n">mp_worker</span> <span class="ow">in</span> <span class="n">pool</span><span class="p">:</span>
-        <span class="n">task_queue</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">task_queue_timeout</span><span class="p">)</span>
+        <span class="n">task_queue</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">termination_msg</span><span class="p">,</span> <span class="n">histoparam</span><span class="p">[</span><span class="s1">&#39;general&#39;</span><span class="p">][</span><span class="s1">&#39;queue_timeout&#39;</span><span class="p">])</span>
 
     <span class="k">if</span> <span class="p">(</span><span class="n">histoparam</span><span class="p">[</span><span class="s1">&#39;general&#39;</span><span class="p">][</span><span class="s1">&#39;verbose&#39;</span><span class="p">]):</span>
-        <span class="nb">print</span> <span class="s2">&quot; </span><span class="si">%s</span><span class="s2"> waiting for worker processes ...&quot;</span> <span class="o">%</span> <span class="n">util</span><span class="o">.</span><span class="n">timeStamp</span><span class="p">(</span><span class="n">t0</span><span class="o">=</span><span class="n">t0</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; </span><span class="si">%s</span><span class="s2"> waiting for worker processes ...&quot;</span> <span class="o">%</span> <span class="n">util</span><span class="o">.</span><span class="n">timeStamp</span><span class="p">(</span><span class="n">t0</span><span class="o">=</span><span class="n">t0</span><span class="p">))</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
+
     <span class="n">task_queue</span><span class="o">.</span><span class="n">join</span><span class="p">()</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">histoparam</span><span class="p">[</span><span class="s1">&#39;general&#39;</span><span class="p">][</span><span class="s1">&#39;verbose&#39;</span><span class="p">]):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; </span><span class="si">%s</span><span class="s2"> joined task_queue&quot;</span> <span class="o">%</span> <span class="n">util</span><span class="o">.</span><span class="n">timeStamp</span><span class="p">(</span><span class="n">t0</span><span class="o">=</span><span class="n">t0</span><span class="p">))</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
+
     <span class="n">result_queue</span><span class="o">.</span><span class="n">join</span><span class="p">()</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">histoparam</span><span class="p">[</span><span class="s1">&#39;general&#39;</span><span class="p">][</span><span class="s1">&#39;verbose&#39;</span><span class="p">]):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; </span><span class="si">%s</span><span class="s2"> joined result_queue&quot;</span> <span class="o">%</span> <span class="n">util</span><span class="o">.</span><span class="n">timeStamp</span><span class="p">(</span><span class="n">t0</span><span class="o">=</span><span class="n">t0</span><span class="p">))</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
 
     <span class="n">t1</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
     <span class="n">wallclock</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">t1</span> <span class="o">-</span> <span class="n">t0</span><span class="p">)</span>
     <span class="n">ntotal</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">histoparam</span><span class="p">[</span><span class="s1">&#39;input&#39;</span><span class="p">][</span><span class="s1">&#39;last&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">histoparam</span><span class="p">[</span><span class="s1">&#39;input&#39;</span><span class="p">][</span><span class="s1">&#39;first&#39;</span><span class="p">])</span>
-    <span class="n">fps</span> <span class="o">=</span> <span class="n">ntotal</span> <span class="o">/</span> <span class="n">wallclock</span>
+    <span class="n">fps</span> <span class="o">=</span> <span class="n">old_div</span><span class="p">(</span><span class="n">ntotal</span><span class="p">,</span> <span class="n">wallclock</span><span class="p">)</span>
 
     <span class="c1"># Save preprocessor meta information (that was fetched from the HDF5 input file)</span>
     <span class="c1"># to a JSON text file for potential evaluation by the postprocessor.</span>
     <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">histoparam</span><span class="p">[</span><span class="s1">&#39;output&#39;</span><span class="p">][</span><span class="s1">&#39;directory&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;preprocessor_log.json&quot;</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
         <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">ti</span><span class="o">.</span><span class="n">pipeline_log</span><span class="p">,</span> <span class="n">fp</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">sort_keys</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
-    <span class="nb">print</span> <span class="n">util</span><span class="o">.</span><span class="n">SEP</span>
-    <span class="nb">print</span> <span class="s2">&quot; </span><span class="si">%s</span><span class="s2"> distance histogram computation finished&quot;</span> <span class="o">%</span> <span class="n">util</span><span class="o">.</span><span class="n">timeStamp</span><span class="p">(</span><span class="n">dateAndTime</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-    <span class="nb">print</span> <span class="s2">&quot;   frames:             </span><span class="si">%d</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">ntotal</span>
-    <span class="nb">print</span> <span class="s2">&quot;   wallclock time:     </span><span class="si">%.3f</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">wallclock</span>
-    <span class="nb">print</span> <span class="s2">&quot;   frames per second:  </span><span class="si">%.3f</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">fps</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">util</span><span class="o">.</span><span class="n">SEP</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; </span><span class="si">%s</span><span class="s2"> distance histogram computation finished&quot;</span> <span class="o">%</span> <span class="n">util</span><span class="o">.</span><span class="n">timeStamp</span><span class="p">(</span><span class="n">dateAndTime</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;   frames:             </span><span class="si">%d</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">ntotal</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;   wallclock time:     </span><span class="si">%.3f</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">wallclock</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;   frames per second:  </span><span class="si">%.3f</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">fps</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;   output directory:   &quot;</span> <span class="o">+</span> <span class="n">histoparam</span><span class="p">[</span><span class="s1">&#39;output&#39;</span><span class="p">][</span><span class="s1">&#39;directory&#39;</span><span class="p">])</span>
 
     <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
 
@@ -503,7 +532,7 @@
     <span class="c1"># join the process (i.e. wait until it terminates itself)!</span>
     <span class="c1"># Using terminate() here does cause HDF5 errors!</span>
     <span class="n">sum_worker</span><span class="o">.</span><span class="n">join</span><span class="p">()</span>
-    <span class="nb">print</span> <span class="n">util</span><span class="o">.</span><span class="n">SEP</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">util</span><span class="o">.</span><span class="n">SEP</span><span class="p">)</span>
     <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span></div>
 </pre></div>
 
@@ -527,7 +556,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2017, Klaus Reuter, Juergen Koefinger.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.6.
     </div>
   </body>
 </html>

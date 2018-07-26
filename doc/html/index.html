@@ -1,16 +1,13 @@
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
     <title>Cadishi documentation &#8212; Cadishi 1.0.0 documentation</title>
-    
     <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
@@ -28,7 +25,7 @@
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Cadishi modules" href="modules.html" /> 
   </head>
-  <body role="document">
+  <body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -112,8 +109,8 @@ h5py, and PyYAML modules. We recommend to use the Anaconda Python Distribution
 which provides all the necessary modules out of the box. Cadishi was mostly
 developed using Anaconda Python 2, versions 4.0.0 and newer. Moreover, to
 compile the high-performance kernels, recent GCC and CUDA (optional)
-installations are required. GCC 4.9 and GCC 5.4, and CUDA 7.5 and 8.0 were used
-successfully. Note that Python 3 is currently not supported.</p>
+installations are required. GCC 4.9, 5.4, 6.4, and 7.2, and CUDA 7.5, 8.0, and
+9.1 were used successfully.</p>
 </div>
 <div class="section" id="features">
 <h2>Features<a class="headerlink" href="#features" title="Permalink to this headline">¶</a></h2>
@@ -127,15 +124,11 @@ are used by the GPU kernel. Hence, it is possible to fully exploit the
 resources of a shared-memory machine. E.g., on a dual-socket server with two
 GPUs, Cadishi would use two CPU worker processes (one per multi-core chip) and
 two GPU worker processes (one per GPU card).</p>
-<p>Optionally, Cadishi supports orthorhombic periodic boxes, applying the minimum
-image convention to the distances internally. Support for triclinic boxes is
-implemented following the equations given by Tuckerman (M. E. Tuckerman.
-Statistical Mechanics: Theory and Molecular Simulation. Oxford University Press,
-Oxford, UK, 2010.).  Note that we consider support for triclinic boxes as highly
-experimental. Check your results carefully for possible inconsistencies.</p>
+<p>Cadishi supports orthorhombic and triclinic periodic boxes, applying the minimum
+image convention to the distances internally.</p>
 <p>Computations can be performed in single (default) or double precision.
 Optionally, the distances can be checked if they fit into the desired histogram
-width. Given the combinatorial space resulting from these possibilities,
+width. Given the combinatorial explosion resulting from these possibilities,
 templated C++ code is used to generate machine code with a minimum amount of
 branches at runtime. Recent compilers are known to generate well-vectorized
 machine code from the distance calculation for the CPU. The GPU kernel benefits
@@ -149,20 +142,20 @@ MAXWELL generation of NVIDIA GPUs.</p>
 <code class="docutils literal"><span class="pre">./preprocessor_output/trajectory.h5</span></code> when Cadishi is used in concert with
 the Capriqorn package from the same authors. In any case the HDF5 file must have
 a certain internal structure as shown in the following example:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">/</span><span class="mi">0</span><span class="o">/</span><span class="n">coordinates</span><span class="o">/</span><span class="n">species_0</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">/</span><span class="mi">1</span><span class="o">/</span><span class="n">coordinates</span><span class="o">/</span><span class="n">species_0</span>
                <span class="n">species_1</span>
                <span class="n">species_2</span>
                <span class="o">...</span>
-<span class="o">/</span><span class="mi">1</span><span class="o">/</span><span class="n">coordinates</span><span class="o">/</span><span class="n">species_0</span>
+<span class="o">/</span><span class="mi">2</span><span class="o">/</span><span class="n">coordinates</span><span class="o">/</span><span class="n">species_0</span>
                <span class="n">species_1</span>
                <span class="n">species_2</span>
                <span class="o">...</span>
 <span class="o">...</span>
 </pre></div>
 </div>
-<p>Frames are numbered starting with 0. The number is used as the label for the
+<p>Frames are numbered starting with 1. The number is used as the label for the
 uppermost HDF5 group. For each frame the particle coordinates are stored in the
-sub-group &#8216;coordinates&#8217;. Coordinate sets are double precision HDF5 datasets of
+sub-group ‘coordinates’. Coordinate sets are double precision HDF5 datasets of
 size (n_i, 3) where n_i is the number of particles of species i. The coordinate
 datasets use the name of the species as the label which e.g. can be the name of
 the chemical element in the context of MD data.</p>
@@ -170,14 +163,19 @@ the chemical element in the context of MD data.</p>
 available at
 <a class="reference download internal" href="_downloads/input_example.py" download=""><code class="xref download docutils literal"><span class="pre">doc/scripts/input_example.py</span></code></a>.
 Adapt that code to easily implement a reader for arbitrary custom data.</p>
+<p>To <strong>convert data from a plethora of MD simulation data formats</strong> to Cadishi’s
+HDF5 format, we provide the script <code class="docutils literal"><span class="pre">md_to_cadishi.py</span></code> which is installed
+together with the main program <code class="docutils literal"><span class="pre">cadishi</span></code>.  It uses the reader from the
+MDAnalysis package which needs to be installed to be able to use the conversion
+tool (but is not a requirement to run Cadishi).</p>
 <p>For each frame read from the HDF5 file <strong>Cadishi computes the distance histograms</strong>
 between the particles for all combinations of species. The top-level parallelization
 of Cadishi is able to compute multiple frames simultaneously on all GPUs and CPUs
-available on a node. Within a frame the computation is highly parallelized using
+available on a node. Within a frame, the computation is highly parallelized using
 threads.</p>
 <p>Finally, <strong>Cadishi writes the histograms into HDF5 files</strong> according to the
 following scheme:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">/</span><span class="mi">0</span><span class="o">/</span><span class="n">histograms</span><span class="o">/</span><span class="n">species_0</span><span class="p">,</span><span class="n">species_0</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">/</span><span class="mi">1</span><span class="o">/</span><span class="n">histograms</span><span class="o">/</span><span class="n">species_0</span><span class="p">,</span><span class="n">species_0</span>
               <span class="n">species_0</span><span class="p">,</span><span class="n">species_1</span>
               <span class="n">species_0</span><span class="p">,</span><span class="n">species_2</span>
               <span class="n">species_1</span><span class="p">,</span><span class="n">species_1</span>
@@ -194,7 +192,7 @@ parameter file that comes with Cadishi.  It can be generated using the command
 <code class="docutils literal"><span class="pre">cadishi</span> <span class="pre">example</span> <span class="pre">[--expert]</span></code>.</p>
 <p>To <strong>make life with HDF5 files easier</strong> we recommend to use a graphical HDF5
 viewer such as HDFView.  Note, however, that HDFView does not support the LZF
-compression that comes with the Python HDF5 module &#8220;H5py&#8221; and is used by Cadishi
+compression that comes with the Python HDF5 module “H5py” and is used by Cadishi
 by default (LZF can be disabled via the parameter file)).</p>
 <p>Moreover, to demonstrate how to access the HDF5 data written by Cadishi from
 Python we provide the example program
@@ -211,27 +209,39 @@ single HDF5 files quickly before viewing them with HDFView.</p>
 using <code class="docutils literal"><span class="pre">cadishi</span> <span class="pre">example</span> <span class="pre">[--expert]</span></code>). Below we pick the most important
 parameters and provide some background explanation.</p>
 <ul class="simple">
-<li><code class="docutils literal"><span class="pre">histogram:dr</span></code>: Defines the histogram bin width. The total number of bins is determined in conjunction with the following parameter.</li>
-<li><code class="docutils literal"><span class="pre">histogram:r_max</span></code>: Defines the histogram cutoff radius. Make sure that your input data is compatible with the cutoff radius, i.e. the maximum distance between all points must be smaller. In this context, the following settings are important.</li>
-<li><code class="docutils literal"><span class="pre">cpu:check_input</span></code> and <code class="docutils literal"><span class="pre">gpu:check_input</span></code>: Checks at runtime if any distance computed is equal or smaller than the cutoff radius. If this is the case, an exception is raised that causes Cadishi to exit. If these parameters are set to false, no checks are performed and outliers may write into non-allocated memory. In order to achieve the highest possible performance, make absolutely sure that your data fits into r_max and disable the checks.</li>
-<li><code class="docutils literal"><span class="pre">input:periodic_box</span></code>: The default value is null, causing Cadishi to automatically look for the presence of box information in the input data. A box can as well be specified explicitly, or disabled by setting the value to an empty list []. Note that we consider the triclinic box implementation currently as experimental.</li>
+<li><code class="docutils literal"><span class="pre">histogram:dr</span></code>: Defines the histogram bin width. The total number of bins is
+determined in conjunction with the following parameter.</li>
+<li><code class="docutils literal"><span class="pre">histogram:r_max</span></code>: Defines the histogram cutoff radius. Make sure that your
+input data is compatible with the cutoff radius, i.e. the maximum distance
+between all points must be smaller. In this context, the following settings
+are important.</li>
+<li><code class="docutils literal"><span class="pre">cpu:check_input</span></code> and <code class="docutils literal"><span class="pre">gpu:check_input</span></code>: Checks at runtime if any distance
+computed is equal or smaller than the cutoff radius. If this is not the case, an
+exception is raised that causes Cadishi to exit. If these parameters are set
+to false, no checks are performed and outliers may write into non-allocated
+memory. In order to achieve the highest possible performance, make absolutely
+sure that your data fits into r_max and disable the checks.</li>
+<li><code class="docutils literal"><span class="pre">input:periodic_box</span></code>: The default value is null, causing Cadishi to
+automatically look for the presence of box information in the input data. A
+box can as well be specified explicitly, or disabled by setting the value to
+an empty list [].</li>
 </ul>
 <p>To achieve optimum <strong>performance</strong>, the number of workers and threads must be
 tuned to your system. For large frames (&gt;O(100000) particles) it is reasonable
 to use few workers and a large number of threads per worker, e.g. if you have a
 16 core CPU you could run a single cpu worker process with 14 threads, while
-keeping the 2 more cores busy with Cadishi&#8217;s reader and writer processes (you
+keeping the 2 more cores busy with Cadishi’s reader and writer processes (you
 always have these two processes). For small frames, use more workers and fewer
 (down to one) threads. Running some experiments is useful to gain experience
 with specific datasets. Note that Cadishi supports NUMA awareness, i.e.
 processes can be pinned to CPUs. Calculations on large frames <em>greatly</em> benefit
 from the GPU kernels. Enable one worker per GPU. We have seen a binning rate of
-up to 160 billion particle-pairs per second on a single Pascal GPU.</p>
+up to 495 billion particle-pairs per second on a single Volta GPU.</p>
 </div>
 <div class="section" id="installation">
 <h2>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h2>
 <p>The package comes with a standard Python setup.py file.  It is installed e.g. as
-follows into the user&#8217;s homedirectory:</p>
+follows into the user’s homedirectory:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">setup</span><span class="o">.</span><span class="n">py</span> <span class="n">install</span> <span class="o">--</span><span class="n">user</span>
 </pre></div>
 </div>
@@ -256,7 +266,7 @@ follows:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">cadishi</span> <span class="n">example</span> <span class="p">[</span><span class="o">--</span><span class="n">expert</span><span class="p">]</span>
 </pre></div>
 </div>
-<p>By default, the parameter file&#8217;s name is <code class="docutils literal"><span class="pre">histograms.yaml</span></code>. Edit the parameter
+<p>By default, the parameter file’s name is <code class="docutils literal"><span class="pre">histograms.yaml</span></code>. Edit the parameter
 file to your needs.  In particular, the compute kernels <em>pydh</em> (CPU) and <em>cudh</em>
 (GPU) can be configured.  In the example parameter file, the input configuration
 points to the default test case included with the Cadishi package. Adapt the
@@ -300,8 +310,6 @@ present in the Cadishi source code.</p>
 <li class="toctree-l2"><a class="reference internal" href="executables.html#module-cadishi.exe">cadishi.exe</a></li>
 <li class="toctree-l2"><a class="reference internal" href="executables.html#module-cadishi.exe.cli">cadishi.exe.cli</a></li>
 <li class="toctree-l2"><a class="reference internal" href="executables.html#module-cadishi.exe.histograms">cadishi.exe.histograms</a></li>
-<li class="toctree-l2"><a class="reference internal" href="executables.html#module-cadishi.exe.json2yaml">cadishi.exe.json2yaml</a></li>
-<li class="toctree-l2"><a class="reference internal" href="executables.html#module-cadishi.exe.yaml2json">cadishi.exe.yaml2json</a></li>
 <li class="toctree-l2"><a class="reference internal" href="executables.html#module-cadishi.exe.unpack">cadishi.exe.unpack</a></li>
 </ul>
 </li>
@@ -312,13 +320,13 @@ present in the Cadishi source code.</p>
 <h2>License and Citation<a class="headerlink" href="#license-and-citation" title="Permalink to this headline">¶</a></h2>
 <p>Cadishi is released under the permissive MIT license.  See the file
 <cite>LICENSE.txt</cite> for details.</p>
-<p>Copyright 2015-2017  Klaus Reuter (MPCDF), Juergen Koefinger (MPIBP)</p>
-<p>In case you&#8217;re using Cadishi for your own academic or non-academic research, <strong>we
+<p>Copyright 2015-2018  Klaus Reuter (MPCDF), Juergen Koefinger (MPIBP)</p>
+<p>In case you’re using Cadishi for your own academic or non-academic research, <strong>we
 kindly request that you cite Cadishi in your publications and presentations</strong>. We
 suggest the following citations as appropriate:</p>
 <p>A proper reference will be added once it is publicly available. Please use the
 following reference meanwhile:
-&#8220;K. Reuter, J. Koefinger: Cadishi, <a class="reference external" href="https://github.com/bio-phys/cadishi">https://github.com/bio-phys/cadishi</a>, 2017.&#8221;</p>
+“K. Reuter, J. Koefinger: Cadishi, <a class="reference external" href="https://github.com/bio-phys/cadishi">https://github.com/bio-phys/cadishi</a>, 2017.”</p>
 </div>
 <div class="section" id="indices-and-tables">
 <h2>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h2>
@@ -353,7 +361,7 @@ following reference meanwhile:
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2017, Klaus Reuter, Juergen Koefinger.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.6.
     </div>
   </body>
 </html>
