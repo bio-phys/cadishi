@@ -61,6 +61,49 @@ Alternatively, you may access the local copy at `doc/html/index.html` after havi
 cloned the repository.
 
 
+Directories and Files
+---------------------
+
+The CADISHI software is designed and packaged as a Python package.  Each Python
+source file contains docstrings, explaining each module and function.
+Nevertheless, an explanation of the directory structure and of important files
+therein is given in the following::
+
+`cadishi` directory, and subdirectories
+  CADISHI Python module, implementing various functions necessary to run the
+  CADISHI engine.
+
+`cadishi/exe` directory
+  CADISHI executables, to be invoked via the `cadishi` command.  Most
+  importantly, `histograms.py` is the main program of the CADISHI engine.
+
+`cadishi/kernel` directory, and subdirectories
+  C++/CUDA high-performance implementations of the distance histogram
+  computation, and interfaces to Python.  Noteworthy files are:
+
+`cadishi/kernel/c_pydh.pyx`
+  Cython interface to the CPU distance histogram kernel (pydh).
+
+`cadishi/kernel/c_pydh_functions.cc`
+  C++ CPU distance histogram kernel implementation.
+
+`cadishi/kernel/c_cudh.pyx`
+  Cython interface to the GPU distance histogram kernel (cudh).
+
+`cadishi/kernel/c_cudh_functions.cu`
+  CUDA GPU distance histogram kernel.
+
+`doc` directory
+  Documentation in rst format, to be processed using the Sphinx documentation
+  system.
+
+`aux` directory
+  Auxiliary scripts for CADISHI, e.g. bash completion and data import.
+
+`scripts` directory
+  Example installation scripts for CADISHI.
+
+
 License and Citation
 --------------------
 
