@@ -67,7 +67,7 @@ Directories and Files
 The CADISHI software is designed and packaged as a Python package.  Each Python
 source file contains docstrings, explaining each module and function.
 Nevertheless, an explanation of the directory structure and of important files
-therein is given in the following::
+therein is given in the following.
 
 `cadishi` directory, and subdirectories
   CADISHI Python module, implementing various functions necessary to run the
