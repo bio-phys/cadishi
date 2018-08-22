@@ -1,4 +1,4 @@
-Cadishi modules
+CADISHI modules
 ===============
 
 The following documentation was automatically generated from the docstrings

@@ -1,4 +1,4 @@
-Cadishi compute kernels
+CADISHI compute kernels
 =======================
 
 The following documentation was automatically generated from the docstrings

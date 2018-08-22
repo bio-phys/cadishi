@@ -5,7 +5,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Cadishi documentation &#8212; Cadishi 1.1.0 documentation</title>
+    <title>CADISHI documentation &#8212; CADISHI 1.1.0 documentation</title>
     <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Cadishi modules" href="modules.html" /> 
+    <link rel="next" title="CADISHI modules" href="modules.html" /> 
   </head>
   <body>
     <div class="related" role="navigation" aria-label="related navigation">
@@ -36,16 +36,16 @@
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="modules.html" title="Cadishi modules"
+          <a href="modules.html" title="CADISHI modules"
              accesskey="N">next</a> |</li>
-        <li class="nav-item nav-item-0"><a href="#">Cadishi 1.1.0 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="#">CADISHI 1.1.0 documentation</a> &#187;</li> 
       </ul>
     </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
   <h3><a href="#">Table Of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">Cadishi documentation</a><ul>
+<li><a class="reference internal" href="#">CADISHI documentation</a><ul>
 <li><a class="reference internal" href="#introduction">Introduction</a></li>
 <li><a class="reference internal" href="#requirements">Requirements</a></li>
 <li><a class="reference internal" href="#features">Features</a></li>
@@ -62,7 +62,7 @@
 
   <h4>Next topic</h4>
   <p class="topless"><a href="modules.html"
-                        title="next chapter">Cadishi modules</a></p>
+                        title="next chapter">CADISHI modules</a></p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -89,24 +89,27 @@
           <div class="body" role="main">
             
   <div class="section" id="cadishi-documentation">
-<h1>Cadishi documentation<a class="headerlink" href="#cadishi-documentation" title="Permalink to this headline">¶</a></h1>
+<h1>CADISHI documentation<a class="headerlink" href="#cadishi-documentation" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="introduction">
 <h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
-<p>The Cadishi package is designed to perform fast computations of histograms of
+<p>The CADISHI package is designed to perform fast computations of histograms of
 the (Euclidean) distances between objects. For example, these objects may be
 atoms from molecular dynamics (MD) simulation datasets, or stars or galaxies
-from astrophysical datasets. While Cadishi is written mostly in Python, it is
+from astrophysical datasets. While CADISHI is written mostly in Python, it is
 built upon high-performance kernels written in C++ and CUDA to exploit the CPU
 and GPU resources of a compute node as best as possible.</p>
-<p>In the field of MD simulations, Cadishi is most useful in conjunction with the
-Capriqorn package. The name Cadishi is simply an acronym derived from (or, more
+<p>In the field of MD simulations, CADISHI is most useful in conjunction with the
+Capriqorn package. The name CADISHI is simply an acronym derived from (or, more
 precisely, the syllabic abbreviation of) <em>calculation of distance histograms</em>.</p>
+<p>For more information, we refer to our publication:</p>
+<p>K. Reuter, J. Koefinger; CADISHI: Fast parallel calculation of particle-pair
+distance histograms on CPUs and GPUs; <a class="reference external" href="https://arxiv.org/abs/1808.01478">https://arxiv.org/abs/1808.01478</a>; 2018.</p>
 </div>
 <div class="section" id="requirements">
 <h2>Requirements<a class="headerlink" href="#requirements" title="Permalink to this headline">¶</a></h2>
-<p>Cadishi requires a Python 2.7 or Python 3.X installation including the NumPy,
+<p>CADISHI requires a Python 2.7 or Python 3.X installation including the NumPy,
 SciPy, Cython, h5py, and PyYAML modules. We recommend to use the Anaconda Python
-Distribution which provides all the necessary modules out of the box. Cadishi
+Distribution which provides all the necessary modules out of the box. CADISHI
 was mostly developed using Anaconda Python 2, versions 4.0.0 and newer.
 Moreover, to compile the high-performance kernels, recent GCC and CUDA
 (optional) installations are required. GCC 4.9, 5.4, 6.4, and 7.2, and CUDA 7.5,
@@ -114,7 +117,7 @@ Moreover, to compile the high-performance kernels, recent GCC and CUDA
 </div>
 <div class="section" id="features">
 <h2>Features<a class="headerlink" href="#features" title="Permalink to this headline">¶</a></h2>
-<p>Cadishi features a two-level parallelization. On the top level, Cadishi
+<p>CADISHI features a two-level parallelization. On the top level, CADISHI
 parallelizes over frames (i.e. snapshots of the ensemble of objects at certain
 points in time) using the Python multiprocessing module. A single frame is
 processed by a single worker process running a CPU or GPU kernel. Multiple
@@ -122,9 +125,9 @@ worker processes may run simultaneously on a shared-memory multi-core machine.
 On the frame level, OpenMP threads are used by the CPU kernel, and CUDA threads
 are used by the GPU kernel. Hence, it is possible to fully exploit the
 resources of a shared-memory machine. E.g., on a dual-socket server with two
-GPUs, Cadishi would use two CPU worker processes (one per multi-core chip) and
+GPUs, CADISHI would use two CPU worker processes (one per multi-core chip) and
 two GPU worker processes (one per GPU card).</p>
-<p>Cadishi supports orthorhombic and triclinic periodic boxes, applying the minimum
+<p>CADISHI supports orthorhombic and triclinic periodic boxes, applying the minimum
 image convention to the distances internally.</p>
 <p>Computations can be performed in single (default) or double precision.
 Optionally, the distances can be checked if they fit into the desired histogram
@@ -137,9 +140,9 @@ MAXWELL generation of NVIDIA GPUs.</p>
 </div>
 <div class="section" id="input-data-distance-histogram-computation-output-data">
 <h2>Input data, distance histogram computation, output data<a class="headerlink" href="#input-data-distance-histogram-computation-output-data" title="Permalink to this headline">¶</a></h2>
-<p><strong>Cadishi reads input data from an HDF5 file</strong> that is specified in the
+<p><strong>CADISHI reads input data from an HDF5 file</strong> that is specified in the
 <code class="docutils literal"><span class="pre">histograms.yaml</span></code> parameter file.  A typical file location is
-<code class="docutils literal"><span class="pre">./preprocessor_output/trajectory.h5</span></code> when Cadishi is used in concert with
+<code class="docutils literal"><span class="pre">./preprocessor_output/trajectory.h5</span></code> when CADISHI is used in concert with
 the Capriqorn package from the same authors. In any case the HDF5 file must have
 a certain internal structure as shown in the following example:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">/</span><span class="mi">1</span><span class="o">/</span><span class="n">coordinates</span><span class="o">/</span><span class="n">species_0</span>
@@ -159,21 +162,21 @@ sub-group ‘coordinates’. Coordinate sets are double precision HDF5 datasets 
 size (n_i, 3) where n_i is the number of particles of species i. The coordinate
 datasets use the name of the species as the label which e.g. can be the name of
 the chemical element in the context of MD data.</p>
-<p>To demonstrate how to feed data into Cadishi there is an <strong>example code</strong>
+<p>To demonstrate how to feed data into CADISHI there is an <strong>example code</strong>
 available at
 <a class="reference download internal" href="_downloads/input_example.py" download=""><code class="xref download docutils literal"><span class="pre">doc/scripts/input_example.py</span></code></a>.
 Adapt that code to easily implement a reader for arbitrary custom data.</p>
-<p>To <strong>convert data from a plethora of MD simulation data formats</strong> to Cadishi’s
+<p>To <strong>convert data from a plethora of MD simulation data formats</strong> to CADISHI’s
 HDF5 format, we provide the script <code class="docutils literal"><span class="pre">md_to_cadishi.py</span></code> which is installed
 together with the main program <code class="docutils literal"><span class="pre">cadishi</span></code>.  It uses the reader from the
 MDAnalysis package which needs to be installed to be able to use the conversion
-tool (but is not a requirement to run Cadishi).</p>
-<p>For each frame read from the HDF5 file <strong>Cadishi computes the distance histograms</strong>
+tool (but is not a requirement to run CADISHI).</p>
+<p>For each frame read from the HDF5 file <strong>CADISHI computes the distance histograms</strong>
 between the particles for all combinations of species. The top-level parallelization
-of Cadishi is able to compute multiple frames simultaneously on all GPUs and CPUs
+of CADISHI is able to compute multiple frames simultaneously on all GPUs and CPUs
 available on a node. Within a frame, the computation is highly parallelized using
 threads.</p>
-<p>Finally, <strong>Cadishi writes the histograms into HDF5 files</strong> according to the
+<p>Finally, <strong>CADISHI writes the histograms into HDF5 files</strong> according to the
 following scheme:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">/</span><span class="mi">1</span><span class="o">/</span><span class="n">histograms</span><span class="o">/</span><span class="n">species_0</span><span class="p">,</span><span class="n">species_0</span>
               <span class="n">species_0</span><span class="p">,</span><span class="n">species_1</span>
@@ -188,24 +191,24 @@ following scheme:</p>
 <p>The HDF5 histogram datasets are single-column vectors of 64 bit floats. The
 numerical datatype was chosen to make averaging easier and more consistent.</p>
 <p>To get an idea about all the options available please have a look at the example
-parameter file that comes with Cadishi.  It can be generated using the command
+parameter file that comes with CADISHI.  It can be generated using the command
 <code class="docutils literal"><span class="pre">cadishi</span> <span class="pre">example</span> <span class="pre">[--expert]</span></code>.</p>
 <p>To <strong>make life with HDF5 files easier</strong> we recommend to use a graphical HDF5
 viewer such as HDFView.  Note, however, that HDFView does not support the LZF
-compression that comes with the Python HDF5 module “H5py” and is used by Cadishi
+compression that comes with the Python HDF5 module “H5py” and is used by CADISHI
 by default (LZF can be disabled via the parameter file)).</p>
-<p>Moreover, to demonstrate how to access the HDF5 data written by Cadishi from
+<p>Moreover, to demonstrate how to access the HDF5 data written by CADISHI from
 Python we provide the example program
 <a class="reference download internal" href="_downloads/plot_hdf5_data.py" download=""><code class="xref download docutils literal"><span class="pre">doc/scripts/plot_hdf5_data.py</span></code></a>.
 It opens the HDF5 container, reads the last frame and plots a histogram using
-matplotlib. As an input file, the Cadishi output from the test case can be taken.</p>
-<p>Finally, Cadishi comes with a HDF5 unpack tool (<code class="docutils literal"><span class="pre">cadishi</span> <span class="pre">unpack</span></code>) and a HDF5
+matplotlib. As an input file, the CADISHI output from the test case can be taken.</p>
+<p>Finally, CADISHI comes with a HDF5 unpack tool (<code class="docutils literal"><span class="pre">cadishi</span> <span class="pre">unpack</span></code>) and a HDF5
 merge tool (<code class="docutils literal"><span class="pre">cadishi</span> <span class="pre">merge</span></code>). The latter tool can also be used to decompress
 single HDF5 files quickly before viewing them with HDFView.</p>
 </div>
 <div class="section" id="parameters">
 <h2>Parameters<a class="headerlink" href="#parameters" title="Permalink to this headline">¶</a></h2>
-<p>Cadishi is highly configurable via its YAML parameter file (create a sample file
+<p>CADISHI is highly configurable via its YAML parameter file (create a sample file
 using <code class="docutils literal"><span class="pre">cadishi</span> <span class="pre">example</span> <span class="pre">[--expert]</span></code>). Below we pick the most important
 parameters and provide some background explanation.</p>
 <ul class="simple">
@@ -217,11 +220,11 @@ between all points must be smaller. In this context, the following settings
 are important.</li>
 <li><code class="docutils literal"><span class="pre">cpu:check_input</span></code> and <code class="docutils literal"><span class="pre">gpu:check_input</span></code>: Checks at runtime if any distance
 computed is equal or smaller than the cutoff radius. If this is not the case, an
-exception is raised that causes Cadishi to exit. If these parameters are set
+exception is raised that causes CADISHI to exit. If these parameters are set
 to false, no checks are performed and outliers may write into non-allocated
 memory. In order to achieve the highest possible performance, make absolutely
 sure that your data fits into r_max and disable the checks.</li>
-<li><code class="docutils literal"><span class="pre">input:periodic_box</span></code>: The default value is null, causing Cadishi to
+<li><code class="docutils literal"><span class="pre">input:periodic_box</span></code>: The default value is null, causing CADISHI to
 automatically look for the presence of box information in the input data. A
 box can as well be specified explicitly, or disabled by setting the value to
 an empty list [].</li>
@@ -230,10 +233,10 @@ an empty list [].</li>
 tuned to your system. For large frames (&gt;O(100000) particles) it is reasonable
 to use few workers and a large number of threads per worker, e.g. if you have a
 16 core CPU you could run a single cpu worker process with 14 threads, while
-keeping the 2 more cores busy with Cadishi’s reader and writer processes (you
+keeping the 2 more cores busy with CADISHI’s reader and writer processes (you
 always have these two processes). For small frames, use more workers and fewer
 (down to one) threads. Running some experiments is useful to gain experience
-with specific datasets. Note that Cadishi supports NUMA awareness, i.e.
+with specific datasets. Note that CADISHI supports NUMA awareness, i.e.
 processes can be pinned to CPUs. Calculations on large frames <em>greatly</em> benefit
 from the GPU kernels. Enable one worker per GPU. We have seen a binning rate of
 up to 495 billion particle-pairs per second on a single Volta GPU.</p>
@@ -245,7 +248,7 @@ follows into the user’s homedirectory:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">setup</span><span class="o">.</span><span class="n">py</span> <span class="n">install</span> <span class="o">--</span><span class="n">user</span>
 </pre></div>
 </div>
-<p>In this case, setup.py copies the Cadishi files into the directory <code class="docutils literal"><span class="pre">~/.local</span></code>.
+<p>In this case, setup.py copies the CADISHI files into the directory <code class="docutils literal"><span class="pre">~/.local</span></code>.
 Make sure that your <code class="docutils literal"><span class="pre">PATH</span></code> environment variable includes the directory
 <code class="docutils literal"><span class="pre">~/.local/bin</span></code>.  To enable a CUDA build the <code class="docutils literal"><span class="pre">nvcc</span></code> compiler wrapper must be
 found via the <code class="docutils literal"><span class="pre">PATH</span></code> environment variable.  Influential boolean environment variables
@@ -254,9 +257,9 @@ set they override the keys listed in the options section of the file <code class
 </div>
 <div class="section" id="usage">
 <h2>Usage<a class="headerlink" href="#usage" title="Permalink to this headline">¶</a></h2>
-<p>The Cadishi package provides a single main executable <code class="docutils literal"><span class="pre">cadishi</span></code> which supports
+<p>The CADISHI package provides a single main executable <code class="docutils literal"><span class="pre">cadishi</span></code> which supports
 commands and options (similar to the well-known concept used by <code class="docutils literal"><span class="pre">git</span></code>).</p>
-<p>To get a quick overview on the options of Cadishi issue the following command:</p>
+<p>To get a quick overview on the options of CADISHI issue the following command:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">cadishi</span> <span class="o">--</span><span class="n">help</span>
 </pre></div>
 </div>
@@ -269,9 +272,9 @@ follows:</p>
 <p>By default, the parameter file’s name is <code class="docutils literal"><span class="pre">histograms.yaml</span></code>. Edit the parameter
 file to your needs.  In particular, the compute kernels <em>pydh</em> (CPU) and <em>cudh</em>
 (GPU) can be configured.  In the example parameter file, the input configuration
-points to the default test case included with the Cadishi package. Adapt the
+points to the default test case included with the CADISHI package. Adapt the
 input configuration to your actual data. An example code on how to import data
-into Cadishi is available at
+into CADISHI is available at
 <a class="reference download internal" href="_downloads/input_example.py" download=""><code class="xref download docutils literal"><span class="pre">doc/scripts/input_example.py</span></code></a>.
 As a second step the distance histogram calculation is run as follows:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">cadishi</span> <span class="n">histo</span>
@@ -281,10 +284,10 @@ As a second step the distance histogram calculation is run as follows:</p>
 <div class="section" id="source-documentation">
 <h2>Source documentation<a class="headerlink" href="#source-documentation" title="Permalink to this headline">¶</a></h2>
 <p>The documentation linked below is generated automatically from the docstrings
-present in the Cadishi source code.</p>
+present in the CADISHI source code.</p>
 <div class="toctree-wrapper compound">
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="modules.html">Cadishi modules</a><ul>
+<li class="toctree-l1"><a class="reference internal" href="modules.html">CADISHI modules</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="modules.html#module-cadishi">cadishi</a></li>
 <li class="toctree-l2"><a class="reference internal" href="modules.html#module-cadishi.base">cadishi.base</a></li>
 <li class="toctree-l2"><a class="reference internal" href="modules.html#module-cadishi.io.ascii">cadishi.io.ascii</a></li>
@@ -298,7 +301,7 @@ present in the Cadishi source code.</p>
 <li class="toctree-l2"><a class="reference internal" href="modules.html#module-cadishi.version">cadishi.version</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="kernel.html">Cadishi compute kernels</a><ul>
+<li class="toctree-l1"><a class="reference internal" href="kernel.html">CADISHI compute kernels</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="kernel.html#module-cadishi.kernel">cadishi.kernel</a></li>
 <li class="toctree-l2"><a class="reference internal" href="kernel.html#module-cadishi.kernel.common">cadishi.kernel.common</a></li>
 <li class="toctree-l2"><a class="reference internal" href="kernel.html#module-cadishi.kernel.dist">cadishi.kernel.dist</a></li>
@@ -306,7 +309,7 @@ present in the Cadishi source code.</p>
 <li class="toctree-l2"><a class="reference internal" href="kernel.html#module-cadishi.kernel.cudh">cadishi.kernel.cudh</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="executables.html">Cadishi executables</a><ul>
+<li class="toctree-l1"><a class="reference internal" href="executables.html">CADISHI executables</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="executables.html#module-cadishi.exe">cadishi.exe</a></li>
 <li class="toctree-l2"><a class="reference internal" href="executables.html#module-cadishi.exe.cli">cadishi.exe.cli</a></li>
 <li class="toctree-l2"><a class="reference internal" href="executables.html#module-cadishi.exe.histograms">cadishi.exe.histograms</a></li>
@@ -318,15 +321,14 @@ present in the Cadishi source code.</p>
 </div>
 <div class="section" id="license-and-citation">
 <h2>License and Citation<a class="headerlink" href="#license-and-citation" title="Permalink to this headline">¶</a></h2>
-<p>Cadishi is released under the permissive MIT license.  See the file
+<p>CADISHI is released under the permissive MIT license.  See the file
 <cite>LICENSE.txt</cite> for details.</p>
 <p>Copyright 2015-2018  Klaus Reuter (MPCDF), Juergen Koefinger (MPIBP)</p>
-<p>In case you’re using Cadishi for your own academic or non-academic research, <strong>we
-kindly request that you cite Cadishi in your publications and presentations</strong>. We
-suggest the following citations as appropriate:</p>
-<p>A proper reference will be added once it is publicly available. Please use the
-following reference meanwhile:
-“K. Reuter, J. Koefinger: Cadishi, <a class="reference external" href="https://github.com/bio-phys/cadishi">https://github.com/bio-phys/cadishi</a>, 2017.”</p>
+<p>In case you’re using CADISHI for your own academic or non-academic research, <strong>we
+kindly request that you cite CADISHI in your publications and presentations</strong>. We
+suggest the following citation as appropriate:</p>
+<p>K. Reuter, J. Koefinger; CADISHI: Fast parallel calculation of particle-pair
+distance histograms on CPUs and GPUs; <a class="reference external" href="https://arxiv.org/abs/1808.01478">https://arxiv.org/abs/1808.01478</a>; 2018.</p>
 </div>
 <div class="section" id="indices-and-tables">
 <h2>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h2>
@@ -354,9 +356,9 @@ following reference meanwhile:
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="modules.html" title="Cadishi modules"
+          <a href="modules.html" title="CADISHI modules"
              >next</a> |</li>
-        <li class="nav-item nav-item-0"><a href="#">Cadishi 1.1.0 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="#">CADISHI 1.1.0 documentation</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">

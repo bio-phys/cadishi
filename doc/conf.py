@@ -1,14 +1,14 @@
 # -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding: utf-8 -*-
 # vim: tabstop=4 expandtab shiftwidth=4 softtabstop=4 fileencoding=utf-8
 #
-# Cadishi --- CAlculation of DIStance HIstograms
+# CADISHI --- CAlculation of DIStance HIstograms
 #
 # Copyright (c) Klaus Reuter, Juergen Koefinger
 # See the file AUTHORS.rst for the full list of contributors.
 #
 # Released under the MIT License, see the file LICENSE.txt.
 
-# Cadishi documentation build configuration file, created by
+# CADISHI documentation build configuration file, created by
 # sphinx-quickstart on Wed Feb 15 09:03:45 2017.
 #
 # This file is execfile()d with the current directory set to its
@@ -68,7 +68,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'Cadishi'
+project = u'CADISHI'
 copyright = u'2017, Klaus Reuter, Juergen Koefinger'
 author = u'Klaus Reuter, Juergen Koefinger'
 
@@ -156,7 +156,7 @@ html_theme = 'sphinxdoc'
 # The name for this set of Sphinx documents.
 # "<project> v<release> documentation" by default.
 #
-# html_title = u'Cadishi v1.0.0'
+# html_title = u'CADISHI v1.0.0'
 
 # A shorter title for the navigation bar.  Default is the same as html_title.
 #
@@ -256,7 +256,7 @@ html_static_path = ['_static']
 # html_search_scorer = 'scorer.js'
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'Cadishidoc'
+htmlhelp_basename = 'CADISHIdoc'
 
 # -- Options for LaTeX output ---------------------------------------------
 
@@ -282,7 +282,7 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'Cadishi.tex', u'Cadishi Documentation',
+    (master_doc, 'CADISHI.tex', u'CADISHI Documentation',
      u'Klaus Reuter, Juergen Koefinger', 'manual'),
 ]
 
@@ -324,7 +324,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    (master_doc, 'cadishi', u'Cadishi Documentation',
+    (master_doc, 'cadishi', u'CADISHI Documentation',
      [author], 1)
 ]
 
@@ -339,8 +339,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, 'Cadishi', u'Cadishi Documentation',
-     author, 'Cadishi', 'One line description of project.',
+    (master_doc, 'CADISHI', u'CADISHI Documentation',
+     author, 'CADISHI', 'One line description of project.',
      'Miscellaneous'),
 ]
 

@@ -1,7 +1,7 @@
 To (re-)generate the HTML documentation, install the package first in order to
-make all the Cadishi modules available be imported by Sphinx.
+make all the CADISHI modules available be imported by Sphinx.
 
-Then, run the following command on the top-level of the Cadishi source package:
+Then, run the following command on the top-level of the CADISHI source package:
 
   $ python setup.py build_sphinx
 

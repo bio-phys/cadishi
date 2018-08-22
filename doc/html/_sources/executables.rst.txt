@@ -1,4 +1,4 @@
-Cadishi executables
+CADISHI executables
 ===================
 
 The executables are accessible via the ``cadishi`` command.
