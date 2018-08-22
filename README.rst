@@ -36,6 +36,7 @@ CADISHI was developed, built, and tested on SUSE Linux Enterprise Server 11 and
 12, Ubuntu Linux 14.04 LTS and 16.04 LTS, and Scientific Linux 7 using the
 Anaconda Python distribution version 2, release 4.0.0, and newer. CADISHI
 requires gcc, and optionally nvcc, to compile C++ code during the installation.
+CADISHI was successfully tested Mac computers as well.
 
 
 Quick start guide
