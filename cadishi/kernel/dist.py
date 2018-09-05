@@ -53,7 +53,7 @@ def histograms(coordinate_sets, r_max, n_bins):
         raise RuntimeError("could not import compiled dist kernel (c_dist.so)")
 
     n_El = len(coordinate_sets)
-    n_Hij = n_El * (n_El + 1) / 2
+    n_Hij = int(n_El * (n_El + 1) / 2)
     histos = np.zeros((n_bins, n_Hij + 1), order='F')
     idx = 0
     for i in range(n_El):
