@@ -105,7 +105,7 @@ def histograms(coordinate_sets,
     assert(n_bins > 0)
 
     n_El = len(coordinate_sets)
-    n_Hij = n_El * (n_El + 1) / 2
+    n_Hij = (n_El * (n_El + 1)) // 2
 
     if do_histo2_only and (n_El != 2):
         raise ValueError(common.histo2_error_msg)
@@ -165,7 +165,7 @@ def distances(coordinates, precision="single", box=[], force_triclinic=False):
     assert(np_coord.shape[1] == 3)
 
     # --- To see the bins contiguously in memory from C, we use the following layout:
-    n_dist = n_tot * (n_tot - 1) / 2
+    n_dist = (n_tot * (n_tot - 1)) // 2
     np_dist = np.zeros(n_dist, dtype=np.float64)
 
     np_box, box_type_id, box_type = pbc.get_standard_box(box, force_triclinic=force_triclinic, verbose=False)

@@ -114,7 +114,7 @@ def histograms(coordinate_sets,
     assert(n_bins > 0)
 
     n_El = len(coordinate_sets)
-    n_Hij = n_El * (n_El + 1) / 2
+    n_Hij = (n_El * (n_El + 1)) // 2
 
     if do_histo2_only and (n_El != 2):
         raise ValueError(common.histo2_error_msg)
