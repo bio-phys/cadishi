@@ -399,6 +399,9 @@ class CleanCommand(Command):
         os.system('rm -vrf ./doc/_build')
         os.system('rm -vrf dist')
         os.system('rm -vrf cadishi.egg-info')
+        os.system('rm -vrf ./cadishi/kernel/c_dist.c')
+        os.system('rm -vrf ./cadishi/kernel/c_pydh.cpp')
+        os.system('rm -vrf ./cadishi/kernel/c_cudh.cpp')
         os.system("find cadishi -name '*.pyc' -delete -print")
         os.system("find cadishi -name '*.so' -delete -print")
 
