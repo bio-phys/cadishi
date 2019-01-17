@@ -127,4 +127,6 @@ kindly request that you cite CADISHI in your publications and presentations. We
 suggest the following citation as appropriate:
 
 K. Reuter, J. Koefinger; CADISHI: Fast parallel calculation of particle-pair
-distance histograms on CPUs and GPUs; https://arxiv.org/abs/1808.01478; 2018.
+distance histograms on CPUs and GPUs; Computer Physics Communications (2018);
+<https://doi.org/10.1016/j.cpc.2018.10.018>.
+
