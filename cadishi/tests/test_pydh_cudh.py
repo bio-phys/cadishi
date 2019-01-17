@@ -377,7 +377,7 @@ if TEST_PYDH:
     def test_pydh_medium_masked_single(fixture_medium):
         n_atoms, n_bins, coords, histo_ref = fixture_medium
         n_el = len(n_atoms)
-        mask_array = np.ones(n_el * (n_el + 1) / 2)
+        mask_array = np.ones(n_el * (n_el + 1) // 2)
         mask_array[::2] = 0
         for check_input in [True, False]:
             histo_pydh = pydh.histograms(coords, r_max, n_bins, precision="single",
@@ -388,7 +388,7 @@ if TEST_PYDH:
     def test_pydh_medium_scaled_single(fixture_medium):
         n_atoms, n_bins, coords, histo_ref = fixture_medium
         n_el = len(n_atoms)
-        scale_factors = np.ones(n_el * (n_el + 1) / 2)
+        scale_factors = np.ones(n_el * (n_el + 1) // 2)
         scale_factors *= 0.5
         for check_input in [True, False]:
             histo_pydh = pydh.histograms(coords, r_max, n_bins, precision="single",
