@@ -154,7 +154,7 @@ class MDReader(base.Reader):
                 frm.i = i
                 frm.put_meta(self.get_meta())
                 if self.verb:
-                    print "MDReader.next() : ", frm.i
+                    print("MDReader.next() : {}".format(frm.i))
                 yield frm
             # ---
             i = i + 1
