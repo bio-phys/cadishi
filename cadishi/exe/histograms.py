@@ -16,17 +16,16 @@ The configuration is read from the parameter file histograms.{json,yaml}.
 This program is not intended to be invoked directly. It is launched via cli.py
 which in turn is called as the `cadishi` command via an entry_point in setup.py.
 """
-from __future__ import print_function
-from __future__ import division
 
 
-from future import standard_library
-standard_library.install_aliases()
 from builtins import next
 from builtins import str
 from builtins import range
-from past.builtins import basestring
-from past.utils import old_div
+import warnings
+with warnings.catch_warnings():
+    warnings.filterwarnings("ignore", category=DeprecationWarning)
+    from past.builtins import basestring
+    from past.utils import old_div
 import sys
 import os
 import math

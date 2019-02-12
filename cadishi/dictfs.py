@@ -14,8 +14,10 @@ Store and retrieve data from nested dictionaries in memory using path name
 strings similar to a UNIX file system. Can be used in tandem with HDF5 IO.
 """
 
-
-from past.builtins import basestring
+import warnings
+with warnings.catch_warnings():
+    warnings.filterwarnings("ignore", category=DeprecationWarning)
+    from past.builtins import basestring
 import copy
 from . import util
 

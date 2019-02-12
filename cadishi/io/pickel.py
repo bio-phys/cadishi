@@ -18,10 +18,10 @@ significantly slower than HDF5.
 from __future__ import print_function
 
 
-from builtins import next
 from builtins import str
 from builtins import range
 import pickle
+from six.moves import range
 
 from .. import base
 from .. import util
@@ -66,6 +66,9 @@ class PickleReader(base.Reader):
             frm.data = pickle.load(fp)
         # ---
         return frm
+
+    def __iter__(self):
+        return self
 
     def __next__(self):
         """Iterate through all the frames and yield frame by frame."""

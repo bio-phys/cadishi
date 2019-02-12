@@ -11,15 +11,13 @@
 """Functions to be used as multiprocessing-workers by the <histograms.py>
 executable.
 """
-from __future__ import print_function
-from __future__ import division
 
-
-from future import standard_library
-standard_library.install_aliases()
 from builtins import str
 from builtins import range
-from past.utils import old_div
+import warnings
+with warnings.catch_warnings():
+    warnings.filterwarnings("ignore", category=DeprecationWarning)
+    from past.utils import old_div
 import sys
 import os
 import math

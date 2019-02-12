@@ -13,6 +13,7 @@
 
 
 import numpy as np
+from collections import OrderedDict
 from six.moves import range
 try:
     import MDAnalysis as mda
@@ -82,7 +83,15 @@ class MDReader(base.Reader):
         Was separated from __init__ during the development of <preprocessor.py>
         because no actual work should be done during the setup of the pipeline.
         """
-        aliasDict = dict(np.genfromtxt(self.alias_file, dtype='S4'))
+        aliasDict = OrderedDict()
+        with open(self.alias_file, 'r') as fp:
+            for line in fp:
+                pair = tuple(line.strip().split())
+                if len(pair) == 2:
+                    aliasDict[pair[0]] = pair[1]
+                else:
+                    # this should not happen
+                    pass
         if self.trajectory_file.endswith(('crdbox', 'crdbox.gz', 'crdbox.bz2')):
             self.universe = mda.Universe(self.pdb_file, self.trajectory_file, format='trj')
         else:
@@ -90,8 +99,7 @@ class MDReader(base.Reader):
         self.atoms = self.universe.select_atoms(self.selection)
         # ---
         self.nrPart = self.atoms.n_atoms
-        self.elList = [aliasDict[self.atoms[i].name] for i in
-                       range(self.nrPart)]
+        self.elList = [aliasDict[self.atoms[i].name] for i in range(self.nrPart)]
         self.elements = sorted(list(set(self.elList)))
         # ---
         self.nEl = len(self.elements)
@@ -127,7 +135,11 @@ class MDReader(base.Reader):
         meta[label] = param
         return meta
 
-    def next(self):
+    def __iter__(self):
+        return sel
+
+    # def next(self):
+    def __next__(self):
         """Generator that iterates through all the frames and yields
         frame by frame.
         """

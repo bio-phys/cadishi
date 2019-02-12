@@ -22,7 +22,10 @@ Python's native Pickle.
 """
 
 
-from past.builtins import basestring
+import warnings
+with warnings.catch_warnings():
+    warnings.filterwarnings("ignore", category=DeprecationWarning)
+    from past.builtins import basestring
 import numpy as np
 # disable FutureWarning, intended to warn H5PY developers, but may confuse our users
 import warnings
