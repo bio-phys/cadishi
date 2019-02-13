@@ -13,17 +13,21 @@
 HDF5 data reader/writer for base.Container instances.  Heavily used by Cadishi
 and Capriqorn.
 """
-from __future__ import print_function
+
 from builtins import str
-from builtins import range
+
+import numpy as np
+
 import warnings
 with warnings.catch_warnings():
-    warnings.filterwarnings("ignore",category=DeprecationWarning)
+    warnings.filterwarnings("ignore", category=DeprecationWarning)
+    warnings.filterwarnings("ignore", category=FutureWarning)
     import h5py
-    from past.builtins import basestring
+
 import re
 import json
 import random
+import six
 from six.moves import range
 
 from .. import base
@@ -56,7 +60,7 @@ class H5Reader(base.Reader):
     def __init__(self, file=["default.h5"], first=1, last=None, step=1,
                  shuffle=False, shuffle_reproducible=False, verbose=False):
         # update: file supports lists or tuples of multiple file names
-        if isinstance(file, basestring):
+        if isinstance(file, six.string_types):
             self.file_names = [file]
         else:
             self.file_names = list(file)
