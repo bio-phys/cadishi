@@ -14,16 +14,12 @@ HDF5 data reader/writer for base.Container instances.  Heavily used by Cadishi
 and Capriqorn.
 """
 
-from builtins import str
-
 import numpy as np
-
 import warnings
 with warnings.catch_warnings():
     warnings.filterwarnings("ignore", category=DeprecationWarning)
     warnings.filterwarnings("ignore", category=FutureWarning)
     import h5py
-
 import re
 import json
 import random
@@ -45,7 +41,6 @@ class H5Reader(base.Reader):
     def close_h5fp(self):
         if (self.file_idx_open >= 0):
             self.file_pointer.close()
-#             print "H5Reader: closed " + self.file_names[self.file_idx_open]
             self.file_idx_open = -1
 
     def get_h5fp(self, file_idx):
@@ -53,7 +48,6 @@ class H5Reader(base.Reader):
             self.close_h5fp()
             file_name = self.file_names[file_idx]
             self.file_pointer = h5py.File(file_name, "r")
-#             print "H5Reader: opened " + file_name
             self.file_idx_open = file_idx
         return self.file_pointer
 
