@@ -309,6 +309,8 @@ def cuda_compiler_flags():
                 nvcc_flags += ['--generate-code', 'arch=compute_61,code=sm_61']
             if (CUDAVER[0] >= 9):
                 nvcc_flags += ['--generate-code', 'arch=compute_70,code=sm_70']
+            if (CUDAVER[0] >= 10):
+                nvcc_flags += ['--generate-code', 'arch=compute_75,code=sm_75']
             # --- generate PTX code for future compatibility
             if (CUDAVER[0] == 6):
                 nvcc_flags += ['--generate-code', 'arch=compute_50,code=compute_50']
@@ -318,6 +320,8 @@ def cuda_compiler_flags():
                 nvcc_flags += ['--generate-code', 'arch=compute_61,code=compute_61']
             if (CUDAVER[0] == 9):
                 nvcc_flags += ['--generate-code', 'arch=compute_70,code=compute_70']
+            if (CUDAVER[0] == 10):
+                nvcc_flags += ['--generate-code', 'arch=compute_75,code=compute_75']
     nvcc_flags += ['--compiler-options=' + gcc_flags_string + ' -fPIC']
     return {'gcc': gcc_flags, 'nvcc': nvcc_flags}
 
