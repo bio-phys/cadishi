@@ -64,5 +64,5 @@ class DummyWriter(base.Writer):
     def dump(self):
         for frm in self.src.next():
             if self.verb:
-                print "DummyWriter.dump() : ", frm.i
+                print("DummyWriter.dump() : ", frm.i)
             pass
