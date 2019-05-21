@@ -14,8 +14,7 @@ Store and retrieve data from nested dictionaries in memory using path name
 strings similar to a UNIX file system. Can be used in tandem with HDF5 IO.
 """
 
-
-from past.builtins import basestring
+import six
 import copy
 from . import util
 
@@ -27,7 +26,7 @@ def _store_obj(node, subnodes, obj):
     assert isinstance(node, dict)
     assert isinstance(subnodes, list)
     assert len(subnodes) > 0
-    assert isinstance(subnodes[0], basestring)
+    assert isinstance(subnodes[0], six.string_types)
     if len(subnodes) == 1:
         if subnodes[0] == '':
             # replace the dict at node itself
@@ -50,7 +49,7 @@ def _fetch_obj(node, subnodes):
     assert isinstance(node, dict)
     assert isinstance(subnodes, list)
     assert len(subnodes) > 0
-    assert isinstance(subnodes[0], basestring)
+    assert isinstance(subnodes[0], six.string_types)
     if len(subnodes) == 1:
         if subnodes[0] == '':
             return node
@@ -67,7 +66,7 @@ def _delete_obj(node, subnodes):
     assert isinstance(node, dict)
     assert isinstance(subnodes, list)
     assert len(subnodes) > 0
-    assert isinstance(subnodes[0], basestring)
+    assert isinstance(subnodes[0], six.string_types)
     if len(subnodes) == 1:
         if len(subnodes[0]) > 0:
             if subnodes[0] in node:
@@ -83,7 +82,7 @@ def _query_obj(node, subnodes):
     assert isinstance(node, dict)
     assert isinstance(subnodes, list)
     assert len(subnodes) > 0
-    assert isinstance(subnodes[0], basestring)
+    assert isinstance(subnodes[0], six.string_types)
     if len(subnodes) == 1:
         if subnodes[0] in node:
             return True
@@ -100,7 +99,7 @@ def _path_to_list(path):
     """Convert a Unix-Style location path to a list of its substrings.
     If the location path is already a list, do nothing.
     """
-    if isinstance(path, basestring):
+    if isinstance(path, six.string_types):
         return util.tokenize(path)
     elif isinstance(path, list):
         return path

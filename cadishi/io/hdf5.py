@@ -13,25 +13,22 @@
 HDF5 data reader/writer for base.Container instances.  Heavily used by Cadishi
 and Capriqorn.
 """
-from __future__ import print_function
 
-
-from builtins import next
-from builtins import str
-from builtins import range
-from past.builtins import basestring
+import numpy as np
+import warnings
+with warnings.catch_warnings():
+    warnings.filterwarnings("ignore", category=DeprecationWarning)
+    warnings.filterwarnings("ignore", category=FutureWarning)
+    import h5py
 import re
 import json
 import random
-# disable FutureWarning, intended to warn H5PY developers, but may confuse our users
-import warnings
-warnings.simplefilter(action='ignore', category=FutureWarning)
-import h5py
+import six
+from six.moves import range
 
 from .. import base
 from .. import util
 from .. import h5pickle
-
 
 shuffle_reproducible_seed = 42
 
@@ -44,7 +41,6 @@ class H5Reader(base.Reader):
     def close_h5fp(self):
         if (self.file_idx_open >= 0):
             self.file_pointer.close()
-#             print "H5Reader: closed " + self.file_names[self.file_idx_open]
             self.file_idx_open = -1
 
     def get_h5fp(self, file_idx):
@@ -52,14 +48,13 @@ class H5Reader(base.Reader):
             self.close_h5fp()
             file_name = self.file_names[file_idx]
             self.file_pointer = h5py.File(file_name, "r")
-#             print "H5Reader: opened " + file_name
             self.file_idx_open = file_idx
         return self.file_pointer
 
     def __init__(self, file=["default.h5"], first=1, last=None, step=1,
                  shuffle=False, shuffle_reproducible=False, verbose=False):
         # update: file supports lists or tuples of multiple file names
-        if isinstance(file, basestring):
+        if isinstance(file, six.string_types):
             self.file_names = [file]
         else:
             self.file_names = list(file)
@@ -91,7 +86,6 @@ class H5Reader(base.Reader):
             self.frame_pool = self.frame_pool[self.first - 1:]
         if (self.step is not None):
             self.frame_pool = self.frame_pool[::self.step]
-        self.n_elem = len(self.frame_pool)
         if self.shuffle:
             if self.shuffle_reproducible:
                 random.Random(shuffle_reproducible_seed).shuffle(self.frame_pool)
@@ -116,7 +110,7 @@ class H5Reader(base.Reader):
         """
         meta = {}
         label = 'H5Reader'
-        param = {'file': self.file_names, 'n_elem': self.n_elem,
+        param = {'file': self.file_names,
                  'first': self.first, 'last': self.last, 'step': self.step,
                  'shuffle': False, 'shuffle_reproducible': False}
         meta[label] = param
@@ -168,15 +162,12 @@ class H5Reader(base.Reader):
         idx_tuple = self.frame_pool[0]
         frm = self.get_frame(idx_tuple)
         if frm.contains_key(base.loc_coordinates):
-            ti.species = sorted(frm.get_keys(base.loc_coordinates))
+            ti.species = frm.get_keys(base.loc_coordinates)
         else:
             ti.species = []
         ti.pipeline_log = frm.get_meta()
         ti.frame_numbers = list(range(1, len(self.frame_pool) + 1))
         return ti
-
-    def get_n_elem(self):
-        return self.n_elem
 
 
 class H5Writer(base.Writer):
@@ -189,11 +180,16 @@ class H5Writer(base.Writer):
 
     def __init__(self, file="default.hdf5", source=-1,
                  compression=None, mode="w", verbose=False):
-        util.md(file)
-        self.safe_open(file, mode)
-        self.src = source
         self.file = file
-        self.mode = mode
+        util.md(file)
+        try:
+            self.h5fp = h5py.File(file, mode)
+        except:
+            self.file_is_open = False
+            raise
+        else:
+            self.file_is_open = True
+        self.src = source
         self.comp = compression
         self.verb = verbose
         self.info = ''
@@ -205,32 +201,16 @@ class H5Writer(base.Writer):
         return self
 
     def __del__(self):
-        self.safe_close()
+        self.close_file_safely()
 
     def __exit__(self, type, value, traceback):
-        self.safe_close()
+        self.close_file_safely()
 
-    def safe_open(self, file, mode):
-        try:
-            self.h5fp = h5py.File(file, mode)
-        except:
-            self.file_is_open = False
-            raise
-        else:
-            self.file_is_open = True
-
-    def safe_close(self):
+    def close_file_safely(self):
         if self.file_is_open:
             self.h5fp.flush()
             self.h5fp.close()
-            del self.h5fp
             self.file_is_open = False
-
-    def hard_flush(self):
-        file = self.file
-        mode = 'a'
-        self.safe_close()
-        self.safe_open(file, mode)
 
     def get_meta(self):
         """Return information on the HDF5 writer,

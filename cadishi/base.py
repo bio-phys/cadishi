@@ -212,6 +212,9 @@ class Filter(PipelineElement):
         self.src = source
         self.verb = verbose
 
+    def __iter__(self):
+        return self
+
     def set_input(self, source):
         self.src = source
 
@@ -229,6 +232,9 @@ class Filter(PipelineElement):
 class Reader(PipelineElement):
     _conflicts = ['Reader']
     """Reader base class, to be overloaded by an actual implementation."""
+
+    def __iter__(self):
+        return self
 
     def get_meta(self):
         """Return information on the present filter, ready to be added to a frame

@@ -16,7 +16,6 @@ purposes.  A reader is currently not implemented.
 from __future__ import print_function
 
 
-from builtins import next
 from builtins import str
 import numpy as np
 import json

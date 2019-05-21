@@ -63,7 +63,7 @@ class Config(object):
 
     def __init__(self, fname='setup.cfg'):
         if os.path.exists(fname):
-            self.config = configparser.SafeConfigParser()
+            self.config = configparser.ConfigParser()
             self.config.read(fname)
 
     def get(self, option_name, default=None):
@@ -491,7 +491,8 @@ setup(
               'cadishi.tests',
               'cadishi.exe'],
     install_requires=[
-        'future',
+        'six',
+        'future', # to be removed
         'numpy',
         'scipy',
         'h5py',
