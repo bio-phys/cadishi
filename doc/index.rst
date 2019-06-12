@@ -18,7 +18,12 @@ precisely, the syllabic abbreviation of) *calculation of distance histograms*.
 For more information, we refer to our publication:
 
 K. Reuter, J. Koefinger; CADISHI: Fast parallel calculation of particle-pair
-distance histograms on CPUs and GPUs; https://arxiv.org/abs/1808.01478; 2018.
+distance histograms on CPUs and GPUs; Computer Physics Communications (2018);
+<https://doi.org/10.1016/j.cpc.2018.10.018>.
+
+A preprint of the paper is available at <https://arxiv.org/abs/1808.01478>.
+
+
 
 
 Requirements
@@ -242,15 +247,15 @@ License and Citation
 CADISHI is released under the permissive MIT license.  See the file
 `LICENSE.txt` for details.
 
-Copyright 2015-2018  Klaus Reuter (MPCDF), Juergen Koefinger (MPIBP)
+Copyright 2015-2019  Klaus Reuter (MPCDF), Juergen Koefinger (MPIBP)
 
 In case you're using CADISHI for your own academic or non-academic research, **we
 kindly request that you cite CADISHI in your publications and presentations**. We
 suggest the following citation as appropriate:
 
 K. Reuter, J. Koefinger; CADISHI: Fast parallel calculation of particle-pair
-distance histograms on CPUs and GPUs; https://arxiv.org/abs/1808.01478; 2018.
-
+distance histograms on CPUs and GPUs; Computer Physics Communications (2018);
+<https://doi.org/10.1016/j.cpc.2018.10.018>.
 
 Indices and tables
 ------------------
