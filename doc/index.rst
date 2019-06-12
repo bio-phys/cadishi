@@ -10,10 +10,12 @@ atoms from molecular dynamics (MD) simulation datasets, or stars or galaxies
 from astrophysical datasets. While CADISHI is written mostly in Python, it is
 built upon high-performance kernels written in C++ and CUDA to exploit the CPU
 and GPU resources of a compute node as best as possible.
+The code is released as open source and available at
+`https://github.com/bio-phys/cadishi <https://github.com/bio-phys/cadishi>`_.
 
 In the field of MD simulations, CADISHI is most useful in conjunction with the
-Capriqorn package. The name CADISHI is simply an acronym derived from (or, more
-precisely, the syllabic abbreviation of) *calculation of distance histograms*.
+Capriqorn package. The name CADISHI is simply an
+abbreviation of *calculation of distance histograms*.
 
 For more information, we refer to our publication:
 
