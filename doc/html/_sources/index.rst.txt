@@ -18,10 +18,11 @@ precisely, the syllabic abbreviation of) *calculation of distance histograms*.
 For more information, we refer to our publication:
 
 K. Reuter, J. Koefinger; CADISHI: Fast parallel calculation of particle-pair
-distance histograms on CPUs and GPUs; Computer Physics Communications (2018);
-<https://doi.org/10.1016/j.cpc.2018.10.018>.
+distance histograms on CPUs and GPUs;
+`Comp. Phys. Comm. (236), 274 (2019) <https://doi.org/10.1016/j.cpc.2018.10.018>`_.
 
-A preprint of the paper is available at <https://arxiv.org/abs/1808.01478>.
+A preprint of the paper is available on the
+`arxiv <https://arxiv.org/abs/1808.01478>`_.
 
 
 
@@ -32,11 +33,10 @@ Requirements
 CADISHI requires a Python 2.7 or Python 3.X installation including the NumPy,
 SciPy, Cython, h5py, and PyYAML modules. We recommend to use the Anaconda Python
 Distribution which provides all the necessary modules out of the box. CADISHI
-was mostly developed using Anaconda Python 2, versions 4.0.0 and newer.
-Moreover, to compile the high-performance kernels, recent GCC and CUDA
-(optional) installations are required. GCC 4.9, 5.4, 6.4, and 7.2, and CUDA 7.5,
-8.0, and 9.1 were used successfully. CADISHI was successfully tested on Linux
-and Mac machines.
+was mostly developed using Anaconda Python 2 (>=4.0.0).
+Moreover, to compile the high-performance kernels, recent GCC (>=4.9) and CUDA
+(>=7.5, together with a compatible GCC) installations are required.
+CADISHI was successfully tested on Linux and Mac machines.
 
 
 Features
@@ -254,8 +254,8 @@ kindly request that you cite CADISHI in your publications and presentations**. W
 suggest the following citation as appropriate:
 
 K. Reuter, J. Koefinger; CADISHI: Fast parallel calculation of particle-pair
-distance histograms on CPUs and GPUs; Computer Physics Communications (2018);
-<https://doi.org/10.1016/j.cpc.2018.10.018>.
+distance histograms on CPUs and GPUs;
+`Comp. Phys. Comm. (236), 274 (2019) <https://doi.org/10.1016/j.cpc.2018.10.018>`_.
 
 Indices and tables
 ------------------
