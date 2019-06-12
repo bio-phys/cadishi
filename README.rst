@@ -17,11 +17,11 @@ part of CADISHI and are written in C++ and CUDA.
 For more information, we refer to our publication:
 
 K. Reuter, J. Koefinger; CADISHI: Fast parallel calculation of particle-pair
-distance histograms on CPUs and GPUs; Computer Physics Communications (2018);
-<https://doi.org/10.1016/j.cpc.2018.10.018>.
+distance histograms on CPUs and GPUs;
+`Comp. Phys. Comm. (236), 274 (2019) <https://doi.org/10.1016/j.cpc.2018.10.018>`_.
 
-A preprint of the paper is available at <https://arxiv.org/abs/1808.01478>.
-
+A preprint of the paper is available on
+`arXiv.org <https://arxiv.org/abs/1808.01478>`_.
 
 
 Installation

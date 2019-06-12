@@ -21,8 +21,8 @@ K. Reuter, J. Koefinger; CADISHI: Fast parallel calculation of particle-pair
 distance histograms on CPUs and GPUs;
 `Comp. Phys. Comm. (236), 274 (2019) <https://doi.org/10.1016/j.cpc.2018.10.018>`_.
 
-A preprint of the paper is available on the
-`arxiv <https://arxiv.org/abs/1808.01478>`_.
+A preprint of the paper is available on
+`arXiv.org <https://arxiv.org/abs/1808.01478>`_.
 
 
 
