@@ -4,28 +4,20 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>CADISHI documentation &#8212; CADISHI 1.1.0 documentation</title>
+    <title>CADISHI &#8212; CADISHI 1.1.0 documentation</title>
     <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    './',
-        VERSION:     '1.1.0',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="CADISHI modules" href="modules.html" /> 
-  </head>
-  <body>
+  </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -43,9 +35,9 @@
     </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
-  <h3><a href="#">Table Of Contents</a></h3>
+  <h3><a href="#">Table of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">CADISHI documentation</a><ul>
+<li><a class="reference internal" href="#">CADISHI</a><ul>
 <li><a class="reference internal" href="#introduction">Introduction</a></li>
 <li><a class="reference internal" href="#requirements">Requirements</a></li>
 <li><a class="reference internal" href="#features">Features</a></li>
@@ -72,12 +64,14 @@
    </div>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
+    </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -88,8 +82,9 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="cadishi-documentation">
-<h1>CADISHI documentation<a class="headerlink" href="#cadishi-documentation" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="cadishi">
+<h1>CADISHI<a class="headerlink" href="#cadishi" title="Permalink to this headline">¶</a></h1>
+<img alt="_images/logo.png" class="align-center" src="_images/logo.png" />
 <div class="section" id="introduction">
 <h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
 <p>The CADISHI package is designed to perform fast computations of histograms of
@@ -142,11 +137,11 @@ MAXWELL generation of NVIDIA GPUs.</p>
 <div class="section" id="input-data-distance-histogram-computation-output-data">
 <h2>Input data, distance histogram computation, output data<a class="headerlink" href="#input-data-distance-histogram-computation-output-data" title="Permalink to this headline">¶</a></h2>
 <p><strong>CADISHI reads input data from an HDF5 file</strong> that is specified in the
-<code class="docutils literal"><span class="pre">histograms.yaml</span></code> parameter file.  A typical file location is
-<code class="docutils literal"><span class="pre">./preprocessor_output/trajectory.h5</span></code> when CADISHI is used in concert with
+<code class="docutils literal notranslate"><span class="pre">histograms.yaml</span></code> parameter file.  A typical file location is
+<code class="docutils literal notranslate"><span class="pre">./preprocessor_output/trajectory.h5</span></code> when CADISHI is used in concert with
 the Capriqorn package from the same authors. In any case the HDF5 file must have
 a certain internal structure as shown in the following example:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">/</span><span class="mi">1</span><span class="o">/</span><span class="n">coordinates</span><span class="o">/</span><span class="n">species_0</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">/</span><span class="mi">1</span><span class="o">/</span><span class="n">coordinates</span><span class="o">/</span><span class="n">species_0</span>
                <span class="n">species_1</span>
                <span class="n">species_2</span>
                <span class="o">...</span>
@@ -165,11 +160,11 @@ datasets use the name of the species as the label which e.g. can be the name of
 the chemical element in the context of MD data.</p>
 <p>To demonstrate how to feed data into CADISHI there is an <strong>example code</strong>
 available at
-<a class="reference download internal" href="_downloads/input_example.py" download=""><code class="xref download docutils literal"><span class="pre">doc/scripts/input_example.py</span></code></a>.
+<a class="reference download internal" download="" href="_downloads/0d2c8d1afac0584a8611335b1e8d42e8/input_example.py"><code class="xref download docutils literal notranslate"><span class="pre">doc/scripts/input_example.py</span></code></a>.
 Adapt that code to easily implement a reader for arbitrary custom data.</p>
 <p>To <strong>convert data from a plethora of MD simulation data formats</strong> to CADISHI’s
-HDF5 format, we provide the script <code class="docutils literal"><span class="pre">md_to_cadishi.py</span></code> which is installed
-together with the main program <code class="docutils literal"><span class="pre">cadishi</span></code>.  It uses the reader from the
+HDF5 format, we provide the script <code class="docutils literal notranslate"><span class="pre">md_to_cadishi.py</span></code> which is installed
+together with the main program <code class="docutils literal notranslate"><span class="pre">cadishi</span></code>.  It uses the reader from the
 MDAnalysis package which needs to be installed to be able to use the conversion
 tool (but is not a requirement to run CADISHI).</p>
 <p>For each frame read from the HDF5 file <strong>CADISHI computes the distance histograms</strong>
@@ -179,7 +174,7 @@ available on a node. Within a frame, the computation is highly parallelized usin
 threads.</p>
 <p>Finally, <strong>CADISHI writes the histograms into HDF5 files</strong> according to the
 following scheme:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">/</span><span class="mi">1</span><span class="o">/</span><span class="n">histograms</span><span class="o">/</span><span class="n">species_0</span><span class="p">,</span><span class="n">species_0</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">/</span><span class="mi">1</span><span class="o">/</span><span class="n">histograms</span><span class="o">/</span><span class="n">species_0</span><span class="p">,</span><span class="n">species_0</span>
               <span class="n">species_0</span><span class="p">,</span><span class="n">species_1</span>
               <span class="n">species_0</span><span class="p">,</span><span class="n">species_2</span>
               <span class="n">species_1</span><span class="p">,</span><span class="n">species_1</span>
@@ -193,39 +188,39 @@ following scheme:</p>
 numerical datatype was chosen to make averaging easier and more consistent.</p>
 <p>To get an idea about all the options available please have a look at the example
 parameter file that comes with CADISHI.  It can be generated using the command
-<code class="docutils literal"><span class="pre">cadishi</span> <span class="pre">example</span> <span class="pre">[--expert]</span></code>.</p>
+<code class="docutils literal notranslate"><span class="pre">cadishi</span> <span class="pre">example</span> <span class="pre">[--expert]</span></code>.</p>
 <p>To <strong>make life with HDF5 files easier</strong> we recommend to use a graphical HDF5
 viewer such as HDFView.  Note, however, that HDFView does not support the LZF
 compression that comes with the Python HDF5 module “H5py” and is used by CADISHI
 by default (LZF can be disabled via the parameter file)).</p>
 <p>Moreover, to demonstrate how to access the HDF5 data written by CADISHI from
 Python we provide the example program
-<a class="reference download internal" href="_downloads/plot_hdf5_data.py" download=""><code class="xref download docutils literal"><span class="pre">doc/scripts/plot_hdf5_data.py</span></code></a>.
+<a class="reference download internal" download="" href="_downloads/3925899b8a83e3496c6886ee7cd0d76c/plot_hdf5_data.py"><code class="xref download docutils literal notranslate"><span class="pre">doc/scripts/plot_hdf5_data.py</span></code></a>.
 It opens the HDF5 container, reads the last frame and plots a histogram using
 matplotlib. As an input file, the CADISHI output from the test case can be taken.</p>
-<p>Finally, CADISHI comes with a HDF5 unpack tool (<code class="docutils literal"><span class="pre">cadishi</span> <span class="pre">unpack</span></code>) and a HDF5
-merge tool (<code class="docutils literal"><span class="pre">cadishi</span> <span class="pre">merge</span></code>). The latter tool can also be used to decompress
+<p>Finally, CADISHI comes with a HDF5 unpack tool (<code class="docutils literal notranslate"><span class="pre">cadishi</span> <span class="pre">unpack</span></code>) and a HDF5
+merge tool (<code class="docutils literal notranslate"><span class="pre">cadishi</span> <span class="pre">merge</span></code>). The latter tool can also be used to decompress
 single HDF5 files quickly before viewing them with HDFView.</p>
 </div>
 <div class="section" id="parameters">
 <h2>Parameters<a class="headerlink" href="#parameters" title="Permalink to this headline">¶</a></h2>
 <p>CADISHI is highly configurable via its YAML parameter file (create a sample file
-using <code class="docutils literal"><span class="pre">cadishi</span> <span class="pre">example</span> <span class="pre">[--expert]</span></code>). Below we pick the most important
+using <code class="docutils literal notranslate"><span class="pre">cadishi</span> <span class="pre">example</span> <span class="pre">[--expert]</span></code>). Below we pick the most important
 parameters and provide some background explanation.</p>
 <ul class="simple">
-<li><code class="docutils literal"><span class="pre">histogram:dr</span></code>: Defines the histogram bin width. The total number of bins is
+<li><code class="docutils literal notranslate"><span class="pre">histogram:dr</span></code>: Defines the histogram bin width. The total number of bins is
 determined in conjunction with the following parameter.</li>
-<li><code class="docutils literal"><span class="pre">histogram:r_max</span></code>: Defines the histogram cutoff radius. Make sure that your
+<li><code class="docutils literal notranslate"><span class="pre">histogram:r_max</span></code>: Defines the histogram cutoff radius. Make sure that your
 input data is compatible with the cutoff radius, i.e. the maximum distance
 between all points must be smaller. In this context, the following settings
 are important.</li>
-<li><code class="docutils literal"><span class="pre">cpu:check_input</span></code> and <code class="docutils literal"><span class="pre">gpu:check_input</span></code>: Checks at runtime if any distance
+<li><code class="docutils literal notranslate"><span class="pre">cpu:check_input</span></code> and <code class="docutils literal notranslate"><span class="pre">gpu:check_input</span></code>: Checks at runtime if any distance
 computed is equal or smaller than the cutoff radius. If this is not the case, an
 exception is raised that causes CADISHI to exit. If these parameters are set
 to false, no checks are performed and outliers may write into non-allocated
 memory. In order to achieve the highest possible performance, make absolutely
 sure that your data fits into r_max and disable the checks.</li>
-<li><code class="docutils literal"><span class="pre">input:periodic_box</span></code>: The default value is null, causing CADISHI to
+<li><code class="docutils literal notranslate"><span class="pre">input:periodic_box</span></code>: The default value is null, causing CADISHI to
 automatically look for the presence of box information in the input data. A
 box can as well be specified explicitly, or disabled by setting the value to
 an empty list [].</li>
@@ -246,39 +241,39 @@ up to 495 billion particle-pairs per second on a single Volta GPU.</p>
 <h2>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h2>
 <p>The package comes with a standard Python setup.py file.  It is installed e.g. as
 follows into the user’s homedirectory:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">setup</span><span class="o">.</span><span class="n">py</span> <span class="n">install</span> <span class="o">--</span><span class="n">user</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">setup</span><span class="o">.</span><span class="n">py</span> <span class="n">install</span> <span class="o">--</span><span class="n">user</span>
 </pre></div>
 </div>
-<p>In this case, setup.py copies the CADISHI files into the directory <code class="docutils literal"><span class="pre">~/.local</span></code>.
-Make sure that your <code class="docutils literal"><span class="pre">PATH</span></code> environment variable includes the directory
-<code class="docutils literal"><span class="pre">~/.local/bin</span></code>.  To enable a CUDA build the <code class="docutils literal"><span class="pre">nvcc</span></code> compiler wrapper must be
-found via the <code class="docutils literal"><span class="pre">PATH</span></code> environment variable.  Influential boolean environment variables
-are <code class="docutils literal"><span class="pre">CAD_DEBUG</span></code>, <code class="docutils literal"><span class="pre">CAD_OPENMP</span></code>, <code class="docutils literal"><span class="pre">CAD_CUDA</span></code>, and <code class="docutils literal"><span class="pre">CAD_SAFE_CUDA_FLAGS</span></code>; if
-set they override the keys listed in the options section of the file <code class="docutils literal"><span class="pre">setup.cfg</span></code>.</p>
+<p>In this case, setup.py copies the CADISHI files into the directory <code class="docutils literal notranslate"><span class="pre">~/.local</span></code>.
+Make sure that your <code class="docutils literal notranslate"><span class="pre">PATH</span></code> environment variable includes the directory
+<code class="docutils literal notranslate"><span class="pre">~/.local/bin</span></code>.  To enable a CUDA build the <code class="docutils literal notranslate"><span class="pre">nvcc</span></code> compiler wrapper must be
+found via the <code class="docutils literal notranslate"><span class="pre">PATH</span></code> environment variable.  Influential boolean environment variables
+are <code class="docutils literal notranslate"><span class="pre">CAD_DEBUG</span></code>, <code class="docutils literal notranslate"><span class="pre">CAD_OPENMP</span></code>, <code class="docutils literal notranslate"><span class="pre">CAD_CUDA</span></code>, and <code class="docutils literal notranslate"><span class="pre">CAD_SAFE_CUDA_FLAGS</span></code>; if
+set they override the keys listed in the options section of the file <code class="docutils literal notranslate"><span class="pre">setup.cfg</span></code>.</p>
 </div>
 <div class="section" id="usage">
 <h2>Usage<a class="headerlink" href="#usage" title="Permalink to this headline">¶</a></h2>
-<p>The CADISHI package provides a single main executable <code class="docutils literal"><span class="pre">cadishi</span></code> which supports
-commands and options (similar to the well-known concept used by <code class="docutils literal"><span class="pre">git</span></code>).</p>
+<p>The CADISHI package provides a single main executable <code class="docutils literal notranslate"><span class="pre">cadishi</span></code> which supports
+commands and options (similar to the well-known concept used by <code class="docutils literal notranslate"><span class="pre">git</span></code>).</p>
 <p>To get a quick overview on the options of CADISHI issue the following command:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">cadishi</span> <span class="o">--</span><span class="n">help</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cadishi</span> <span class="o">--</span><span class="n">help</span>
 </pre></div>
 </div>
 <p>To get started a parameter file controlling the distance histogram calculation
 is required. A basic example is included with the package and can be created as
 follows:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">cadishi</span> <span class="n">example</span> <span class="p">[</span><span class="o">--</span><span class="n">expert</span><span class="p">]</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cadishi</span> <span class="n">example</span> <span class="p">[</span><span class="o">--</span><span class="n">expert</span><span class="p">]</span>
 </pre></div>
 </div>
-<p>By default, the parameter file’s name is <code class="docutils literal"><span class="pre">histograms.yaml</span></code>. Edit the parameter
+<p>By default, the parameter file’s name is <code class="docutils literal notranslate"><span class="pre">histograms.yaml</span></code>. Edit the parameter
 file to your needs.  In particular, the compute kernels <em>pydh</em> (CPU) and <em>cudh</em>
 (GPU) can be configured.  In the example parameter file, the input configuration
 points to the default test case included with the CADISHI package. Adapt the
 input configuration to your actual data. An example code on how to import data
 into CADISHI is available at
-<a class="reference download internal" href="_downloads/input_example.py" download=""><code class="xref download docutils literal"><span class="pre">doc/scripts/input_example.py</span></code></a>.
+<a class="reference download internal" download="" href="_downloads/0d2c8d1afac0584a8611335b1e8d42e8/input_example.py"><code class="xref download docutils literal notranslate"><span class="pre">doc/scripts/input_example.py</span></code></a>.
 As a second step the distance histogram calculation is run as follows:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">cadishi</span> <span class="n">histo</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cadishi</span> <span class="n">histo</span>
 </pre></div>
 </div>
 </div>
@@ -364,7 +359,7 @@ distance histograms on CPUs and GPUs; <a class="reference external" href="https:
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2017, Klaus Reuter, Juergen Koefinger.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.6.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.5.
     </div>
   </body>
 </html>
