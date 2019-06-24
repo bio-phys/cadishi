@@ -1,5 +1,8 @@
-CADISHI documentation
-=====================
+CADISHI
+=======
+
+.. image:: img/cadishi.png
+   :align: center
 
 Introduction
 ------------

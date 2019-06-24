@@ -22,20 +22,21 @@ Python's native Pickle.
 """
 
 
-from past.builtins import basestring
+import six
 import numpy as np
-# disable FutureWarning, intended to warn H5PY developers, but may confuse our users
+# disable warnings intended to warn H5PY developers, but may confuse our users
 import warnings
-warnings.simplefilter(action='ignore', category=FutureWarning)
-import h5py
-
+with warnings.catch_warnings():
+    warnings.filterwarnings("ignore", category=DeprecationWarning)
+    warnings.filterwarnings("ignore", category=FutureWarning)
+    import h5py
 
 def save(h5_grp, key, data, compression=None):
     """Save commonly used Python data structures to a HDF5 file/group.
     For dictionaries, this function is called recursively, using the
     keys as labels to create sub-groups.
     """
-    assert isinstance(key, basestring)
+    assert isinstance(key, six.string_types)
     if isinstance(data, dict):
         # --- save dictionary content into a subgroup
         sub_group = h5_grp.create_group(key)
@@ -46,8 +47,20 @@ def save(h5_grp, key, data, compression=None):
         maxshape = [None for _i in data.shape]
         h5_grp.create_dataset(key, data=data, maxshape=maxshape,
                               chunks=True, compression=compression)
+    elif isinstance(data, list):
+        dup = []
+        for i in data:
+            if isinstance(i, six.string_types):
+                # encode into portable ASCII (http://docs.h5py.org/en/stable/strings.html)
+                dup.append(np.string_(i))
+            else:
+                dup.append(i)
+        h5_grp.attrs[key] = dup
+    elif isinstance(data, six.string_types):
+        # encode into portable ASCII (http://docs.h5py.org/en/stable/strings.html)
+        h5_grp.attrs[key] = np.string_(data)
     else:
-        # --- attempt to save any other Python data structure as HDF5 attribute
+        # --- Attempt to save any other Python data structure as HDF5 attribute which may rise an exception!
         h5_grp.attrs[key] = data
 
 

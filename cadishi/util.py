@@ -13,13 +13,14 @@ of potential general use.
 """
 from __future__ import print_function
 from __future__ import division
-
-
 from builtins import str
 from builtins import range
-from past.builtins import basestring
 from builtins import object
-from past.utils import old_div
+import warnings
+with warnings.catch_warnings():
+    warnings.filterwarnings("ignore", category=DeprecationWarning)
+    from past.builtins import basestring
+    from past.utils import old_div
 import importlib
 import os
 import sys

@@ -65,11 +65,7 @@
 
 <span class="sd">&quot;&quot;&quot;Cadishi dummy IO module, useful to test and develop Capriqorn pipelines.</span>
 <span class="sd">&quot;&quot;&quot;</span>
-<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">print_function</span>
 
-<span class="kn">from</span> <span class="nn">builtins</span> <span class="k">import</span> <span class="nb">next</span>
-<span class="kn">from</span> <span class="nn">builtins</span> <span class="k">import</span> <span class="nb">str</span>
-<span class="kn">from</span> <span class="nn">builtins</span> <span class="k">import</span> <span class="nb">range</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">from</span> <span class="nn">..</span> <span class="k">import</span> <span class="n">base</span>
 <span class="kn">from</span> <span class="nn">..</span> <span class="k">import</span> <span class="n">util</span>
@@ -101,9 +97,9 @@
         <span class="n">frm</span><span class="o">.</span><span class="n">i</span> <span class="o">=</span> <span class="n">i</span>
         <span class="k">return</span> <span class="n">frm</span></div>
 
-    <span class="k">def</span> <span class="nf">__next__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_frames</span><span class="p">):</span>
-            <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_frame</span><span class="p">(</span><span class="n">i</span><span class="p">)</span></div>
+<div class="viewcode-block" id="DummyReader.next"><a class="viewcode-back" href="../../../modules.html#cadishi.io.dummy.DummyReader.next">[docs]</a>    <span class="k">def</span> <span class="nf">next</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_frames</span><span class="p">):</span>
+            <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_frame</span><span class="p">(</span><span class="n">i</span><span class="p">)</span></div></div>
 
 
 <div class="viewcode-block" id="DummyWriter"><a class="viewcode-back" href="../../../modules.html#cadishi.io.dummy.DummyWriter">[docs]</a><span class="k">class</span> <span class="nc">DummyWriter</span><span class="p">(</span><span class="n">base</span><span class="o">.</span><span class="n">Writer</span><span class="p">):</span>
@@ -121,7 +117,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_conflicts</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="nb">super</span><span class="p">(</span><span class="n">base</span><span class="o">.</span><span class="n">Writer</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">_conflicts</span><span class="p">)</span>
 
 <div class="viewcode-block" id="DummyWriter.dump"><a class="viewcode-back" href="../../../modules.html#cadishi.io.dummy.DummyWriter.dump">[docs]</a>    <span class="k">def</span> <span class="nf">dump</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">for</span> <span class="n">frm</span> <span class="ow">in</span> <span class="nb">next</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">src</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">frm</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">src</span><span class="o">.</span><span class="n">next</span><span class="p">():</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verb</span><span class="p">:</span>
                 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;DummyWriter.dump() : &quot;</span><span class="p">,</span> <span class="n">frm</span><span class="o">.</span><span class="n">i</span><span class="p">)</span>
             <span class="k">pass</span></div></div>

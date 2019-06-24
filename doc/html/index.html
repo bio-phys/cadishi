@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>CADISHI documentation &#8212; CADISHI 1.1.0 documentation</title>
+    <title>CADISHI &#8212; CADISHI 1.1.0 documentation</title>
     <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
@@ -37,7 +37,7 @@
         <div class="sphinxsidebarwrapper">
   <h3><a href="#">Table of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">CADISHI documentation</a><ul>
+<li><a class="reference internal" href="#">CADISHI</a><ul>
 <li><a class="reference internal" href="#introduction">Introduction</a></li>
 <li><a class="reference internal" href="#requirements">Requirements</a></li>
 <li><a class="reference internal" href="#features">Features</a></li>
@@ -82,8 +82,9 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="cadishi-documentation">
-<h1>CADISHI documentation<a class="headerlink" href="#cadishi-documentation" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="cadishi">
+<h1>CADISHI<a class="headerlink" href="#cadishi" title="Permalink to this headline">¶</a></h1>
+<img alt="_images/cadishi.png" class="align-center" src="_images/cadishi.png" />
 <div class="section" id="introduction">
 <h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
 <p>The CADISHI package is designed to perform fast computations of histograms of
@@ -163,7 +164,7 @@ datasets use the name of the species as the label which e.g. can be the name of
 the chemical element in the context of MD data.</p>
 <p>To demonstrate how to feed data into CADISHI there is an <strong>example code</strong>
 available at
-<a class="reference download internal" download="" href="_downloads/6c7827913459a2201e5184b5a44b097b/input_example.py"><code class="xref download docutils literal notranslate"><span class="pre">doc/scripts/input_example.py</span></code></a>.
+<a class="reference download internal" download="" href="_downloads/0d2c8d1afac0584a8611335b1e8d42e8/input_example.py"><code class="xref download docutils literal notranslate"><span class="pre">doc/scripts/input_example.py</span></code></a>.
 Adapt that code to easily implement a reader for arbitrary custom data.</p>
 <p>To <strong>convert data from a plethora of MD simulation data formats</strong> to CADISHI’s
 HDF5 format, we provide the script <code class="docutils literal notranslate"><span class="pre">md_to_cadishi.py</span></code> which is installed
@@ -198,7 +199,7 @@ compression that comes with the Python HDF5 module “H5py” and is used by CAD
 by default (LZF can be disabled via the parameter file)).</p>
 <p>Moreover, to demonstrate how to access the HDF5 data written by CADISHI from
 Python we provide the example program
-<a class="reference download internal" download="" href="_downloads/bc1828d24ca8c97e7e03c74a9cd55f40/plot_hdf5_data.py"><code class="xref download docutils literal notranslate"><span class="pre">doc/scripts/plot_hdf5_data.py</span></code></a>.
+<a class="reference download internal" download="" href="_downloads/3925899b8a83e3496c6886ee7cd0d76c/plot_hdf5_data.py"><code class="xref download docutils literal notranslate"><span class="pre">doc/scripts/plot_hdf5_data.py</span></code></a>.
 It opens the HDF5 container, reads the last frame and plots a histogram using
 matplotlib. As an input file, the CADISHI output from the test case can be taken.</p>
 <p>Finally, CADISHI comes with a HDF5 unpack tool (<code class="docutils literal notranslate"><span class="pre">cadishi</span> <span class="pre">unpack</span></code>) and a HDF5
@@ -274,7 +275,7 @@ file to your needs.  In particular, the compute kernels <em>pydh</em> (CPU) and 
 points to the default test case included with the CADISHI package. Adapt the
 input configuration to your actual data. An example code on how to import data
 into CADISHI is available at
-<a class="reference download internal" download="" href="_downloads/6c7827913459a2201e5184b5a44b097b/input_example.py"><code class="xref download docutils literal notranslate"><span class="pre">doc/scripts/input_example.py</span></code></a>.
+<a class="reference download internal" download="" href="_downloads/0d2c8d1afac0584a8611335b1e8d42e8/input_example.py"><code class="xref download docutils literal notranslate"><span class="pre">doc/scripts/input_example.py</span></code></a>.
 As a second step the distance histogram calculation is run as follows:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cadishi</span> <span class="n">histo</span>
 </pre></div>

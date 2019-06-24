@@ -73,10 +73,10 @@
 <span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">print_function</span>
 
 
-<span class="kn">from</span> <span class="nn">builtins</span> <span class="k">import</span> <span class="nb">next</span>
 <span class="kn">from</span> <span class="nn">builtins</span> <span class="k">import</span> <span class="nb">str</span>
 <span class="kn">from</span> <span class="nn">builtins</span> <span class="k">import</span> <span class="nb">range</span>
 <span class="kn">import</span> <span class="nn">pickle</span>
+<span class="kn">from</span> <span class="nn">six.moves</span> <span class="k">import</span> <span class="nb">range</span>
 
 <span class="kn">from</span> <span class="nn">..</span> <span class="k">import</span> <span class="n">base</span>
 <span class="kn">from</span> <span class="nn">..</span> <span class="k">import</span> <span class="n">util</span>
@@ -121,6 +121,9 @@
             <span class="n">frm</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">fp</span><span class="p">)</span>
         <span class="c1"># ---</span>
         <span class="k">return</span> <span class="n">frm</span></div>
+
+    <span class="k">def</span> <span class="nf">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span>
 
     <span class="k">def</span> <span class="nf">__next__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Iterate through all the frames and yield frame by frame.&quot;&quot;&quot;</span>

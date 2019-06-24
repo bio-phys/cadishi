@@ -17,7 +17,7 @@
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="CADISHI compute kernels" href="kernel.html" />
-    <link rel="prev" title="CADISHI documentation" href="index.html" /> 
+    <link rel="prev" title="CADISHI" href="index.html" /> 
   </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
@@ -32,7 +32,7 @@
           <a href="kernel.html" title="CADISHI compute kernels"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="index.html" title="CADISHI documentation"
+          <a href="index.html" title="CADISHI"
              accesskey="P">previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="index.html">CADISHI 1.1.0 documentation</a> &#187;</li> 
       </ul>
@@ -59,7 +59,7 @@
 
   <h4>Previous topic</h4>
   <p class="topless"><a href="index.html"
-                        title="previous chapter">CADISHI documentation</a></p>
+                        title="previous chapter">CADISHI</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="kernel.html"
                         title="next chapter">CADISHI compute kernels</a></p>
@@ -305,6 +305,11 @@ Intended for development/testing purposes.</p>
 <code class="descname">get_frame</code><span class="sig-paren">(</span><em>i</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cadishi/io/dummy.html#DummyReader.get_frame"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cadishi.io.dummy.DummyReader.get_frame" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
+<dl class="method">
+<dt id="cadishi.io.dummy.DummyReader.next">
+<code class="descname">next</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/cadishi/io/dummy.html#DummyReader.next"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cadishi.io.dummy.DummyReader.next" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
 </dd></dl>
 
 <dl class="class">
@@ -355,11 +360,6 @@ pipeline meta information.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="cadishi.io.hdf5.H5Reader.get_n_elem">
-<code class="descname">get_n_elem</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/cadishi/io/hdf5.html#H5Reader.get_n_elem"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cadishi.io.hdf5.H5Reader.get_n_elem" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
 <dt id="cadishi.io.hdf5.H5Reader.get_trajectory_information">
 <code class="descname">get_trajectory_information</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/cadishi/io/hdf5.html#H5Reader.get_trajectory_information"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cadishi.io.hdf5.H5Reader.get_trajectory_information" title="Permalink to this definition">¶</a></dt>
 <dd><p>Collect information from the first frame, assume it to be
@@ -373,6 +373,11 @@ information object.</p>
 <dt id="cadishi.io.hdf5.H5Writer">
 <em class="property">class </em><code class="descclassname">cadishi.io.hdf5.</code><code class="descname">H5Writer</code><span class="sig-paren">(</span><em>file='default.hdf5'</em>, <em>source=-1</em>, <em>compression=None</em>, <em>mode='w'</em>, <em>verbose=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cadishi/io/hdf5.html#H5Writer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cadishi.io.hdf5.H5Writer" title="Permalink to this definition">¶</a></dt>
 <dd><p>HDF5 writer for base.Container instances.</p>
+<dl class="method">
+<dt id="cadishi.io.hdf5.H5Writer.close_file_safely">
+<code class="descname">close_file_safely</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/cadishi/io/hdf5.html#H5Writer.close_file_safely"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cadishi.io.hdf5.H5Writer.close_file_safely" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
 <dl class="attribute">
 <dt id="cadishi.io.hdf5.H5Writer.default_compression">
 <code class="descname">default_compression</code><em class="property"> = 'lzf'</em><a class="headerlink" href="#cadishi.io.hdf5.H5Writer.default_compression" title="Permalink to this definition">¶</a></dt>
@@ -397,26 +402,11 @@ pipeline meta information.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="cadishi.io.hdf5.H5Writer.hard_flush">
-<code class="descname">hard_flush</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/cadishi/io/hdf5.html#H5Writer.hard_flush"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cadishi.io.hdf5.H5Writer.hard_flush" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
 <dt id="cadishi.io.hdf5.H5Writer.put_frame">
 <code class="descname">put_frame</code><span class="sig-paren">(</span><em>frm</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cadishi/io/hdf5.html#H5Writer.put_frame"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cadishi.io.hdf5.H5Writer.put_frame" title="Permalink to this definition">¶</a></dt>
 <dd><p>Save a single frame into a HDF5 group
 labeled with the frame number.</p>
 </dd></dl>
-
-<dl class="method">
-<dt id="cadishi.io.hdf5.H5Writer.safe_close">
-<code class="descname">safe_close</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/cadishi/io/hdf5.html#H5Writer.safe_close"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cadishi.io.hdf5.H5Writer.safe_close" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="cadishi.io.hdf5.H5Writer.safe_open">
-<code class="descname">safe_open</code><span class="sig-paren">(</span><em>file</em>, <em>mode</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cadishi/io/hdf5.html#H5Writer.safe_open"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cadishi.io.hdf5.H5Writer.safe_open" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
 
 <dl class="attribute">
 <dt id="cadishi.io.hdf5.H5Writer.valid_compression">
@@ -1028,7 +1018,7 @@ entry.</p>
           <a href="kernel.html" title="CADISHI compute kernels"
              >next</a> |</li>
         <li class="right" >
-          <a href="index.html" title="CADISHI documentation"
+          <a href="index.html" title="CADISHI"
              >previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="index.html">CADISHI 1.1.0 documentation</a> &#187;</li> 
       </ul>

@@ -267,6 +267,9 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">src</span> <span class="o">=</span> <span class="n">source</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">verb</span> <span class="o">=</span> <span class="n">verbose</span>
 
+    <span class="k">def</span> <span class="nf">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span>
+
 <div class="viewcode-block" id="Filter.set_input"><a class="viewcode-back" href="../../modules.html#cadishi.base.Filter.set_input">[docs]</a>    <span class="k">def</span> <span class="nf">set_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">source</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">src</span> <span class="o">=</span> <span class="n">source</span></div>
 
@@ -284,6 +287,9 @@
 <div class="viewcode-block" id="Reader"><a class="viewcode-back" href="../../modules.html#cadishi.base.Reader">[docs]</a><span class="k">class</span> <span class="nc">Reader</span><span class="p">(</span><span class="n">PipelineElement</span><span class="p">):</span>
     <span class="n">_conflicts</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Reader&#39;</span><span class="p">]</span>
     <span class="sd">&quot;&quot;&quot;Reader base class, to be overloaded by an actual implementation.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span>
 
 <div class="viewcode-block" id="Reader.get_meta"><a class="viewcode-back" href="../../modules.html#cadishi.base.Reader.get_meta">[docs]</a>    <span class="k">def</span> <span class="nf">get_meta</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Return information on the present filter, ready to be added to a frame</span>

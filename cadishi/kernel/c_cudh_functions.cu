@@ -429,7 +429,7 @@ void histo_gpu(TUPLE3_T *coords, int n_tot,
     int histo_block_x;
 
     // --- maximum number of bins fitting into the 48kB of shared memory available on relevant GPUs
-    int smem_n_bins_max = 12288;  // 48 kB
+    int smem_n_bins_max = 49152/sizeof(uint32_t);  // 48 kB
     // --- threshold value *below* which the advanced kernels should be used
     int histo_advanced_nbins_threshold;
     // --- set parameters depending on the compute capability based on
@@ -439,12 +439,12 @@ void histo_gpu(TUPLE3_T *coords, int n_tot,
         // VOLTA
         histo_block_x = 512;
 #if __CUDACC_VER_MAJOR__ >= 9
-        smem_n_bins_max *= 2;  // 96 kB -- experimental
-        const int maxbytes = 98304; // 96 KB
+        const int maxbytes = prop.sharedMemPerBlockOptin;
         cudaFuncSetAttribute(histo1_advanced_knl<TUPLE3_T,COUNTER_T,FLOAT_T,check_input, box_type_id>,
             cudaFuncAttributeMaxDynamicSharedMemorySize, maxbytes);
         cudaFuncSetAttribute(histo2_advanced_knl<TUPLE3_T,COUNTER_T,FLOAT_T,check_input, box_type_id>,
             cudaFuncAttributeMaxDynamicSharedMemorySize, maxbytes);
+        smem_n_bins_max = maxbytes/sizeof(uint32_t);  // 64 kb on some Turings, 96 kB on Volta
 #endif
         histo_advanced_nbins_threshold = 4*smem_n_bins_max;
     } else if (prop.major == 6) {
