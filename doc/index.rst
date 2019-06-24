@@ -1,7 +1,7 @@
 CADISHI
 =======
 
-.. image:: _static/logo.png
+.. image:: img/cadishi.png
    :align: center
 
 Introduction
