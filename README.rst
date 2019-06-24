@@ -1,7 +1,8 @@
-=======
 CADISHI
 =======
 
+.. image:: doc/img/cadishi.png
+   :align: center
 
 Introduction
 ------------
