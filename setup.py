@@ -477,12 +477,63 @@ entry_points = {
     ]
 }
 
-# update_git_hash("cadishi")
+# string created from README.rst using pandoc and some manual cleaning
+long_description = """
+CADISHI
+=======
+
+Introduction
+------------
+
+CADISHI \-- CAlculation of DIStance HIstograms \-- is a software package
+that enables scientists to compute (Euclidean) distance histograms
+efficiently. Any sets of objects that have 3D Cartesian coordinates may
+be used as input, for example, atoms in molecular dynamics datasets or
+galaxies in astrophysical contexts. CADISHI drives the high-performance
+kernels pydh (CPU) and cudh (GPU, optional) to do the actual histogram
+computation. The kernels pydh and cudh are part of CADISHI and are
+written in C++ and CUDA.
+
+For more information, we refer to our publication:
+
+K. Reuter, J. Koefinger; CADISHI: Fast parallel calculation of
+particle-pair distance histograms on CPUs and GPUs; [Comp. Phys. Comm.
+(236), 274 (2019)](https://doi.org/10.1016/j.cpc.2018.10.018).
+
+A preprint of the paper is available on
+[arXiv.org](https://arxiv.org/abs/1808.01478).
+
+Documentation
+-------------
+
+Documentation is available at [http://cadishi.readthedocs.io/en/latest/
+\<http://cadishi.readthedocs.io/en/latest/\>](). Alternatively, you may
+access the local copy at [doc/html/index.html]{.title-ref} after having
+cloned the repository.
+
+License and Citation
+--------------------
+
+The CADISHI package is released under the permissive MIT license. See
+the file [LICENSE.txt]{.title-ref} for details.
+
+Copyright 2015-2019 Klaus Reuter (MPCDF), Juergen Koefinger (MPIBP)
+
+In case you\'re using CADISHI for own academic or non-academic research,
+we kindly request that you cite CADISHI in your publications and
+presentations. We suggest the following citation as appropriate:
+
+K. Reuter, J. Koefinger; CADISHI: Fast parallel calculation of
+particle-pair distance histograms on CPUs and GPUs; Computer Physics
+Communications (2018); \<<https://doi.org/10.1016/j.cpc.2018.10.018>\>.
+"""
 
 setup(
     name="cadishi",
     version=get_version_string(),
     description='High performance distance histogram calculation framework for CPUs and GPUs',
+    long_description=long_description,
+    long_description_content_type='text/markdown',
     author='Juergen Koefinger, Max Linke, Klaus Reuter',
     author_email='khr@mpcdf.mpg.de',
     url='https://gitlab.mpcdf.mpg.de/MPIBP-Hummer/Cadishi',
