@@ -468,14 +468,12 @@ def extensions():
     return exts
 
 
-data_files = [('cadishi/tests/data', glob('cadishi/tests/data/*')),
-              ('cadishi/data', glob('cadishi/data/*'))]
-
 entry_points = {
     'console_scripts': [
         'cadishi=cadishi.exe.cli:main'
     ]
 }
+
 
 # string created from README.rst using pandoc and some manual cleaning
 long_description = """
@@ -528,6 +526,7 @@ particle-pair distance histograms on CPUs and GPUs; Computer Physics
 Communications (2018); \<<https://doi.org/10.1016/j.cpc.2018.10.018>\>.
 """
 
+
 setup(
     name="cadishi",
     version=get_version_string(),
@@ -542,6 +541,7 @@ setup(
               'cadishi.kernel',
               'cadishi.tests',
               'cadishi.exe'],
+    package_data={'cadishi' : ['tests/data/*', 'data/*']},
     install_requires=[
         'six',
         'future', # to be removed
@@ -554,7 +554,6 @@ setup(
     cmdclass={'clean': CleanCommand,
               'build_ext': cuda_build_ext},
     entry_points=entry_points,
-    data_files=data_files,
     ext_modules=extensions(),
     scripts=glob('aux/*.py')+glob('aux/*.bash'),
     zip_safe=False)

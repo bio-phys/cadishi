@@ -14,7 +14,7 @@
 # The 'ver' tuple is read by the setup.py, conf.py of the Sphinx documentation
 # system and __init__.py of the package.
 
-ver = (1, 1, 1)
+ver = (1, 1, 2)
 
 
 def get_version_string():
