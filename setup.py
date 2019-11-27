@@ -504,5 +504,6 @@ setup(
     entry_points=entry_points,
     data_files=data_files,
     ext_modules=extensions(),
-    scripts=glob('aux/*'),
+    scripts=glob('aux/*.py')+glob('aux/*.bash'),
     zip_safe=False)
+
