@@ -482,9 +482,10 @@ entry_points = {
 setup(
     name="cadishi",
     version=get_version_string(),
-    description='distance histogram calculation framework',
+    description='High performance distance histogram calculation framework for CPUs and GPUs',
     author='Juergen Koefinger, Max Linke, Klaus Reuter',
     author_email='khr@mpcdf.mpg.de',
+    url='https://gitlab.mpcdf.mpg.de/MPIBP-Hummer/Cadishi',
     packages=['cadishi',
               'cadishi.io',
               'cadishi.kernel',
