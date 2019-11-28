@@ -112,9 +112,9 @@ print("###")
 ####################
 # Common functions #
 ####################
-def get_gcc_ver(gcc="gcc"):
+def get_gcc_ver(exe="gcc"):
     """Determine the version of GCC. Returns a tuple with integers."""
-    cmd = [gcc, '-v']
+    cmd = [exe, '-v']
     major = -1
     minor = -1
     patch = -1
@@ -132,40 +132,45 @@ def get_gcc_ver(gcc="gcc"):
     return ver
 
 
-def get_gcc_flags():
+def get_gcc_flags(exe="gcc"):
     """Set up compiler flags for the C extensions using the GCC compiler."""
-    gcc_ver = get_gcc_ver()
-    # set up compiler flags for the C extensions
+    gcc_ver = get_gcc_ver(exe=exe)
     cc_flags = ['-g']
     cc_flags += ['-D_GLIBCXX_USE_CXX11_ABI=0']
-    # avoid the error "undefined symbol: _ZdlPvm" with newer GCCs
-    if ((gcc_ver[0] == 4) and (gcc_ver[1] == 9)) or (gcc_ver[0] >= 5):
-        cc_flags += ['-std=c++11']
-    if CAD_DEBUG:
-        cc_flags += ['-O0']
+    if (gcc_ver[0] > 0):
+        # yes, we use GCC
+        # avoid the error "undefined symbol: _ZdlPvm" with newer GCCs
+        if ((gcc_ver[0] == 4) and (gcc_ver[1] == 9)) or (gcc_ver[0] >= 5):
+            cc_flags += ['-std=c++11']
+        if CAD_DEBUG:
+            cc_flags += ['-O0']
+        else:
+            cc_flags += ['-O3']
+            if (find_in_path(['g++']) is not None):
+                cc_flags += ['-ffast-math']  # essential to get vectorization and performance
+                cc_flags += ['-funroll-loops']
+                cc_flags += ['-mtune=native']  # optimize for the current CPU but preserve portability
+                if platform.processor() == 'x86_64':
+                    if CAD_GCC_NATIVE:
+                        # flag does not work e.g. on IBM Minsky systems
+                        cc_flags += ['-march=native']
+                        # cc_flags += ['-march=skylake-avx512']
+                    else:
+                        cc_flags += ['-msse4.2']  # required for fast round() instruction
+                if not on_mac():
+                    if CAD_OPENMP:
+                        cc_flags += ['-fopenmp']
+                        cc_flags += ['-lgomp']
+                    # avoid flag during GitLab continuous integration to keep the log slim
+                    if 'CI' not in os.environ:
+                        cc_flags += ['-fopt-info']
+                    # cc_flags += ['-ftree-vectorize']
+                    # cc_flags += ['-fopt-info-vec-missed']
+        cc_flags += ['-Wno-unknown-pragmas']
     else:
-        cc_flags += ['-O3']
-        if (find_in_path(['g++']) is not None):
-            cc_flags += ['-ffast-math']  # essential to get vectorization and performance
-            cc_flags += ['-funroll-loops']
-            cc_flags += ['-mtune=native']  # optimize for the current CPU but preserve portability
-            if platform.processor() == 'x86_64':
-                if CAD_GCC_NATIVE:
-                    # flag does not work e.g. on IBM Minsky systems
-                    cc_flags += ['-march=native']
-                    # cc_flags += ['-march=skylake-avx512']
-                else:
-                    cc_flags += ['-msse4.2']  # required for fast round() instruction
-            if not on_mac():
-                if CAD_OPENMP:
-                    cc_flags += ['-fopenmp']
-                    cc_flags += ['-lgomp']
-                # avoid flag during GitLab continuous integration to keep the log slim
-                if 'CI' not in os.environ:
-                    cc_flags += ['-fopt-info']
-                # cc_flags += ['-ftree-vectorize']
-                # cc_flags += ['-fopt-info-vec-missed']
-    cc_flags += ['-Wno-unknown-pragmas']
+        # non-gcc branch
+        cc_flags += ['-O2']
+    print("GCC flags: {}".format(" ".join(cc_flags)))
     return cc_flags
 
 
@@ -278,7 +283,11 @@ def locate_cuda():
 
 def cuda_compiler_flags():
     """Assemble compiler flags for CUDA."""
-    gcc_flags = get_gcc_flags()
+    if ('CXX' in os.environ):
+        exe = os.environ['CXX']
+    else:
+        exe = 'g++'
+    gcc_flags = get_gcc_flags(exe)
     try:
         gcc_flags.remove('-std=c++11')
     except:
@@ -323,6 +332,7 @@ def cuda_compiler_flags():
             if (CUDAVER[0] == 10):
                 nvcc_flags += ['--generate-code', 'arch=compute_75,code=compute_75']
     nvcc_flags += ['--compiler-options=' + gcc_flags_string + ' -fPIC']
+    print("NVCC flags: {}".format(" ".join(nvcc_flags)))
     return {'gcc': gcc_flags, 'nvcc': nvcc_flags}
 
 
@@ -415,7 +425,7 @@ class CleanCommand(Command):
 #########################
 def extensions():
     "Assemble the extensions array for setuptools."
-    # Experimental support for the Intel compiler.  Prerequisite environment variables:
+    # Experimental support for the Intel compiler. Set the following environment variables:
     #   export CC=icc
     #   export CXX=icpc
     #   export LDSHARED='icc -shared'
@@ -425,8 +435,12 @@ def extensions():
         print("Build using the Intel compiler")
         cc_flags = get_icc_flags()
     else:
-        print("Build using the GCC compiler")
-        cc_flags = get_gcc_flags()
+        print("Build using GCC or a generic compiler ...")
+        if ('CXX' in os.environ):
+            exe = os.environ['CXX']
+        else:
+            exe = 'g++'
+        cc_flags = get_gcc_flags(exe)
 
     exts = []
     exts.append(
@@ -547,6 +561,7 @@ setup(
         'future', # to be removed
         'numpy',
         'scipy',
+        'cython',
         'h5py',
         'pyyaml'
         # 'MDAnalysis>=0.14.0'
@@ -557,4 +572,3 @@ setup(
     ext_modules=extensions(),
     scripts=glob('aux/*.py')+glob('aux/*.bash'),
     zip_safe=False)
-
