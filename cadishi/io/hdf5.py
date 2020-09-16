@@ -206,6 +206,10 @@ class H5Writer(base.Writer):
     def __exit__(self, type, value, traceback):
         self.close_file_safely()
 
+    def flush(self):
+        if self.file_is_open:
+            self.h5fp.flush()
+
     def close_file_safely(self):
         if self.file_is_open:
             self.h5fp.flush()

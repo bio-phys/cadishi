@@ -390,7 +390,7 @@ def sum(histoparam, resultQueue, n_El, n_bins, dr, header_str, t0, n_frames, n_w
                 if (icount % histoparam['output']['flush_interval'] == 0):
                     sys.stdout.flush()
                     if histoparam['output']['write_h5']:
-                        h5writer.hard_flush()
+                        h5writer.flush()
                 iframe += 1
                 resultQueue.task_done()
             elif (n_done == n_workers):

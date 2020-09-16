@@ -19,7 +19,7 @@ import sys
 import argparse
 
 
-def parse_args():
+def setup_cli():
     """"Set up the cadishi command line interface using argparse.
 
     Individual cadishi commands and their arguments are set up
@@ -58,9 +58,16 @@ def parse_args():
     if ('random' in '\t'.join(sys.argv)):
         random_trajectory.configure_cli(subparsers)
 
-    return parser.parse_args()
+    return parser
 
 
 def main():
-    args = parse_args()
-    args.func(args)
+    parser = setup_cli()
+    args = parser.parse_args()
+    try:
+        func = args.func
+    except AttributeError:
+        parser.print_help()
+        parser.exit()
+    else:
+        func(args)
